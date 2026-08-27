@@ -41,7 +41,7 @@ const s3 = {
   bilet: null,                 // biletul curent {text,x,y,rest,unghi,w,h,viata}
   laturaBilet: -1,             // în ce margine cade următorul bilet
   aSunatChemarea: false,       // clopoțelul buzunarului sună o singură dată
-  vizitate: [false, false, false, false, false, false, false, false, false],
+  vizitat: false,              // ai fost măcar o dată în galerie
   urmatoareaPasare: 0,         // când cântă următoarea pasăre
   cantecePasari: 0,
   incercari: 0,                // de câte ori ai atins pe lângă cercel
@@ -74,6 +74,87 @@ function faza3(nume) { s3.faza = nume; s3.t0 = performance.now(); }
 function actiune3(acum) { s3.ultimaActiune = acum; s3.nivelInactiv = 0; }
 
 // ---- text & bilete ----
+/* ---------- FIȘA DE SALĂ ----------
+   Plăcuța albă de lângă o lucrare, din orice muzeu: un titlu scurt cu majuscule
+   și un rând sau două de explicație. Nu e o etichetă de obiect — aceea spune ce
+   e lucrul; fișa spune ce trebuie să știi ca să-l privești.
+
+   Se așază unde i se spune, agățată de perete cu două piulițe, iar înălțimea ei
+   iese din text: rândurile se rup singure la lățimea dată, și abia pe urmă se
+   știe cât de înalt e cartonul. Altfel textul ar da pe dinafară la orice
+   propoziție mai lungă decât cea la care ne-am gândit noi. */
+const FISA_HARTIE = '#f7f3e8';
+const FISA_CERNEALA = '#332c1f';
+
+function fisaDeSala(cx, cy, lat, titlu, text) {
+  const marg = lat * 0.1;
+  const marimeT = Math.max(9, lat * 0.098);
+  const marimeR = Math.max(8, lat * 0.082);
+
+  // rupem textul în rânduri, ca să știm cât de înaltă iese fișa
+  ctx.font = `${marimeR}px Georgia`;
+  const cuvinte = String(text).split(' ');
+  const randuri = [];
+  let rand = '';
+  for (const c of cuvinte) {
+    const incercare = rand ? rand + ' ' + c : c;
+    if (ctx.measureText(incercare).width > lat - marg * 2 && rand) {
+      randuri.push(rand); rand = c;
+    } else rand = incercare;
+  }
+  if (rand) randuri.push(rand);
+
+  const inalt = marg * 2 + marimeT * 1.5 + randuri.length * marimeR * 1.32;
+  const x = cx - lat / 2, y = cy - inalt / 2;
+
+  ctx.save();
+  // umbra subțire de sub carton
+  ctx.fillStyle = 'rgba(60, 52, 38, 0.22)';
+  dreptunghi(x + lat * 0.012, y + inalt * 0.03, lat, inalt, lat * 0.02);
+  // cartonul
+  const hartie = ctx.createLinearGradient(x, y, x + lat, y + inalt);
+  hartie.addColorStop(0, '#fffdf6');
+  hartie.addColorStop(1, FISA_HARTIE);
+  ctx.fillStyle = hartie;
+  dreptunghi(x, y, lat, inalt, lat * 0.02);
+  ctx.strokeStyle = 'rgba(120, 106, 80, 0.45)';
+  ctx.lineWidth = Math.max(1, lat * 0.006);
+  ctx.strokeRect(x, y, lat, inalt);
+
+  // titlul, cu majuscule rărite, ca la muzeu
+  ctx.fillStyle = FISA_CERNEALA;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.font = `bold ${marimeT}px Georgia`;
+  let tx = x + marg;
+  for (const litera of String(titlu).toUpperCase()) {
+    ctx.fillText(litera, tx, y + marg);
+    tx += ctx.measureText(litera).width + marimeT * 0.14;
+  }
+  // linia de sub titlu
+  ctx.strokeStyle = 'rgba(120, 106, 80, 0.5)';
+  ctx.lineWidth = Math.max(1, lat * 0.005);
+  ctx.beginPath();
+  ctx.moveTo(x + marg, y + marg + marimeT * 1.16);
+  ctx.lineTo(x + lat - marg, y + marg + marimeT * 1.16);
+  ctx.stroke();
+
+  ctx.font = `${marimeR}px Georgia`;
+  ctx.fillStyle = '#4a4234';
+  for (let k = 0; k < randuri.length; k++) {
+    ctx.fillText(randuri[k], x + marg, y + marg + marimeT * 1.5 + k * marimeR * 1.32);
+  }
+
+  // cele două piulițe cu care stă prinsă de perete
+  ctx.fillStyle = 'rgba(150, 138, 112, 0.75)';
+  for (const lats of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(cx + lats * (lat / 2 - marg * 0.45), y + marg * 0.42, lat * 0.014, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  return { x, y, w: lat, h: inalt };
+}
+
 function textIncadrat(text, x, y, latMax, hLinie, font, culoare, aliniere = 'center') {
   ctx.font = font; ctx.fillStyle = culoare; ctx.textAlign = aliniere; ctx.textBaseline = 'top';
   const cuv = text.split(' '); let linie = '', yy = y;
@@ -258,11 +339,15 @@ function intrareScena3(acum) {
   s3.diploma = null; s3.stralucire = 0; s3.chemare = 0; s3.manualDeschidere = 0;
   s3.laturaBilet = -1; s3.aSunatChemarea = false;
   s3.incercari = 0; s3.cercelInPalma = false;
-  s3.vizitate = [false, false, false, false, false, false, false, false, false];
+  s3.vizitat = false;
   s3.urmatoareaPasare = acum + 2500; s3.cantecePasari = 0;
   if (audio) sunetClunc();
-  pornesteMuzicaMuzeu();
-  pornesteNatura(false);          // păsări, dar fără foșnetul care acoperă totul
+  /* Aici nu cântă nimic. Muzeul e înăuntru, în galerii; noi stăm afară, pe
+     iarbă, în fața custodelui — și afară se aud păsările, nu Mozart. */
+  opresteMuzicaMuzeu();
+  /* Afară, pe iarbă: numai păsările. Muzica e a muzeului, iar muzeul e
+     înăuntru, în galerii — aici stăm în grădină, în fața custodelui. */
+  pornesteNatura(false);
 }
 
 /* Fundalul scenei a treia: cer cald și o pajiște verde. Aici a ajuns lumea
@@ -537,11 +622,8 @@ function varfulTrompeiMuzeu() {
   /* Cu haina desfăcută, custodele arată cu trompa spre buzunarul care cheamă.
      Un deget întins spune mai limpede decât orice scris că acolo trebuie apăsat. */
   if (s3.faza === 'usaDeschisa' && s3.chemare > 0.5) {
-    const k = primulBuzunarNevizitat();
-    if (k >= 0) {
-      const b = geomBuzunar(geomMuzeu(), k);
-      return { x: b.cx - b.w * 0.72, y: b.cy };
-    }
+    const b = geomBuzunar(geomMuzeu());
+    return { x: b.cx - b.w * 0.66, y: b.cy };
   }
   const ridicat = s3.usa;
   return {
@@ -759,48 +841,47 @@ function traseuOgiva(x, y, w, h) {
   ctx.closePath();
 }
 
-// Primul buzunar în care n-ai intrat încă — el e cel care cheamă.
-function primulBuzunarNevizitat() {
-  for (let k = 0; k < 9; k++) if (!s3.vizitate[k]) return k;
-  return -1;
+/* Un singur buzunar, mare, în mijlocul căptușelii.
+
+   Erau nouă, numerotate. Nouă firide mărunte cu cifre pe ele se citeau ca un
+   tablou de comandă: nu se vedea că se deschid, se vedea că trebuie alese. Iar
+   alegerea era falsă — toate duceau în aceeași galerie. Unul singur, cât o ușă,
+   cu scris pe el, spune dintr-o privire și ce e, și că se apasă. */
+function geomBuzunar(g) {
+  const bw = g.hainaW * 0.46, bh = g.hainaH * 0.44;
+  const x = g.cx - bw / 2;
+  const y = g.hainaY + g.hainaH * 0.24;
+  return { x, y, w: bw, h: bh, cx: x + bw / 2, cy: y + bh / 2, culoare: CULORI_BUZUNAR[0] };
 }
 
-// Unde stă buzunarul cu numărul k (0..8) pe căptușeala hainei.
-function geomBuzunar(g, k) {
-  const bw = g.hainaW * 0.24, bh = g.hainaH * 0.24, pas = g.hainaW * 0.28;
-  const c = k % 3, r = Math.floor(k / 3);
-  const x = g.cx + (c - 1) * pas - bw / 2;
-  const y = g.hainaY + g.hainaH * 0.14 + r * (bh + g.hainaH * 0.03);
-  return { x, y, w: bw, h: bh, cx: x + bw / 2, cy: y + bh / 2, culoare: CULORI_BUZUNAR[k] };
-}
-
-/* Un buzunar-galerie: firidă cu boltă, mătase de culoarea galeriei în adânc,
-   ramă și rozetă de alamă. Cel dintâi cheamă la atins — pulsează și i se
-   aprinde o aură caldă — ca să se vadă că buzunarele se deschid, nu se admiră. */
-function deseneazaBuzunar(g, k, chemare, acum) {
-  const b = geomBuzunar(g, k);
-  const cheama = k === primulBuzunarNevizitat() ? chemare : 0;
-  const puls = 1 + 0.055 * cheama * Math.sin(acum * 0.005);
+/* Buzunarul-galerie: o firidă cu boltă, cât o ușă, cu mătase în adânc, ramă și
+   rozetă de alamă, și cuvântul GALERIE scris pe pragul ei. Cheamă la atins —
+   pulsează și i se aprinde o aură caldă — ca să se vadă că se deschide, nu că
+   se admiră. */
+function deseneazaBuzunar(g, chemare, acum) {
+  const b = geomBuzunar(g);
+  const cheama = chemare;
+  const puls = 1 + 0.04 * cheama * Math.sin(acum * 0.005);
 
   if (cheama > 0.02) {
     /* Pe căptușeala aurie, o aură aurie n-ar spune nimic — de-aia lumina care
        cheamă e albă și caldă, iar peste ea se rotește un inel de sclipiri. */
     const bat = 0.6 + 0.4 * Math.sin(acum * 0.005);
-    const halo = ctx.createRadialGradient(b.cx, b.cy, b.w * 0.28, b.cx, b.cy, b.w * 1.15);
-    halo.addColorStop(0, `rgba(255, 252, 235, ${0.75 * cheama * bat})`);
+    const halo = ctx.createRadialGradient(b.cx, b.cy, b.w * 0.3, b.cx, b.cy, b.w * 0.95);
+    halo.addColorStop(0, `rgba(255, 252, 235, ${0.7 * cheama * bat})`);
     halo.addColorStop(1, 'rgba(255, 252, 235, 0)');
     ctx.fillStyle = halo;
-    ctx.beginPath(); ctx.arc(b.cx, b.cy, b.w * 1.15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(b.cx, b.cy, b.w * 0.95, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * cheama * bat})`;
-    ctx.lineWidth = Math.max(1.5, b.w * 0.03);
-    traseuOgiva(b.x - b.w * 0.07, b.y - b.h * 0.07, b.w * 1.14, b.h * 1.14);
+    ctx.lineWidth = Math.max(1.5, b.w * 0.018);
+    traseuOgiva(b.x - b.w * 0.04, b.y - b.h * 0.04, b.w * 1.08, b.h * 1.08);
     ctx.stroke();
     ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * cheama})`;
-    for (let f = 0; f < 4; f++) {
-      const a = acum * 0.0016 + f * Math.PI / 2;
-      const rr = b.w * 0.78;
+    for (let f = 0; f < 5; f++) {
+      const a = acum * 0.0016 + f * Math.PI * 2 / 5;
       ctx.beginPath();
-      ctx.arc(b.cx + Math.cos(a) * rr, b.cy + Math.sin(a) * rr * 0.8, b.w * 0.032, 0, Math.PI * 2);
+      ctx.arc(b.cx + Math.cos(a) * b.w * 0.62, b.cy + Math.sin(a) * b.h * 0.62,
+              b.w * 0.02, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -811,33 +892,47 @@ function deseneazaBuzunar(g, k, chemare, acum) {
   ctx.fillStyle = b.culoare;
   traseuOgiva(b.x, b.y, b.w, b.h); ctx.fill();
   const adanc = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-  adanc.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
-  adanc.addColorStop(0.6, 'rgba(0, 0, 0, 0.05)');
+  adanc.addColorStop(0, 'rgba(0, 0, 0, 0.62)');
+  adanc.addColorStop(0.55, 'rgba(0, 0, 0, 0.12)');
+  adanc.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
   ctx.fillStyle = adanc;
   traseuOgiva(b.x, b.y, b.w, b.h); ctx.fill();
 
-  ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(1.4, b.w * 0.05);
+  ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(2, b.w * 0.028);
   traseuOgiva(b.x, b.y, b.w, b.h); ctx.stroke();
 
   ctx.fillStyle = ALAMA;                       // rozeta din creștetul bolții
-  for (let f = 0; f < 6; f++) {
-    const a = f / 6 * Math.PI * 2;
+  for (let f = 0; f < 8; f++) {
+    const a = f / 8 * Math.PI * 2;
     ctx.beginPath();
-    ctx.ellipse(b.cx + Math.cos(a) * b.w * 0.045, b.y + Math.sin(a) * b.w * 0.045,
-                b.w * 0.032, b.w * 0.016, a, 0, Math.PI * 2);
+    ctx.ellipse(b.cx + Math.cos(a) * b.w * 0.035, b.y + Math.sin(a) * b.w * 0.035,
+                b.w * 0.026, b.w * 0.012, a, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  ctx.fillStyle = CREM_HARTIE;
-  ctx.font = `bold ${Math.round(b.h * 0.3)}px Georgia`;
+  /* Plăcuța de alamă de pe pragul buzunarului, cu numele lui gravat. Un cuvânt
+     scris pe un lucru e cel mai scurt drum spre a ști ce e lucrul acela. */
+  const px = b.cx, py = b.y + b.h * 0.86, pw = b.w * 0.62, ph = b.h * 0.16;
+  const placa = ctx.createLinearGradient(0, py - ph / 2, 0, py + ph / 2);
+  placa.addColorStop(0, '#e8cf8a');
+  placa.addColorStop(0.5, ALAMA);
+  placa.addColorStop(1, '#8a6a2c');
+  ctx.fillStyle = placa;
+  dreptunghi(px - pw / 2, py - ph / 2, pw, ph, ph * 0.28);
+  ctx.strokeStyle = 'rgba(60, 42, 12, 0.55)';
+  ctx.lineWidth = Math.max(1, ph * 0.07);
+  ctx.strokeRect(px - pw / 2, py - ph / 2, pw, ph);
+  ctx.fillStyle = '#3a2a10';
+  ctx.font = `bold ${Math.round(ph * 0.62)}px Georgia`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(String(k + 1), b.cx, b.cy + b.h * 0.14);
-  if (s3.vizitate[k]) {                    // galeria văzută, însemnată cu alamă
-    ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(1.6, b.w * 0.05); ctx.lineCap = 'round';
+  ctx.fillText('GALERIE', px, py + ph * 0.04);
+
+  if (s3.vizitat) {                        // galeria văzută, însemnată cu alamă
+    ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(1.6, b.w * 0.026); ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(b.cx - b.w * 0.16, b.cy + b.h * 0.3);
-    ctx.lineTo(b.cx - b.w * 0.04, b.cy + b.h * 0.4);
-    ctx.lineTo(b.cx + b.w * 0.18, b.cy + b.h * 0.16);
+    ctx.moveTo(b.cx - b.w * 0.1, b.y + b.h * 0.34);
+    ctx.lineTo(b.cx - b.w * 0.03, b.y + b.h * 0.42);
+    ctx.lineTo(b.cx + b.w * 0.11, b.y + b.h * 0.22);
     ctx.stroke();
   }
   ctx.restore();
@@ -845,7 +940,7 @@ function deseneazaBuzunar(g, k, chemare, acum) {
 
 /* Haina de custode. Închisă, e ușa muzeului: două poale de catifea verde cu
    broderie de alamă. Desfăcută, se dă în lături și lasă la vedere căptușeala de
-   mătase cu cele nouă buzunare — galeriile. „deschidere" merge de la 0 la 1. */
+   mătase cu buzunarul cel mare — galeria. „deschidere" merge de la 0 la 1. */
 function deseneazaHaina(g, deschidere) {
   const w = g.hainaW, h = g.hainaH, x0 = g.hainaX, y0 = g.hainaY;
 
@@ -891,7 +986,7 @@ function deseneazaHaina(g, deschidere) {
     if (ctx.roundRect) ctx.roundRect(cx0, cy0, cw, ch, w * 0.06); else ctx.rect(cx0, cy0, cw, ch);
     ctx.stroke();
 
-    for (let k = 0; k < 9; k++) deseneazaBuzunar(g, k, s3.chemare, acum);
+    deseneazaBuzunar(g, s3.chemare, acum);
     ctx.restore();
   }
 
@@ -1639,13 +1734,10 @@ function click3(acum) {
     return;
   }
   if (s3.faza === 'usaDeschisa' && s3.usa >= 0.9) {
-    const g = geomMuzeu();
-    for (let k = 0; k < 9; k++) {
-      const b = geomBuzunar(g, k);
-      if (x > b.x && x < b.x + b.w && y > b.y - b.h * 0.12 && y < b.y + b.h) {
-        intraInGalerie(k, acum);
-        return;
-      }
+    const b = geomBuzunar(geomMuzeu());
+    if (x > b.x && x < b.x + b.w && y > b.y - b.h * 0.1 && y < b.y + b.h) {
+      intraInGalerie(acum);
+      return;
     }
     actiune3(acum);
     return;

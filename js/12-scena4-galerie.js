@@ -16,7 +16,7 @@ const PRAG_TAINA = 900;          // cât trebuie ținută lupa pe loc, în milis
 const PRAG_LUPA_IN_MANA = 6;     // după atâtea încercări ratate, lupa vine singură
 
 const s4 = {
-  faza: 'intrare', t0: 0, buzunar: 0, ultimulCadru: 0,
+  faza: 'intrare', t0: 0, ultimulCadru: 0,
   lupaX: 0, lupaY: 0, lupaR: 0,
   lupaLuata: false,                // lupa vine în mână doar dacă o iei tu
   lupaRepausX: 0, lupaRepausY: 0,
@@ -42,9 +42,8 @@ function geomMiniatura() {
   };
 }
 
-function intraInGalerie(k, acum) {
+function intraInGalerie(acum) {
   stare = 'galerie';
-  s4.buzunar = k;
   s4.faza = 'intrare'; s4.t0 = acum; s4.ultimulCadru = acum;
   s4.lupaR = Math.min(W, H) * 0.105;
   const m = geomMiniatura();
@@ -61,18 +60,17 @@ function intraInGalerie(k, acum) {
   pregatesteRama(m);              // ștampila ramei, gata dinainte de portal
   opresteMuzicaMuzeu();
   opresteNatura();                 // sala galeriei e închisă: nu se aude grădina
-  pornesteMuzicaGalerie();
+  pornesteMuzicaMuzeu();          // înăuntru, în muzeu: piesa în felul lui Mozart
   sunetIntrareGalerie();
 }
 
 function intoarceInMuzeu(acum) {
-  s3.vizitate[s4.buzunar] = true;
+  s3.vizitat = true;
   stare = 'muzeu';
   faza3('usaDeschisa');
   s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
   actiune3(acum);
-  opresteMuzicaMuzeu();
-  pornesteMuzicaMuzeu();
+  opresteMuzicaMuzeu();           // ieșim din galerie: muzica rămâne înăuntru
   pornesteNatura(false);
   s3.urmatoareaPasare = acum + 2000;
 }
@@ -135,7 +133,7 @@ function actualizeazaGalerie(acum) {
   } else if (s4.faza === 'portal') {
     s4.portal = Math.min(1, s4.portal + dt / 1800);
     // portalul nu te întoarce în muzeu, ci te duce în galeria următoare
-    if (s4.portal >= 1 && acum - s4.t0 > 2600) intraInCampie(s4.buzunar, acum);
+    if (s4.portal >= 1 && acum - s4.t0 > 2600) intraInCampie(acum);
   }
 }
 
@@ -1147,6 +1145,14 @@ function deseneazaPrinLupa(lx, ly, r, acum) {
   }
   ctx.restore();
 
+  /* Fișa de sală, în dreapta ramei. Un muzeu adevărat nu te lasă în fața unui
+     lucru fără să-ți spună ce e lucrul acela. */
+  const mm = geomMiniatura();
+  fisaDeSala(mm.ramaX + mm.ramaW * 0.86, mm.ramaY - mm.ramaH * 0.1,
+             Math.min(W * 0.17, mm.ramaW * 0.62),
+             'Miniatura',
+             'Un tablou atât de mic încât cere lupă: pictat cu pensula de câteva fire, pe fildeș sau pe pergament.');
+
   luciulSticlei(lx, ly, r);
   deseneazaLupa(lx, ly, r, s4.lupaLuata);
 
@@ -1203,7 +1209,7 @@ function deseneazaScena4(t, acum) {
        decorul peste tine. */
     const p = atenuare(Math.min(1, (acum - s4.t0) / 1300));
     ctx.fillStyle = '#070503'; ctx.fillRect(0, 0, W, H);
-    const b = geomBuzunar(geomMuzeu(), s4.buzunar);
+    const b = geomBuzunar(geomMuzeu());
     const bx = intre(b.x, -W * 0.12, p), by = intre(b.y, -H * 0.12, p);
     const bw = intre(b.w, W * 1.24, p), bh = intre(b.h, H * 1.24, p);
     ctx.save();

@@ -358,6 +358,17 @@ function cantecDePasare() {
   }
 }
 
+/* Poc! Balonul spart: o pocnitură scurtă și un pufăit de aer care scapă.
+   Pocnetul e un ton foarte scurt care cade abrupt; aerul, zgomot filtrat care
+   se stinge. Fără al doilea, pocnetul sună a tobă, nu a foiță ruptă. */
+function sunetPoc() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(880, t, 0.045, 0.16, 'square', 120);
+  nota(320, t + 0.005, 0.09, 0.1, 'triangle', 70);
+  zgomot(t + 0.01, 0.22, 0.075, 4200, 700);
+}
+
 // Un clopoțel curat, pentru ce cheamă la atins: buzunarul care se aprinde.
 function sunetClopotel(frecventa = 880) {
   if (!audio) return;

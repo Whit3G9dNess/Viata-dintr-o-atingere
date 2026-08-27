@@ -1,4 +1,18 @@
 /* ---------- 7. ATINGERILE UTILIZATORULUI ---------- */
+/* Nașterea punctului. Nu mai stă în ascultătorul de atingeri, fiindcă n-o mai
+   pornește atingerea: o pornește bucla, în clipa în care s-au risipit cioburile
+   balonului spart. */
+function incepeJucaria(acum) {
+  stare = 'crestere';
+  inceputulCresterii = acum;
+  balon.x = W / 2;
+  balon.y = H / 2;
+  balon.razaBaza = Math.min(W, H) * 0.11;
+  initMembrana();
+  alegeTintaNoua(acum);
+  sunetRasarit();
+}
+
 window.addEventListener('pointerdown', (e) => {
   cursor.x = e.clientX * scalaPanzei;
   cursor.y = e.clientY * scalaPanzei;
@@ -13,18 +27,11 @@ window.addEventListener('pointerdown', (e) => {
     return;
   }
 
-  /* — Scena 1: nașterea punctului — */
-  if (stare === 'intuneric') {
-    stare = 'crestere';
-    inceputulCresterii = acum;
-    balon.x = W / 2;
-    balon.y = H / 2;
-    balon.razaBaza = Math.min(W, H) * 0.11;
-    initMembrana();
-    alegeTintaNoua(acum);
-    sunetRasarit();
-    return;
-  }
+  /* Pe ultima foaie, atingerea sparge balonul-mânuță, și atât. Jocul pornește
+     abia când s-au risipit cioburile, iar de asta se ocupă bucla, nu atingerea:
+     pocnetul are nevoie de o răsuflare ca să se vadă și să se audă, altfel
+     atingerea ta și nașterea punctului se calcă una pe alta. */
+  if (stare === 'intuneric') { spargeBalonulManutei(acum); return; }
 
   /* — Scena 1→2: gâdilatul și prinderea balonului — */
   if (stare === 'balon') {

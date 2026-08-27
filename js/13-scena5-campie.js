@@ -143,7 +143,7 @@ function pantofElegant(c, lung) {
 }
 
 const s5 = {
-  faza: 'pixeli', t0: 0, ultimulCadru: 0, buzunar: 0,
+  faza: 'pixeli', t0: 0, ultimulCadru: 0,
   pasi: 0, claritate: 0, latimeTablou: 0,
   ramaSeVede: false,               // aurul a intrat în ecran, deci a apărut și sala
   usi: 0, plecare: 0
@@ -739,14 +739,13 @@ function usileHambarului(c, w, h, deschidere) {
 
 /* ---- scena ---- */
 
-function intraInCampie(k, acum) {
+function intraInCampie(acum) {
   stare = 'campie';
-  s5.buzunar = k;
   s5.faza = 'pixeli'; s5.t0 = acum; s5.ultimulCadru = acum;
   s5.pasi = 0; s5.claritate = 0; s5.usi = 0; s5.plecare = 0;
   pregatesteTablou();
   opresteMuzicaMuzeu();
-  pornesteMuzicaGalerie();
+  pornesteMuzicaMuzeu();          // tot înăuntru, în muzeu: aceeași piesă
   pornesteNatura(true);           // scena e despre aer: vânt și păsări
   if (audio) sunetIntrareGalerie();
 }
@@ -776,14 +775,13 @@ function actualizeazaCampia(acum) {
 }
 
 function intoarceInMuzeuDinCampie(acum) {
-  s3.vizitate[s5.buzunar] = true;
+  s3.vizitat = true;
   stare = 'muzeu';
   faza3('usaDeschisa');
   s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
   actiune3(acum);
-  opresteMuzicaMuzeu();
-  pornesteMuzicaMuzeu();
-  pornesteNatura(true);
+  opresteMuzicaMuzeu();           // ne întoarcem afară, la custode
+  pornesteNatura(false);
 }
 
 // Pânzele de lucru: una pe care compunem, una minusculă pe care pixelăm.
@@ -908,6 +906,15 @@ function deseneazaScena5(t, acum) {
   const k = latRama / R.latime;
   ctx.drawImage(R.panza, rx - R.marg * k, ry - R.marg * k,
                 R.panza.width * k, R.panza.height * k);
+
+  /* Fișa de sală, pe peretele din stânga lucrării. Apare odată cu rama: cât
+     stai cu nasul în pânză n-ai unde s-o citești, și n-ar avea niciun rost. */
+  if (s5.ramaSeVede) {
+    fisaDeSala(Math.max(W * 0.115, rx - W * 0.105), ry + inaltRama * 0.3,
+               Math.min(W * 0.18, latRama * 0.28),
+               'Impresionism',
+               'Pictură din pete de lumină: de aproape vezi tușe, de departe vezi câmpul.');
+  }
 
   if (s5.faza === 'sala' || s5.faza === 'viu') pantofiiDePeJos();
 

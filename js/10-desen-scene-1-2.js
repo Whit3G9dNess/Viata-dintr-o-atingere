@@ -38,7 +38,20 @@ function deseneazaInvitatia(t) {
        spațiul rămas sub text, nu din înălțimea ecranului. */
     const spatiu = Math.max(H * 0.2, H - jos);
     const mana = Math.min(Math.min(W, H) * 0.17, spatiu / 3.0);
-    manutaAlba(W / 2, jos + mana * 1.35, mana, t);
+    const mx = W / 2, my = jos + mana * 1.35;
+    const pocnit = catAPocnit(performance.now());
+    if (pocnit <= 0) {
+      manutaAlba(mx, my, mana, t);
+    } else if (pocnit < 1) {
+      // foița se umflă o clipă și se stinge, iar cioburile pleacă în lături
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - pocnit * 2.8);
+      const umflat = 1 + pocnit * 0.55;
+      ctx.translate(mx, my); ctx.scale(umflat, umflat); ctx.translate(-mx, -my);
+      manutaAlba(mx, my, mana, t);
+      ctx.restore();
+      cioburileBalonului(mx, my, mana, pocnit);
+    }
     ctx.restore();
   }
 }

@@ -31,6 +31,27 @@ const PAGINI_INVITATIE = [
    acum, și nu se schimbă nimic altundeva. */
 let sarituraInvitatie = 0;
 
+/* Spargerea balonului din foaia a treia. Cât timp e null, balonul plutește și
+   dă din degete; din clipa atingerii ține minte când a pocnit, iar jocul
+   pornește abia după ce s-au risipit cioburile. Ochiul trebuie să apuce să vadă
+   ce a făcut mâna lui — altfel atingerea și nașterea punctului se suprapun, și
+   nu se înțelege că una a produs-o pe cealaltă. */
+const DURATA_POCNETULUI = 620;
+let pocnetulBalonului = null;
+
+function spargeBalonulManutei(acum) {
+  if (pocnetulBalonului !== null) return false;
+  pocnetulBalonului = acum;
+  if (audio) sunetPoc();
+  return true;
+}
+
+// Cât de departe a ajuns spargerea, de la 0 la 1.
+function catAPocnit(acum) {
+  if (pocnetulBalonului === null) return 0;
+  return Math.min(1, (acum - pocnetulBalonului) / DURATA_POCNETULUI);
+}
+
 function ceasulInvitatiei(t) { return t + sarituraInvitatie; }
 
 function paginaInvitatiei(t) {

@@ -163,6 +163,45 @@ const SCOBITURI_BALON = [
   { adanc: 0.265, ceata: 0.100, umbra: 0.60 }
 ];
 
+// Un aleator cu sămânță: cioburile zboară la fel de fiecare dată.
+function samantaBalon(i) {
+  const v = Math.sin(i * 53.7 + 7.3) * 39217.7;
+  return v - Math.floor(v);
+}
+
+/* Ce rămâne dintr-un balon spart: câteva fâșii de foiță care zboară în lături,
+   răsucindu-se și căzând puțin. Se sting repede — un balon spart nu lasă nimic
+   în urmă, ăsta e tot rostul lui. */
+function cioburileBalonului(x, y, s, p) {
+  const q = Math.min(1, Math.max(0, p));
+  const stins = 1 - q;
+  if (stins <= 0) return;
+  ctx.save();
+  ctx.translate(x, y);
+  for (let k = 0; k < 11; k++) {
+    const a = (k / 11) * Math.PI * 2 + samantaBalon(k) * 0.5;
+    /* Pornesc de pe marginea balonului, nu din mijlocul lui: foița se rupe pe
+       unde era întinsă, iar cioburile adunate în centru arată a pată, nu a
+       spargere. */
+    const departe = s * (0.45 + samantaBalon(k + 20) * 0.5 + q * 1.35);
+    ctx.save();
+    ctx.translate(Math.cos(a) * departe,
+                  Math.sin(a) * departe * 0.9 + q * q * s * 0.5);
+    ctx.rotate(a + q * (3 + samantaBalon(k + 40) * 5));
+    ctx.globalAlpha = Math.min(1, stins * 1.35) * 0.95;
+    ctx.fillStyle = k % 3 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(224, 238, 255, 0.75)';
+    const lung = s * (0.14 + samantaBalon(k + 60) * 0.2) * (0.5 + stins * 0.5);
+    ctx.beginPath();
+    ctx.moveTo(-lung, 0);
+    ctx.quadraticCurveTo(0, -lung * 0.42, lung, 0);
+    ctx.quadraticCurveTo(0, lung * 0.16, -lung, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 function manutaAlba(x, y, s, t) {
   ctx.save();
   // încheietura descrie un opt alene, nu o simplă rotire dus-întors

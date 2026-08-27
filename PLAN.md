@@ -35,6 +35,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 15 | Sala a cincea: ramă, pantofi, port românesc | ✅ gata |
 | 16 | Țăranii calcă, sala respiră, rama vine mai târziu | ✅ gata |
 | 17 | Muzică de Mozart, liniște în grădină, nouă îndreptări | ✅ gata |
+| 18 | Un buzunar cu nume, fișe de sală, balonul care pocnește | ✅ gata |
 
 ---
 
@@ -382,6 +383,37 @@ grădină nu vâjâie nimic; mingea speriată e înapoi în cel mult câteva sec
 căpițele se văd; toți trei se micșorează la plecare; niciun rând scris nu se
 așază peste un pantof.
 
+## Faza 18 — Un buzunar cu nume, fișe de sală, balonul care pocnește
+
+**Un singur buzunar, cât o ușă, cu GALERIE scris pe el.** Erau nouă, numerotate.
+Nouă firide mărunte cu cifre se citeau ca un tablou de comandă: nu se vedea că se
+deschid, se vedea că trebuie alese — iar alegerea era falsă, toate duceau în
+aceeași galerie. Unul singur, cu numele gravat pe o plăcuță de alamă, spune
+dintr-o privire și ce e, și că se apasă. Odată cu cele nouă au plecat și `s4.buzunar`,
+`s5.buzunar` și indicele din `intraInGalerie` — o cifră care nu mai însemna nimic.
+
+**Fișe de sală**, ca în orice muzeu: un titlu cu majuscule rărite și o propoziție.
+Lângă miniatură scrie ce e o miniatură; lângă pânza cea mare, ce e impresionismul.
+Înălțimea cartonului iese din text — rândurile se rup singure la lățimea dată, și
+abia pe urmă se știe cât e de înalt — altfel orice propoziție mai lungă decât cea
+la care ne-am gândit noi ar da pe dinafară.
+
+**Balonul-mânuță pocnește.** Pe ultima foaie, atingerea îl sparge: poc, cioburi de
+foiță care zboară în lături, și abia după ce s-au risipit se naște punctul. Jocul
+nu mai pornește din atingere, ci din buclă, când pocnetul s-a terminat — ochiul
+trebuie să apuce să vadă ce a făcut mâna lui, altfel atingerea și nașterea
+punctului se calcă una pe alta și nu se înțelege că una a produs-o pe cealaltă.
+Cioburile pleacă de pe marginea balonului, nu din mijlocul lui: foița se rupe pe
+unde era întinsă, iar cioburile adunate în centru arată a pată, nu a spargere.
+
+**Muzica s-a mutat înăuntru.** Cânta la elefant, adică afară, pe iarbă. Dar muzeul
+e înăuntru, în galerii — acolo cântă Mozart, iar afară, în grădina custodelui, se
+aud păsările și atât.
+
+**Verificare:** haina deschisă arată un buzunar pe care scrie GALERIE și nicio
+cifră; lângă fiecare lucrare stă fișa ei; atingerea de pe ultima foaie sparge
+balonul și punctul se naște abia după; în galerie cântă, afară nu.
+
 ---
 
 ## Reguli care nu se calcă
@@ -402,7 +434,7 @@ așază peste un pantof.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 138 acum**, în douăsprezece secțiuni.
+au nevoie de nimic instalat. **Sunt 140 acum**, în douăsprezece secțiuni.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o

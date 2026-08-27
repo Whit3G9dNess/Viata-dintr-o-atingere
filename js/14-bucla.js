@@ -7,6 +7,11 @@ function cadru(t) {
      primul nu — și o piesă cântată pe ceasul cadrelor șchioapătă. */
   tineMuzicaMuzeului();
 
+  // cioburile s-au risipit: acum se naște punctul
+  if (stare === 'intuneric' && pocnetulBalonului !== null && catAPocnit(acum) >= 1) {
+    incepeJucaria(acum);
+  }
+
   if (acum - timpulAnterior > 100) cursor.viteza *= 0.9;
 
   if (stare === 'intuneric') {
