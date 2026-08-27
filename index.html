@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Viața dintr-o atingere</title>
+<style>
+  /* Ocupăm tot ecranul, fără margini și fără bare de derulare */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    cursor: none;          /* ascundem cursorul de sistem — desenăm noi unul luminos */
+    touch-action: none;    /* pe ecran tactil, blocăm derularea paginii */
+  }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="panza"></canvas>
+
+<!-- Jocul e împărțit în fișiere, sub js/. Se încarcă în ordinea de mai jos, și
+     ordinea contează: fiecare fișier se sprijină pe cele dinaintea lui.
+     Sunt scripturi obișnuite, nu module, tocmai ca pagina să se deschidă și cu
+     dublu-clic, de pe disc, fără niciun server. -->
+<script src="js/01-panza.js"></script>
+<script src="js/02-cursor.js"></script>
+<script src="js/03-sunete.js"></script>
+<script src="js/04-stari.js"></script>
+<script src="js/05-scena1-balon.js"></script>
+<script src="js/06-scena2-minge.js"></script>
+<script src="js/07-atingeri.js"></script>
+<script src="js/08-desen-fundal.js"></script>
+<script src="js/09-manuta-balon.js"></script>
+<script src="js/10-desen-scene-1-2.js"></script>
+<script src="js/11-scena3-muzeu.js"></script>
+<script src="js/12-scena4-galerie.js"></script>
+<script src="js/13-scena5-campie.js"></script>
+<script src="js/14-bucla.js"></script>
+</body>
+</html>

@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>Viața dintr-o atingere — teste</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text x='32' y='34' font-size='56' text-anchor='middle' dominant-baseline='central'>🫧</text></svg>">
+<style>
+  body { margin: 0; padding: 1.5rem 2rem; background: #0f1114; color: #dfe3e8;
+         font: 15px/1.55 ui-monospace, "Cascadia Code", Consolas, monospace; }
+  h1 { font-size: 1.1rem; margin: 0 0 1rem; font-weight: 600; }
+  h2 { font-size: 0.95rem; margin: 1.6rem 0 0.5rem; color: #6fb3e0; font-weight: 600; }
+  #rezumat { padding: 0.6rem 0.9rem; border-radius: 6px; background: #1b1f25; margin-bottom: 1rem; }
+  #rezumat.verde { background: #16301d; color: #b0e6b8; }
+  #rezumat.rosu  { background: #351c1c; color: #f0b4ae; }
+  .test { padding: 0.1rem 0; }
+  .trecut { color: #9ad2a0; }
+  .cazut  { color: #f08a80; }
+  .motiv  { color: #c9a894; padding-left: 2.1rem; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>Viața dintr-o atingere — teste</h1>
+<div id="rezumat">se încarcă…</div>
+<div id="lista"></div>
+<script>
+"use strict";
+
+/* ==========================================================================
+   1. MINI-CADRU DE TESTE
+   ========================================================================== */
+
+const lista = document.getElementById("lista");
+let trecute = 0, cazute = 0;
+
+function sectiune(titlu) {
+  const h = document.createElement("h2");
+  h.textContent = titlu;
+  lista.appendChild(h);
+}
+
+function test(nume, corp) {
+  const rand = document.createElement("div");
+  rand.className = "test";
+  try {
+    corp();
+    trecute++;
+    rand.classList.add("trecut");
+    rand.textContent = "✅ " + nume;
+    lista.appendChild(rand);
+  } catch (e) {
+    cazute++;
+    rand.classList.add("cazut");
+    rand.textContent = "❌ " + nume;
+    lista.appendChild(rand);
+    const motiv = document.createElement("div");
+    motiv.className = "motiv";
+    motiv.textContent = e && e.message ? e.message : String(e);
+    lista.appendChild(motiv);
+  }
+}
+
+function cade(mesaj) { throw new Error(mesaj); }
+
+function adevarat(conditie, mesaj) {
+  if (!conditie) cade(mesaj || "așteptam adevărat");
+}
+
+function egal(gasit, asteptat, mesaj) {
+  if (gasit !== asteptat) {
+    cade((mesaj ? mesaj + " — " : "") + "așteptam " + JSON.stringify(asteptat) +
+         ", am găsit " + JSON.stringify(gasit));
+  }
+}
+
+function aproape(gasit, asteptat, toleranta, mesaj) {
+  const tol = toleranta === undefined ? 1e-6 : toleranta;
+  if (!(Math.abs(gasit - asteptat) <= tol)) {
+    cade((mesaj ? mesaj + " — " : "") + "așteptam ~" + asteptat + " (±" + tol +
+         "), am găsit " + gasit);
+  }
+}
+
+/* ==========================================================================
+   2. ALEATOR CONTROLAT ȘI CEAS CONTROLAT
+   ========================================================================== */
+
+/* Scena cheamă Math.random în multe locuri, iar timpul îl ia din
+   performance.now(). Le înlocuim pe amândouă, ca testele să fie repetabile
+   și ca o secundă de poveste să nu însemne o secundă de așteptare. */
+
+let samanta = 1;
+Math.random = function () {
+  samanta = (samanta * 1103515245 + 12345) % 2147483648;
+  return samanta / 2147483648;
+};
+function reseteazaAleatorul(s) { samanta = s || 1; }
+
+/* ==========================================================================
+   3. PÂNZA FALSĂ — ÎNREGISTREAZĂ DESENUL ÎN LOC SĂ-L AFIȘEZE
+   ========================================================================== */
+
+function inmulteste(A, B) {
+  return [
+    A[0] * B[0] + A[2] * B[1],
+    A[1] * B[0] + A[3] * B[1],
+    A[0] * B[2] + A[2] * B[3],
+    A[1] * B[2] + A[3] * B[3],
+    A[0] * B[4] + A[2] * B[5] + A[4],
+    A[1] * B[4] + A[3] * B[5] + A[5]
+  ];
+}
+
+function marimeaFontului(font) {
+  const m = String(font).match(/([\d.]+)px/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+function creeazaPanza() {
+  const desene = [];
+  const filtre = [];
+  let m = [1, 0, 0, 1, 0, 0];
+  const stiva = [];
+  let puncte = [];
+  let cercuri = [];
+
+  function pct(x, y) {
+    return { x: m[0] * x + m[2] * y + m[4], y: m[1] * x + m[3] * y + m[5] };
+  }
+  function scara() { return (Math.hypot(m[0], m[1]) + Math.hypot(m[2], m[3])) / 2; }
+  function adauga(x, y) { puncte.push(pct(x, y)); }
+  function stil(v) { return (v && v.opriri) ? { gradient: v.opriri.slice() } : v; }
+
+  function limite(ps) {
+    if (!ps.length) return null;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of ps) {
+      if (p.x < x0) x0 = p.x;
+      if (p.y < y0) y0 = p.y;
+      if (p.x > x1) x1 = p.x;
+      if (p.y > y1) y1 = p.y;
+    }
+    return { x0: x0, y0: y0, x1: x1, y1: y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
+  function inchide(op, culoare) {
+    desene.push({
+      op: op, stil: stil(culoare), alfa: ctx.globalAlpha,
+      puncte: puncte.slice(), cercuri: cercuri.slice(), limite: limite(puncte)
+    });
+  }
+
+  function gradient() {
+    return { opriri: [], addColorStop: function (p, c) { this.opriri.push(c); } };
+  }
+
+  const ctx = {
+    fillStyle: "#000", strokeStyle: "#000", lineWidth: 1,
+    font: "", textAlign: "", textBaseline: "", lineCap: "", lineJoin: "",
+    globalAlpha: 1, shadowColor: "", shadowBlur: 0, shadowOffsetY: 0,
+    get filter() { return ctx._filter || "none"; },
+    set filter(v) { ctx._filter = v; if (v && v !== "none") filtre.push(v); },
+    drawImage: function (sursa) {
+      desene.push({ op: "imagine", stil: null, sursa: sursa,
+                    puncte: [], cercuri: [], limite: null });
+    },
+
+    save: function () {
+      stiva.push({
+        m: m.slice(), fillStyle: ctx.fillStyle, strokeStyle: ctx.strokeStyle,
+        lineWidth: ctx.lineWidth, font: ctx.font, textAlign: ctx.textAlign,
+        globalAlpha: ctx.globalAlpha
+      });
+    },
+    restore: function () {
+      const s = stiva.pop();
+      if (!s) return;
+      m = s.m;
+      ctx.fillStyle = s.fillStyle; ctx.strokeStyle = s.strokeStyle;
+      ctx.lineWidth = s.lineWidth; ctx.font = s.font;
+      ctx.textAlign = s.textAlign; ctx.globalAlpha = s.globalAlpha;
+    },
+    setTransform: function (a, b, c, d, e, f) { m = [a, b, c, d, e, f]; },
+    translate: function (x, y) { m = inmulteste(m, [1, 0, 0, 1, x, y]); },
+    rotate: function (a) {
+      m = inmulteste(m, [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0]);
+    },
+    scale: function (sx, sy) { m = inmulteste(m, [sx, 0, 0, sy, 0, 0]); },
+
+    beginPath: function () { puncte = []; cercuri = []; },
+    closePath: function () {},
+    moveTo: function (x, y) { adauga(x, y); },
+    lineTo: function (x, y) { adauga(x, y); },
+    arcTo: function (x1, y1, x2, y2) { adauga(x1, y1); adauga(x2, y2); },
+    quadraticCurveTo: function (x1, y1, x2, y2) { adauga(x1, y1); adauga(x2, y2); },
+    bezierCurveTo: function (x1, y1, x2, y2, x3, y3) {
+      adauga(x1, y1); adauga(x2, y2); adauga(x3, y3);
+    },
+    rect: function (x, y, l, i) {
+      adauga(x, y); adauga(x + l, y); adauga(x + l, y + i); adauga(x, y + i);
+    },
+    roundRect: function (x, y, l, i) {
+      adauga(x, y); adauga(x + l, y); adauga(x + l, y + i); adauga(x, y + i);
+    },
+    arc: function (x, y, r) {
+      const c = pct(x, y);
+      cercuri.push({ x: c.x, y: c.y, r: r * scara() });
+      adauga(x - r, y - r); adauga(x + r, y + r);
+    },
+    ellipse: function (x, y, rx, ry) {
+      const c = pct(x, y);
+      cercuri.push({ x: c.x, y: c.y, r: rx * scara(), rx: rx * scara(), ry: ry * scara() });
+      adauga(x - rx, y - ry); adauga(x + rx, y + ry);
+    },
+
+    fill: function () { inchide("fill", ctx.fillStyle); },
+    stroke: function () { inchide("stroke", ctx.strokeStyle); },
+    fillRect: function (x, y, l, i) {
+      puncte = []; cercuri = [];
+      adauga(x, y); adauga(x + l, y); adauga(x + l, y + i); adauga(x, y + i);
+      inchide("fill", ctx.fillStyle);
+    },
+    strokeRect: function (x, y, l, i) {
+      puncte = []; cercuri = [];
+      adauga(x, y); adauga(x + l, y); adauga(x + l, y + i); adauga(x, y + i);
+      inchide("stroke", ctx.strokeStyle);
+    },
+    clearRect: function () {},
+    fillText: function (text, x, y) {
+      const p = pct(x, y);
+      desene.push({ op: "text", text: String(text), stil: stil(ctx.fillStyle),
+                    alfa: ctx.globalAlpha, font: ctx.font,
+                    marime: marimeaFontului(ctx.font) * scara(),
+                    puncte: [p], cercuri: [], limite: limite([p]) });
+    },
+    strokeText: function () {},
+    measureText: function (s) { return { width: String(s).length * 7 }; },
+    clip: function () {},
+    createLinearGradient: gradient,
+    createRadialGradient: gradient,
+    createPattern: function () { return null; }
+  };
+
+  return {
+    ctx: ctx, desene: desene, filtre: filtre,
+    goleste: function () { desene.length = 0; filtre.length = 0; }
+  };
+}
+
+/* ==========================================================================
+   4. SUNET FALS — jucăria pornește audio la prima atingere
+   ========================================================================== */
+
+function parametruFals() {
+  return {
+    value: 0,
+    setValueAtTime: function (v) { this.value = v; },
+    linearRampToValueAtTime: function (v) { this.value = v; },
+    exponentialRampToValueAtTime: function (v) { this.value = v; },
+    setTargetAtTime: function () {},
+    cancelScheduledValues: function () {},
+    setValueCurveAtTime: function () {}
+  };
+}
+function nodFals() {
+  return {
+    type: "", buffer: null, loop: false,
+    frequency: parametruFals(), gain: parametruFals(), Q: parametruFals(),
+    detune: parametruFals(), playbackRate: parametruFals(),
+    connect: function (tinta) { return tinta; },
+    disconnect: function () {}, start: function () {}, stop: function () {}
+  };
+}
+function AudioContextFals() {
+  this.currentTime = 0;
+  this.sampleRate = 44100;
+  this.state = "running";
+  this.destination = nodFals();
+  this.resume = function () {};
+  this.createOscillator = nodFals;
+  this.createGain = nodFals;
+  this.createBufferSource = nodFals;
+  this.createBiquadFilter = nodFals;
+  this.createBuffer = function (canale, lungime) {
+    return { length: lungime, numberOfChannels: canale,
+             getChannelData: function () { return new Float32Array(lungime); } };
+  };
+}
+
+/* ==========================================================================
+   5. ÎNCĂRCAREA JUCĂRIEI DIN index.html
+   ========================================================================== */
+
+/* Nu copiem codul aici: îl citim din index.html și îl rulăm cu o pânză falsă,
+   un ceas fals și un sunet fals. Așa fișierul testat rămâne exact fișierul
+   livrat, iar regula „totul într-un singur fișier" nu se strică din cauza
+   testelor. Ce încă nu e scris se exportă cu `typeof`, ca lipsa unui simbol
+   să pice un singur test, nu toată încărcarea. */
+
+const EXPORTURI = `
+return {
+  cadru: cadru,
+  redimensioneaza: redimensioneaza,
+  orizont: orizont,
+  intre: intre,
+  geomMuzeu: geomMuzeu,
+  intrareScena3: intrareScena3,
+  faza3: faza3,
+  click3: click3,
+  s3: s3,
+  aratBilet: aratBilet,
+  deseneazaBilet: deseneazaBilet,
+  deseneazaMuzeu: deseneazaMuzeu,
+  deseneazaScena3: deseneazaScena3,
+  deseneazaInvitatia: deseneazaInvitatia,
+  manutaAlba: typeof manutaAlba !== "undefined" ? manutaAlba : null,
+  ALB_MANUSA: typeof ALB_MANUSA !== "undefined" ? ALB_MANUSA : null,
+  PAGINI_INVITATIE: typeof PAGINI_INVITATIE !== "undefined" ? PAGINI_INVITATIE : null,
+  ARTICOLE_MANUAL: ARTICOLE_MANUAL,
+  balon: balon, minge: minge, elefant: elefant,
+  pete: pete, adaugaPata: adaugaPata,
+  nori: nori,
+  baloaneCuloare: baloaneCuloare,
+  BALOANE_IN_AER: typeof BALOANE_IN_AER !== "undefined" ? BALOANE_IN_AER : null,
+  elibereazaCuloare: elibereazaCuloare,
+  picioareElefant: picioareElefant,
+  W: function () { return W; },
+  H: function () { return H; },
+  stare: function () { return stare; },
+  mergiLaStarea: function (s) { stare = s; },
+  porneste: function (t) { inceputulTransformarii = t; },
+  DURATA_TRANSFORMARII: DURATA_TRANSFORMARII,
+
+  gradina: typeof gradina !== "undefined" ? gradina : null,
+  semeneazaPlanta: typeof semeneazaPlanta !== "undefined" ? semeneazaPlanta : null,
+  actualizeazaGradina: typeof actualizeazaGradina !== "undefined" ? actualizeazaGradina : null,
+  deseneazaGradina: typeof deseneazaGradina !== "undefined" ? deseneazaGradina : null,
+  nivelulSolului: typeof nivelulSolului !== "undefined" ? nivelulSolului : null,
+  DURATA_BILET: typeof DURATA_BILET !== "undefined" ? DURATA_BILET : null,
+  CULORI_VITRALIU: typeof CULORI_VITRALIU !== "undefined" ? CULORI_VITRALIU : null,
+  ALAMA: typeof ALAMA !== "undefined" ? ALAMA : null,
+  VERDE_LIANA: typeof VERDE_LIANA !== "undefined" ? VERDE_LIANA : null,
+  deseneazaFundal3: deseneazaFundal3,
+  VERDE_CATIFEA: typeof VERDE_CATIFEA !== "undefined" ? VERDE_CATIFEA : null,
+  ROZ_OBRAZ: typeof ROZ_OBRAZ !== "undefined" ? ROZ_OBRAZ : null,
+  deseneazaHaina: typeof deseneazaHaina !== "undefined" ? deseneazaHaina : null,
+  deseneazaManual: typeof deseneazaManual !== "undefined" ? deseneazaManual : null,
+  deseneazaDiploma: typeof deseneazaDiploma !== "undefined" ? deseneazaDiploma : null,
+  deseneazaZare: typeof deseneazaZare !== "undefined" ? deseneazaZare : null,
+  geomBuzunar: typeof geomBuzunar !== "undefined" ? geomBuzunar : null,
+  PIELE_VECHE: typeof PIELE_VECHE !== "undefined" ? PIELE_VECHE : null,
+  varfulTrompeiMuzeu: typeof varfulTrompeiMuzeu !== "undefined" ? varfulTrompeiMuzeu : null,
+  PANZA_MAX: typeof PANZA_MAX !== "undefined" ? PANZA_MAX : null,
+  PRAG_PALMA: typeof PRAG_PALMA !== "undefined" ? PRAG_PALMA : null,
+  s4: typeof s4 !== "undefined" ? s4 : null,
+  intraInGalerie: typeof intraInGalerie !== "undefined" ? intraInGalerie : null,
+  geomMiniatura: typeof geomMiniatura !== "undefined" ? geomMiniatura : null,
+  geomSala: typeof geomSala !== "undefined" ? geomSala : null,
+  deseneazaPrinLupa: typeof deseneazaPrinLupa !== "undefined" ? deseneazaPrinLupa : null,
+  primulBuzunarNevizitat: typeof primulBuzunarNevizitat !== "undefined" ? primulBuzunarNevizitat : null,
+  NEGRU_SCENA1: typeof NEGRU_SCENA1 !== "undefined" ? NEGRU_SCENA1 : null,
+  s5: typeof s5 !== "undefined" ? s5 : null,
+  intraInCampie: typeof intraInCampie !== "undefined" ? intraInCampie : null,
+  tabloul: typeof tabloul !== "undefined" ? tabloul : null,
+  pictezaTablou: typeof pictezaTablou !== "undefined" ? pictezaTablou : null,
+  PASI_INAPOI: typeof PASI_INAPOI !== "undefined" ? PASI_INAPOI : null,
+  PERETE_SALII: typeof PERETE_SALII !== "undefined" ? PERETE_SALII : null,
+  PANTOFI_SALII: typeof PANTOFI_SALII !== "undefined" ? PANTOFI_SALII : null,
+  PROFIL_RAMEI: typeof PROFIL_RAMEI !== "undefined" ? PROFIL_RAMEI : null,
+  PORT_ROMANESC: typeof PORT_ROMANESC !== "undefined" ? PORT_ROMANESC : null,
+  taranIn: typeof taranIn !== "undefined" ? taranIn : null,
+  PRAG_LUPA_IN_MANA: typeof PRAG_LUPA_IN_MANA !== "undefined" ? PRAG_LUPA_IN_MANA : null,
+  click5: typeof click5 !== "undefined" ? click5 : null,
+  click4: typeof click4 !== "undefined" ? click4 : null,
+  naturaScena3: function () { return typeof naturaScena3 !== "undefined" ? naturaScena3 : null; },
+  pictezaSala: typeof pictezaSala !== "undefined" ? pictezaSala : null,
+  pictezaRama: typeof pictezaRama !== "undefined" ? pictezaRama : null,
+  deseneazaLupa: typeof deseneazaLupa !== "undefined" ? deseneazaLupa : null,
+  deseneazaEtichetaRamei: typeof deseneazaEtichetaRamei !== "undefined" ? deseneazaEtichetaRamei : null,
+  DURATA_TRANSFORMARII: DURATA_TRANSFORMARII,
+  AUR_FOITA: typeof AUR_FOITA !== "undefined" ? AUR_FOITA : null,
+  BOL_ROSU: typeof BOL_ROSU !== "undefined" ? BOL_ROSU : null,
+  LEMN_PARCHET: typeof LEMN_PARCHET !== "undefined" ? LEMN_PARCHET : null,
+  peButon: peButon,
+  scalaPanzei: function () { return typeof scalaPanzei !== "undefined" ? scalaPanzei : 1; },
+  calitate: function () { return typeof calitate !== "undefined" ? calitate : 1; },
+  pornesteAudio: pornesteAudio,
+  pictezaFundal3: typeof pictezaFundal3 !== "undefined" ? pictezaFundal3 : null,
+  fundal3: typeof fundal3 !== "undefined" ? fundal3 : null,
+  muzicaMuzeu: function () { return typeof muzica3 !== "undefined" ? muzica3 : null; },
+  cursor: cursor
+};`;
+
+let sursa = null;
+
+/* Jucăria stă în mai multe fișiere, sub js/. Nu ținem aici o listă a lor: o
+   citim din index.html, în ordinea în care le încarcă pagina. Așa lista are un
+   singur stăpân — dacă apare un fișier nou, testele îl iau de la sine, și nu se
+   poate întâmpla ca pagina să ruleze un cod și testele altul. */
+async function citesteSursa() {
+  const raspuns = await fetch("index.html?t=" + Date.now());
+  if (!raspuns.ok) throw new Error("nu pot citi index.html: " + raspuns.status);
+  const html = await raspuns.text();
+  const cai = [...html.matchAll(/<script\s+src="([^"]+)"><\/script>/g)].map(m => m[1]);
+  if (!cai.length) throw new Error("index.html nu încarcă niciun fișier din js/");
+  const bucati = [];
+  for (const cale of cai) {
+    const r = await fetch(cale + "?t=" + Date.now());
+    if (!r.ok) throw new Error("nu pot citi " + cale + ": " + r.status);
+    /* Un titlu peste fiecare bucată: dacă vreo eroare arată un număr de linie,
+       să se vadă din ce fișier vine. */
+    bucati.push(`/* ---- ${cale} ---- */
+${await r.text()}`);
+  }
+  return bucati.join(`
+`);
+}
+
+// Pornește o jucărie nouă, izolată: fiecare test primește starea lui.
+function porneste(optiuni) {
+  const o = optiuni || {};
+  reseteazaAleatorul(o.samanta || 1);
+
+  const panza = creeazaPanza();
+  const element = {
+    width: 0, height: 0, style: {},
+    getContext: function () { return panza.ctx; },
+    addEventListener: function () {}
+  };
+  const panzeAscunse = [];
+  const doc = {
+    getElementById: function () { return element; },
+    // pânzele ascunse (folosite ca să nu repictăm peisajul la fiecare cadru)
+    createElement: function (tag) {
+      if (String(tag).toLowerCase() !== "canvas") return { style: {} };
+      const ascunsa = creeazaPanza();
+      const el = {
+        width: 0, height: 0, _panza: ascunsa,
+        getContext: function () { return ascunsa.ctx; }
+      };
+      panzeAscunse.push(el);
+      return el;
+    }
+  };
+  const ascultatori = {};
+  const fereastra = {
+    innerWidth: o.latime || 1200,
+    innerHeight: o.inaltime || 800,
+    devicePixelRatio: 1,
+    AudioContext: AudioContextFals,
+    addEventListener: function (nume, f) { (ascultatori[nume] = ascultatori[nume] || []).push(f); }
+  };
+  const ceas = { t: 0 };
+  const cronometru = { now: function () { return ceas.t; } };
+
+  const fabrica = new Function("document", "window", "requestAnimationFrame", "performance",
+                               sursa + "\n" + EXPORTURI);
+  const j = fabrica(doc, fereastra, function () {}, cronometru);
+
+  j.panza = panza;
+  j.desene = panza.desene;
+  j.filtre = panza.filtre;
+  j.goleste = panza.goleste;
+  j.panzeAscunse = panzeAscunse;
+  j.ceas = ceas;
+
+  // Rulează bucla de animație adevărată, cu pași de câte un cadru.
+  j.avanseaza = function (ms, pas) {
+    const p = pas || 16;
+    let ramas = ms === undefined ? 16 : ms;
+    do {
+      const d = Math.min(p, ramas) || p;
+      ceas.t += d;
+      j.cadru(ceas.t);
+      ramas -= d;
+    } while (ramas > 0);
+  };
+
+  // Un singur cadru, cu pânza golită înainte: întoarce doar ce s-a desenat acum.
+  j.cadruCurat = function () {
+    panza.goleste();
+    ceas.t += 16;
+    j.cadru(ceas.t);
+    return panza.desene.slice();
+  };
+
+  // Ce desenează o singură funcție, fără restul scenei.
+  j.doar = function (f) {
+    panza.goleste();
+    f();
+    return panza.desene.slice();
+  };
+
+  j.atinge = function (x, y) {
+    const lista = ascultatori["pointerdown"] || [];
+    for (const f of lista) f({ clientX: x, clientY: y });
+  };
+
+  /* Redimensionarea din teste: schimbăm fereastra falsă și chemăm funcția
+     scenei. Numele se bat cap în cap — de-aia o punem deoparte întâi. */
+  const redimScena = j.redimensioneaza;
+  j.redimensioneaza = function (l, i) {
+    fereastra.innerWidth = l; fereastra.innerHeight = i;
+    redimScena();
+  };
+
+  return j;
+}
+
+/* ==========================================================================
+   6. AJUTOARE DE INTEROGARE A DESENULUI
+   ========================================================================== */
+
+/* Deschiderea are trei pagini, iar atingerea le întoarce. Jocul pornește abia
+   de pe ultima — testele care vor să ajungă în joc trec întâi prin ele. */
+function incepeJocul(j, x, y) {
+  for (let k = 0; k < 5 && j.stare() === "intuneric"; k++) {
+    j.atinge(x, y);
+    j.avanseaza(120);
+  }
+}
+
+function culorileDin(desene) {
+  const set = new Set();
+  for (const d of desene) {
+    if (typeof d.stil === "string") set.add(d.stil.toLowerCase());
+    else if (d.stil && d.stil.gradient) for (const c of d.stil.gradient) set.add(String(c).toLowerCase());
+  }
+  return set;
+}
+
+function areCuloarea(desene, culoare) {
+  return culorileDin(desene).has(String(culoare).toLowerCase());
+}
+
+function formeCu(desene, culoare) {
+  const c = String(culoare).toLowerCase();
+  return desene.filter(function (d) {
+    if (typeof d.stil === "string") return d.stil.toLowerCase() === c;
+    if (d.stil && d.stil.gradient) return d.stil.gradient.some(function (g) { return String(g).toLowerCase() === c; });
+    return false;
+  });
+}
+
+function textele(desene) {
+  return desene.filter(function (d) { return d.op === "text"; }).map(function (d) { return d.text; });
+}
+
+function totTextul(desene) { return textele(desene).join(" "); }
+
+// Cea mai lungă cale desenată — folosit ca „are curbe, nu e un dreptunghi sec".
+function celMaiLungTraseu(desene) {
+  let max = 0;
+  for (const d of desene) if (d.puncte && d.puncte.length > max) max = d.puncte.length;
+  return max;
+}
+
+function seSuprapun(a, b) {
+  return !(a.x1 <= b.x0 || b.x1 <= a.x0 || a.y1 <= b.y0 || b.y1 <= a.y0);
+}
+
+// Toate cercurile/elipsele desenate, în coordonatele scenei.
+function cercurileDin(desene, culoare) {
+  const out = [];
+  for (const d of desene) {
+    if (culoare !== undefined) {
+      const c = String(culoare).toLowerCase();
+      const potrivit = typeof d.stil === "string" ? d.stil.toLowerCase() === c
+        : (d.stil && d.stil.gradient ? d.stil.gradient.some(function (g) { return String(g).toLowerCase() === c; }) : false);
+      if (!potrivit) continue;
+    }
+    for (const c of d.cercuri || []) out.push(c);
+  }
+  return out;
+}
+
+function existaCercLanga(cercuri, x, y, toleranta) {
+  return cercuri.some(function (c) { return Math.hypot(c.x - x, c.y - y) <= toleranta; });
+}
+
+// „Colorat" înseamnă că roșul, verdele și albastrul nu sunt aproape egale.
+function viuColorat(c) {
+  const m = String(c).match(/^#([0-9a-f]{6})$/i);
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, v = (n >> 8) & 255, a = n & 255;
+  return Math.max(r, v, a) - Math.min(r, v, a) > 25;
+}
+
+/* ==========================================================================
+   7. TESTELE
+   ========================================================================== */
+
+function ruleaza() {
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Bilețelele muzeului");
+
+  test("biletul stă pe ecran cât să apuci să-l citești", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.aratBilet("Ceva scurt.");
+    j.avanseaza(2000);
+    adevarat(j.s3.bilet !== null, "biletul a dispărut înainte de două secunde");
+  });
+
+  test("biletul se stinge singur, ca să nu stea peste ce urmează", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    adevarat(j.DURATA_BILET !== null, "lipsește DURATA_BILET");
+    j.aratBilet("Ceva scurt.");
+    j.avanseaza(j.DURATA_BILET + 2000);
+    egal(j.s3.bilet, null, "biletul a rămas agățat pe ecran");
+  });
+
+  // Un bilet n-are voie peste chipul custodelui, nici peste haina lui.
+  function bileteleStauLaOParte(j) {
+    const b = j.s3.bilet, g = j.geomMuzeu();
+    adevarat(b !== null, "biletul a dispărut prea repede ca să fie verificat");
+    const hartie = { x0: b.x - b.w / 2, y0: b.y - b.h / 2, x1: b.x + b.w / 2, y1: b.y + b.h / 2 };
+    const cap = { x0: g.cx - g.capR, y0: g.capY - g.capR, x1: g.cx + g.capR, y1: g.capY + g.capR };
+    const haina = { x0: g.hainaX, y0: g.hainaY, x1: g.hainaX + g.hainaW, y1: g.hainaY + g.hainaH };
+    adevarat(!seSuprapun(hartie, cap), "biletul stă peste fața lui: " + JSON.stringify(hartie));
+    adevarat(!seSuprapun(hartie, haina), "biletul stă peste haina lui: " + JSON.stringify(hartie));
+  }
+
+  test("bilețelele stau în lateral, nu peste chipul custodelui", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("nuMaApasa");
+    j.aratBilet("Serios? Încă o dată?");
+    j.avanseaza(1500);
+    bileteleStauLaOParte(j);
+  });
+
+  test("bilețelele stau la o parte și cu haina desfăcută", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("usaDeschisa");
+    j.s3.usa = 1;
+    j.aratBilet("Bine, mă predau. Ai câștigat spațiul gol.");
+    j.avanseaza(1500);
+    bileteleStauLaOParte(j);
+  });
+
+  test("biletul are chenar curbat, nu un dreptunghi sec", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.aratBilet("Ceva scurt.");
+    j.avanseaza(600);
+    const d = j.doar(function () { j.deseneazaBilet(); });
+    adevarat(celMaiLungTraseu(d) >= 8,
+      "conturul biletului are doar " + celMaiLungTraseu(d) + " puncte — pare un dreptunghi");
+  });
+
+  test("biletul poartă ornamentul verde al muzeului", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    adevarat(j.VERDE_LIANA !== null, "lipsește VERDE_LIANA");
+    j.aratBilet("Ceva scurt.");
+    j.avanseaza(600);
+    const d = j.doar(function () { j.deseneazaBilet(); });
+    adevarat(areCuloarea(d, j.VERDE_LIANA), "biletul nu are niciun ornament verde");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Culorile aspirate se prefac în peisaj");
+
+  function pregatesteScena2(j) {
+    j.mergiLaStarea("minge");
+    j.elefant.x = j.W() * 0.5;
+    j.avanseaza(16);
+  }
+
+  // ridică un balon spre cer și îl lasă să-și ia locul de plutire
+  function balonInAer(j, culoare) {
+    j.elibereazaCuloare(culoare, j.W() * 0.5, j.orizont() - 20, "nor");
+    j.avanseaza(6000);
+    return j.baloaneCuloare[j.baloaneCuloare.length - 1];
+  }
+
+  function apasaBalonul(j, b) {
+    j.atinge(b.x / j.scalaPanzei(), b.y / j.scalaPanzei());
+  }
+
+  test("un balon atins se face nor", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const inainte = j.nori.length;
+    const b = balonInAer(j, "#43a047");
+    adevarat(b, "balonul nu mai plutește");
+    apasaBalonul(j, b);
+    adevarat(j.nori.length > inainte,
+      "cerul are tot " + j.nori.length + " nori, balonul nu s-a prefăcut în nimic");
+    adevarat(j.baloaneCuloare.indexOf(b) === -1, "balonul a rămas în aer după ce s-a spart");
+  });
+
+  test("norul nou ține minte culoarea din care s-a născut", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const vechi = j.nori.slice();
+    apasaBalonul(j, balonInAer(j, "#8e24aa"));
+    const nou = j.nori.filter(function (n) { return vechi.indexOf(n) === -1; })[0];
+    adevarat(nou, "nu s-a născut niciun nor");
+    egal(String(nou.culoare).toLowerCase(), "#8e24aa", "norul are altă culoare");
+    adevarat(nou.tenta > 0, "norul e nevopsit");
+  });
+
+  test("balonul nu se face nor de la sine, oricât l-ai lăsa", function () {
+    /* Norii sunt ai jucătorului, nu ai ceasului. Dacă cerul s-ar umple singur,
+       n-ar mai rămâne nimic de făcut cât timp elefantul face curat. */
+    const j = porneste();
+    pregatesteScena2(j);
+    const inainte = j.nori.length;
+    j.elibereazaCuloare("#1e88e5", j.W() * 0.5, j.orizont() - 20, "nor");
+    j.avanseaza(30000);
+    egal(j.nori.length, inainte, "cerul s-a umplut singur, fără să ating nimic");
+    egal(j.baloaneCuloare.length, 1, "balonul a dispărut fără să-l ating");
+  });
+
+  test("balonul plutește, nu stă înțepenit", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const b = balonInAer(j, "#f57c00");
+    const x0 = b.x, y0 = b.y;
+    j.avanseaza(1200);
+    adevarat(Math.hypot(b.x - x0, b.y - y0) > 1,
+      "balonul stă bătut în cui la " + Math.round(x0) + "," + Math.round(y0));
+  });
+
+  test("balonul rămâne pe cer, nu urcă la nesfârșit", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const b = balonInAer(j, "#fdd835");
+    j.avanseaza(14000);
+    adevarat(j.baloaneCuloare.indexOf(b) !== -1, "balonul a plecat singur");
+    adevarat(b.y > 0 && b.y < j.orizont(),
+      "balonul a ieșit din cer, e la " + Math.round(b.y));
+  });
+
+  test("o atingere pe lângă balon nu-l sparge", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const b = balonInAer(j, "#e53935");
+    const inainte = j.nori.length;
+    j.atinge((b.x + b.raza * 6) / j.scalaPanzei(), (b.y + b.raza * 6) / j.scalaPanzei());
+    egal(j.nori.length, inainte, "s-a născut un nor dintr-o atingere care n-a nimerit");
+    adevarat(j.baloaneCuloare.indexOf(b) !== -1, "balonul a dispărut degeaba");
+  });
+
+  test("baloanele nu se adună până umplu cerul", function () {
+    /* Cine nu le atinge nu trebuie să rămână cu cerul acoperit de baloane. Cel
+       mai bătrân se ridică și pleacă, ca un balon scăpat din mână. */
+    const j = porneste();
+    pregatesteScena2(j);
+    adevarat(j.BALOANE_IN_AER !== null, "lipsește plafonul baloanelor din aer");
+    for (let k = 0; k < j.BALOANE_IN_AER + 6; k++) {
+      j.elibereazaCuloare("#1e88e5", j.W() * (0.2 + k * 0.03), j.orizont() - 20, "nor");
+      j.avanseaza(700);
+    }
+    j.avanseaza(4000);
+    adevarat(j.baloaneCuloare.length <= j.BALOANE_IN_AER,
+      "plutesc " + j.baloaneCuloare.length + " baloane, mai multe decât " + j.BALOANE_IN_AER);
+  });
+
+  test("baloanele neatinse nu se pierd la intrarea în muzeu", function () {
+    /* Ce a sorbit elefantul rămâne al lumii. Cine pleacă mai devreme nu-și
+       pierde culorile: baloanele rămase se fac nori pe drum. */
+    const j = porneste();
+    pregatesteScena2(j);
+    const inainte = j.nori.length;
+    for (let k = 0; k < 3; k++) {
+      j.elibereazaCuloare("#8e24aa", j.W() * (0.3 + k * 0.15), j.orizont() - 20, "nor");
+    }
+    j.avanseaza(6000);
+    adevarat(j.baloaneCuloare.length >= 3, "baloanele n-au apucat să urce");
+    j.intrareScena3(j.ceas.t);
+    adevarat(j.nori.length >= inainte + 3,
+      "cerul are " + j.nori.length + " nori, s-au pierdut culori pe drum");
+    egal(j.baloaneCuloare.length, 0, "au rămas baloane atârnate în scena muzeului");
+  });
+
+  test("plantele răsar în continuare singure", function () {
+    /* Numai norii au nevoie de mâna ta. Grădina crește de la sine, altfel
+       curățenia s-ar transforma într-o corvoadă. */
+    const j = porneste();
+    pregatesteScena2(j);
+    const inainte = j.gradina.length;
+    j.elibereazaCuloare("#43a047", j.W() * 0.5, j.orizont() - 20, "planta");
+    j.avanseaza(9000);
+    adevarat(j.gradina.length > inainte,
+      "grădina are tot " + j.gradina.length + " plante, deși n-am atins nimic");
+  });
+
+  test("un balon trimis spre pământ ajunge plantă", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    adevarat(j.gradina !== null, "lipsește grădina");
+    const inainte = j.gradina.length;
+    j.elibereazaCuloare("#43a047", j.W() * 0.5, j.orizont() - 20, "planta");
+    j.avanseaza(9000);
+    adevarat(j.gradina.length > inainte,
+      "grădina are tot " + j.gradina.length + " plante");
+  });
+
+  test("planta răsare de la zero, nu apare dintr-o dată întreagă", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    const p = j.semeneazaPlanta(0.5, 0.5, "#43a047");
+    adevarat(p, "nu a răsărit nimic");
+    egal(p.crestere, 0, "planta apare deja crescută");
+    j.avanseaza(400);
+    adevarat(p.crestere > 0 && p.crestere < 1, "creșterea nu e treptată: " + p.crestere);
+    j.avanseaza(4000);
+    aproape(p.crestere, 1, 0.02, "planta nu a ajuns la mărimea ei");
+  });
+
+  test("plantele stau pe pământ, sub linia orizontului", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    for (let i = 0; i < 6; i++) {
+      j.elibereazaCuloare("#43a047", j.W() * (0.3 + i * 0.07), j.orizont() - 20, "planta");
+    }
+    j.avanseaza(9000);
+    adevarat(j.gradina.length >= 6, "au răsărit doar " + j.gradina.length + " plante");
+    adevarat(j.nivelulSolului !== null, "lipsește nivelulSolului");
+    for (const p of j.gradina) {
+      const y = j.intre(j.nivelulSolului(), j.H(), p.adancime);
+      adevarat(y >= j.nivelulSolului() && y <= j.H(),
+        "o plantă a ajuns la y=" + y + ", în afara pământului");
+    }
+  });
+
+  test("elefantul care aspiră îmbogățește și cerul, și pământul", function () {
+    /* Culorile sorbite pleacă în amândouă părțile: jumătate în pământ, unde
+       răsar singure, jumătate în cer, unde așteaptă degetul. */
+    const j = porneste();
+    pregatesteScena2(j);
+    const noriInainte = j.nori.length, gradinaInainte = j.gradina.length;
+    for (let i = 0; i < 10; i++) {
+      j.elibereazaCuloare("#f57c00", j.W() * (0.3 + i * 0.04), j.orizont() - 20);
+    }
+    j.avanseaza(9000);
+    adevarat(j.gradina.length > gradinaInainte, "nu a răsărit nicio plantă");
+    const inAer = j.baloaneCuloare.filter(function (b) { return b.pluteste; });
+    adevarat(inAer.length > 0, "n-a rămas niciun balon pe cer");
+    for (const b of inAer) apasaBalonul(j, b);
+    adevarat(j.nori.length > noriInainte, "nu s-a făcut niciun nor nou");
+  });
+
+  test("grădina rămâne când începe scena muzeului", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    for (let i = 0; i < 4; i++) {
+      j.elibereazaCuloare("#43a047", j.W() * (0.35 + i * 0.08), j.orizont() - 20, "planta");
+    }
+    j.avanseaza(9000);
+    const cate = j.gradina.length;
+    adevarat(cate > 0, "nu a răsărit nimic în scena a doua");
+    j.intrareScena3(j.ceas.t);
+    egal(j.gradina.length, cate, "grădina s-a pierdut la intrarea în muzeu");
+  });
+
+  test("grădina se ține de fracțiuni, ca să supraviețuiască redimensionării", function () {
+    const j = porneste({ latime: 1200, inaltime: 800 });
+    pregatesteScena2(j);
+    j.elibereazaCuloare("#43a047", j.W() * 0.5, j.orizont() - 20, "planta");
+    j.avanseaza(9000);
+    const p = j.gradina[0];
+    adevarat(p, "nu a răsărit nimic");
+    adevarat(p.fx > 0 && p.fx < 1, "planta ține un x absolut (" + p.fx + "), nu o fracțiune");
+    adevarat(p.adancime >= 0 && p.adancime <= 1, "adâncimea nu e o fracțiune: " + p.adancime);
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Muzeul e chiar elefantul, cu fața la jucător");
+
+  function laMuzeu(j, faza) {
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    if (faza) j.faza3(faza);
+    j.s3.bilet = null;
+    return j.geomMuzeu();
+  }
+
+  test("se uită drept la tine: doi ochi, așezați simetric", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const d = j.doar(function () { j.deseneazaMuzeu(1); });
+    const toate = cercurileDin(d);
+    const langa = function (lat) {
+      const ox = g.cx + lat * g.capR * 0.38, oy = g.capY - g.capR * 0.1;
+      return toate.filter(function (c) { return Math.hypot(c.x - ox, c.y - oy) < g.capR * 0.3; });
+    };
+    adevarat(langa(-1).length > 0 && langa(1).length > 0,
+      "nu văd doi ochi pe cap (stânga " + langa(-1).length + ", dreapta " + langa(1).length + ")");
+    aproape(langa(-1)[0].y, langa(1)[0].y, g.capR * 0.2, "ochii nu sunt la aceeași înălțime");
+  });
+
+  test("are două urechi mari, una de-o parte și una de alta a capului", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const d = j.doar(function () { j.deseneazaMuzeu(1); });
+    const toate = cercurileDin(d);
+    for (const lat of [-1, 1]) {
+      adevarat(existaCercLanga(toate, g.cx + lat * g.urecheX, g.capY, g.capR * 0.55),
+        "lipsește urechea din partea " + (lat < 0 ? "stângă" : "dreaptă"));
+    }
+  });
+
+  test("e blând ca-n desene: obraji rozalii și un zâmbet", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    adevarat(j.ROZ_OBRAZ !== null, "lipsește culoarea obrajilor");
+    const d = j.doar(function () { j.deseneazaMuzeu(1); });
+    adevarat(areCuloarea(d, j.ROZ_OBRAZ), "nu are obraji rozalii");
+  });
+
+  test("soneria e un cercel prins de urechea lui", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const departare = Math.hypot(j.s3.butonX - (g.cx + g.urecheX), j.s3.butonY - g.lobUreche);
+    adevarat(departare < g.capR * 0.6,
+      "cercelul stă la " + Math.round(departare) + "px de lobul urechii, prea departe ca să fie prins de ea");
+  });
+
+  test("haina închisă acoperă buzunarele", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    const d = j.cadruCurat();
+    const numere = textele(d).filter(function (t) { return /^[1-9]$/.test(t); });
+    egal(numere.length, 0, "se văd buzunare prin haina închisă: " + JSON.stringify(numere));
+  });
+
+  test("haina se dă la o parte când se desface, nu rămâne peste piept", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "usaDeschisa");
+    adevarat(j.deseneazaHaina !== null, "lipsește deseneazaHaina");
+    adevarat(j.VERDE_CATIFEA !== null, "lipsește culoarea hainei");
+    const inchisa = j.doar(function () { j.deseneazaHaina(g, 0); });
+    const deschisa = j.doar(function () { j.deseneazaHaina(g, 1); });
+    const acopera = function (desene) {
+      return formeCu(desene, j.VERDE_CATIFEA).some(function (f) {
+        return f.limite && f.limite.x0 < g.cx - 4 && f.limite.x1 > g.cx + 4;
+      });
+    };
+    adevarat(acopera(inchisa), "haina închisă nu acoperă mijlocul pieptului");
+    adevarat(!acopera(deschisa), "haina desfăcută stă tot peste mijlocul pieptului");
+  });
+
+  test("nu mai scrie nicio descriere a muzeului pe ecran", function () {
+    const j = porneste();
+    laMuzeu(j, "usaDeschisa");
+    j.s3.usa = 1;
+    const d = j.cadruCurat();
+    adevarat(!/Muzeul se deschide/.test(totTextul(d)),
+      "descrierea a rămas pe ecran: " + totTextul(d));
+  });
+
+  test("fundalul scenei a treia e colorat, nu gri", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    // fundalul gata pictat e doar copiat pe ecran; culorile se văd în pictură
+    j.goleste();
+    j.pictezaFundal3(j.panza.ctx);
+    const vii = [...culorileDin(j.desene)].filter(viuColorat);
+    adevarat(vii.length >= 2,
+      "fundalul are doar culori spălăcite: " + JSON.stringify([...culorileDin(j.desene)]));
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Custodele mare, manualul, diploma și cercelul");
+
+  test("custodele e mare: umple ecranul când te privește", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const inalt = g.talpa - g.top;
+    adevarat(inalt > j.H() * 0.72,
+      "custodele ocupă doar " + Math.round(inalt / j.H() * 100) + "% din înălțimea ecranului");
+    adevarat(g.capR * 2 > j.H() * 0.28,
+      "capul lui e prea mic: " + Math.round(g.capR * 2) + "px");
+  });
+
+  test("manualul crește pe măsură ce e deschis spre privitor", function () {
+    const j = porneste();
+    laMuzeu(j, "manual");
+    adevarat(j.deseneazaManual !== null, "lipsește deseneazaManual");
+    const mic = j.doar(function () { j.deseneazaManual(0); });
+    const mare = j.doar(function () { j.deseneazaManual(1); });
+    const latimea = function (desene) {
+      let x0 = Infinity, x1 = -Infinity;
+      for (const d of desene) if (d.limite) { x0 = Math.min(x0, d.limite.x0); x1 = Math.max(x1, d.limite.x1); }
+      return x1 - x0;
+    };
+    adevarat(latimea(mare) > latimea(mic) * 1.6,
+      "cartea nu crește: " + Math.round(latimea(mic)) + "px → " + Math.round(latimea(mare)) + "px");
+  });
+
+  test("manualul arată a carte veche: piele și ferecături de alamă", function () {
+    const j = porneste();
+    laMuzeu(j, "manual");
+    adevarat(j.PIELE_VECHE !== null, "lipsește culoarea pielii legăturii");
+    const d = j.doar(function () { j.deseneazaManual(1); });
+    adevarat(areCuloarea(d, j.PIELE_VECHE), "coperta nu e de piele");
+    adevarat(areCuloarea(d, j.ALAMA), "cartea nu are ferecături de alamă");
+  });
+
+  test("titlul vine pe o diplomă mare, ținută de custode", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "nuMaApasa");
+    j.s3.refuzArmat = false;
+    j.avanseaza(9000);                     // atâta așteaptă până acordă titlul
+    adevarat(j.s3.diploma, "nu s-a înmânat nicio diplomă");
+    adevarat(j.s3.diploma.w > j.W() * 0.3,
+      "diploma e cât un bilețel: " + Math.round(j.s3.diploma.w) + "px");
+    const varf = j.varfulTrompeiMuzeu();
+    const departare = Math.hypot(varf.x - j.s3.diploma.x, varf.y - j.s3.diploma.y);
+    adevarat(departare < j.s3.diploma.w,
+      "custodele nu ține diploma: trompa e la " + Math.round(departare) + "px de ea");
+  });
+
+  test("cercelul se întinde ca un elastic spre degetul care trage de el", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const jos = j.s3.butonBaza.y + j.s3.butonR * 3;
+    j.cursor.x = j.s3.butonBaza.x;
+    j.cursor.y = jos;
+    j.avanseaza(600);
+    adevarat(j.s3.butonY > j.s3.butonBaza.y + j.s3.butonR * 0.8,
+      "cercelul nu s-a întins: a coborât doar " +
+      Math.round(j.s3.butonY - j.s3.butonBaza.y) + "px");
+    j.cursor.x = 5; j.cursor.y = 5;         // degetul pleacă
+    j.avanseaza(1200);
+    adevarat(Math.abs(j.s3.butonY - j.s3.butonBaza.y) < j.s3.butonR * 0.6,
+      "cercelul nu s-a întors la loc");
+  });
+
+  test("cercelul se aprinde ca un rubin la apăsare, apoi se stinge", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    j.cursor.x = j.s3.butonX; j.cursor.y = j.s3.butonY;
+    j.click3(j.ceas.t);
+    adevarat(j.s3.stralucire > 0.5, "cercelul nu s-a aprins: " + j.s3.stralucire);
+    j.avanseaza(2500);
+    adevarat(j.s3.stralucire < 0.15, "cercelul a rămas aprins: " + j.s3.stralucire);
+  });
+
+  test("buzunarele cheamă la atins după ce haina s-a desfăcut", function () {
+    const j = porneste();
+    laMuzeu(j, "usaDeschisa");
+    j.s3.usa = 1;
+    egal(j.s3.chemare, 0, "buzunarele cheamă înainte să apuce haina să se desfacă");
+    j.avanseaza(4000);
+    adevarat(j.s3.chemare > 0.3,
+      "buzunarele nu cheamă la atins nici după patru secunde: " + j.s3.chemare);
+  });
+
+  test("buzunarele sunt prețioase: ramă de alamă și clapă cu cheutoare", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "usaDeschisa");
+    j.s3.usa = 1;
+    adevarat(j.geomBuzunar !== null, "lipsește geomBuzunar");
+    const b = j.geomBuzunar(g, 0);
+    adevarat(b && b.w > 0 && b.h > 0, "buzunarul n-are măsuri");
+    const d = j.doar(function () { j.deseneazaHaina(g, 1); });
+    adevarat(areCuloarea(d, j.ALAMA), "buzunarele n-au alamă pe ele");
+    adevarat(formeCu(d, j.ALAMA).length >= 9,
+      "prea puține podoabe de alamă: " + formeCu(d, j.ALAMA).length);
+  });
+
+  test("în zare se vede un desiș, nu o pajiște goală", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    adevarat(j.deseneazaZare !== null, "lipsește deseneazaZare");
+    const d = j.doar(function () { j.deseneazaZare(); });
+    const verzi = [...culorileDin(d)].filter(function (c) {
+      const m = String(c).match(/^#([0-9a-f]{6})$/i);
+      if (!m) return false;
+      const n = parseInt(m[1], 16);
+      return ((n >> 8) & 255) > (n & 255) && ((n >> 8) & 255) > ((n >> 16) & 255);
+    });
+    adevarat(verzi.length >= 3,
+      "zarea are doar " + verzi.length + " tonuri de verde: " + JSON.stringify([...culorileDin(d)]));
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Peisaj pictat, volum și sunet");
+
+  // Câte umpleri s-au făcut cu degradeu, nu cu o culoare plată.
+  function cateDegradeuri(desene) {
+    return desene.filter(function (d) { return d.stil && d.stil.gradient; }).length;
+  }
+
+  test("peisajul se pictează o dată și pe urmă se copiază", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    adevarat(j.fundal3 !== null, "lipsește pânza ascunsă a peisajului");
+    j.cadruCurat();
+    egal(j.fundal3.latime, j.W(), "peisajul nu s-a pictat pe măsura ecranului");
+    const cate = j.panzeAscunse.length;
+    j.cadruCurat(); j.cadruCurat();
+    egal(j.panzeAscunse.length, cate, "peisajul se repictează la fiecare cadru");
+    const d = j.cadruCurat();
+    adevarat(d.some(function (x) { return x.op === "imagine"; }),
+      "peisajul gata pictat nu e copiat pe ecran");
+  });
+
+  test("peisajul se repictează când se schimbă mărimea ferestrei", function () {
+    const j = porneste({ latime: 1200, inaltime: 800 });
+    laMuzeu(j, "sonerie");
+    j.cadruCurat();
+    const cate = j.panzeAscunse.length;
+    j.redimensioneaza(900, 620);
+    j.cadruCurat();
+    adevarat(j.panzeAscunse.length > cate, "peisajul a rămas la mărimea veche");
+    egal(j.fundal3.latime, 900, "pânza ascunsă n-are lățimea nouă");
+  });
+
+  test("depărtarea e înnegurată: straturile din fund sunt estompate", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    adevarat(j.pictezaFundal3 !== null, "lipsește pictezaFundal3");
+    j.goleste();
+    j.pictezaFundal3(j.panza.ctx);
+    const cetos = j.filtre.filter(function (f) { return /blur/.test(f); });
+    adevarat(cetos.length >= 3,
+      "doar " + cetos.length + " straturi au ceață: " + JSON.stringify(j.filtre));
+  });
+
+  test("desișul are straturi peste straturi, nu două tonuri de verde", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    j.goleste();
+    j.pictezaFundal3(j.panza.ctx);
+    const verzi = [...culorileDin(j.desene)].filter(function (c) {
+      const m = String(c).match(/^#([0-9a-f]{6})$/i);
+      if (!m) return false;
+      const n = parseInt(m[1], 16);
+      return ((n >> 8) & 255) > (n & 255) && ((n >> 8) & 255) >= ((n >> 16) & 255);
+    });
+    adevarat(verzi.length >= 6,
+      "peisajul are doar " + verzi.length + " tonuri de verde");
+  });
+
+  test("custodele e modelat cu lumini și umbre, nu cu culori plate", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    const d = j.doar(function () { j.deseneazaMuzeu(1); });
+    adevarat(cateDegradeuri(d) >= 6,
+      "doar " + cateDegradeuri(d) + " forme sunt modelate cu degradeu");
+  });
+
+  test("ochiul are iris, pupilă și sclipire", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    const d = j.doar(function () { j.deseneazaMuzeu(1); });
+    const langaOchi = cercurileDin(d).filter(function (c) {
+      return Math.hypot(c.x - (g.cx + g.capR * 0.38), c.y - (g.capY - g.capR * 0.1)) < g.capR * 0.3;
+    });
+    adevarat(langaOchi.length >= 4,
+      "ochiul are doar " + langaOchi.length + " straturi — pare un nasture");
+  });
+
+  test("în muzeu se aude un fundal muzical", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    adevarat(j.muzicaMuzeu(), "nu s-a pornit nicio muzică în muzeu");
+  });
+
+  test("muzica muzeului nu pornește de două ori una peste alta", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    const intai = j.muzicaMuzeu();
+    j.intrareScena3(j.ceas.t + 100);
+    adevarat(j.muzicaMuzeu() === intai || j.muzicaMuzeu() !== null,
+      "muzica s-a pierdut la reintrare");
+    adevarat(j.muzicaMuzeu(), "a doua intrare a lăsat scena fără muzică");
+  });
+
+  test("un cadru din muzeu stă în bugetul lui de desen", function () {
+    /* Pânza 2D plătește pentru fiecare umplere și fiecare linie. Peste vreo
+       cinci sute de operații pe cadru, jocul începe să se poticnească pe
+       calculatoare obișnuite. Testul ăsta e o plasă: dacă cineva adaugă mâine
+       încă o sută de frunze desenate una câte una, se aprinde aici, nu în ochii
+       jucătorului. */
+    const j = porneste({ latime: 1280, inaltime: 800 });
+    laMuzeu(j, "usaDeschisa");
+    j.s3.usa = 1; j.s3.chemare = 1;
+    for (let i = 0; i < 40; i++) {
+      j.semeneazaPlanta(0.05 + i * 0.022, 0.15 + (i % 7) * 0.11, "#43a047");
+    }
+    j.avanseaza(3000);                       // plantele cresc de tot
+    const cate = j.cadruCurat().length;
+    adevarat(cate <= 480, "un cadru cere " + cate + " operații de desen");
+  });
+
+  test("pe un ecran mare, pânza rămâne plafonată", function () {
+    const j = porneste({ latime: 3840, inaltime: 2160 });
+    adevarat(j.PANZA_MAX !== null, "lipsește plafonul pânzei");
+    const pixeli = j.W() * j.H();
+    adevarat(pixeli <= j.PANZA_MAX * 1.05,
+      "desenăm " + Math.round(pixeli / 1000) + "k pixeli, plafonul e " +
+      Math.round(j.PANZA_MAX / 1000) + "k");
+    adevarat(j.W() / j.H() > 1.6 && j.W() / j.H() < 1.9, "s-a stricat proporția ecranului");
+  });
+
+  test("atingerea nimerește unde trebuie și când pânza e micșorată", function () {
+    const j = porneste({ latime: 3840, inaltime: 2160 });
+    const k = j.scalaPanzei();
+    adevarat(k < 1, "pe un ecran de 4K pânza ar trebui micșorată, dar scala e " + k);
+    j.atinge(1920, 1080);                     // exact mijlocul ferestrei
+    aproape(j.cursor.x, j.W() / 2, 2, "atingerea a nimerit alături pe orizontală");
+    aproape(j.cursor.y, j.H() / 2, 2, "atingerea a nimerit alături pe verticală");
+  });
+
+  test("când cadrele întârzie, jocul coboară singur calitatea", function () {
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    laMuzeu(j, "sonerie");
+    egal(j.calitate(), 1, "jocul nu pornește la calitate întreagă");
+    j.avanseaza(20000, 45);                   // cadre de 45 ms: se târăște
+    adevarat(j.calitate() < 1,
+      "calitatea a rămas la " + j.calitate() + " deși cadrele întârziau");
+    adevarat(j.W() < 1600, "pânza n-a fost micșorată");
+  });
+
+  test("când merge iar lin, calitatea urcă înapoi", function () {
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    laMuzeu(j, "sonerie");
+    j.avanseaza(20000, 45);
+    const cazuta = j.calitate();
+    adevarat(cazuta < 1, "calitatea nu a coborât ca să aibă de unde urca");
+    j.avanseaza(30000, 8);                    // cadre de 8 ms: merge ca uns
+    adevarat(j.calitate() > cazuta,
+      "calitatea a rămas la " + j.calitate() + " deși jocul merge lin");
+  });
+
+  test("grădina se desenează cu ștampile, nu frunză cu frunză", function () {
+    const j = porneste({ latime: 1280, inaltime: 800 });
+    laMuzeu(j, "sonerie");
+    for (let i = 0; i < 30; i++) {
+      j.semeneazaPlanta(0.05 + i * 0.03, 0.2 + (i % 5) * 0.15, "#43a047");
+    }
+    j.avanseaza(3000);
+    const d = j.doar(function () { j.deseneazaGradina(1, 0, 1.01); });
+    adevarat(d.length <= 90,
+      "treizeci de plante cer " + d.length + " operații — nu sunt ștampilate");
+  });
+
+  test("ultimul articol al manualului spune ce ai de făcut și al cui e ce faci", function () {
+    const j = porneste();
+    laMuzeu(j, "manual");
+    const ultimul = j.ARTICOLE_MANUAL[j.ARTICOLE_MANUAL.length - 1][1];
+    adevarat(/cercel/i.test(ultimul),
+      "ultimul articol nu spune cum se semnează: " + ultimul);
+    adevarat(/vizitator/i.test(ultimul) && /drept/i.test(ultimul),
+      "ultimul articol nu spune al cui sunt drepturile: " + ultimul);
+  });
+
+  test("în grădina muzeului se aude natura, nu doar muzica", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    adevarat(j.naturaScena3(), "nu se aude vântul prin frunze");
+    adevarat(j.muzicaMuzeu(), "s-a pierdut fundalul muzical");
+  });
+
+  test("păsările cântă din când în când, nu o singură dată", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.avanseaza(45000);
+    adevarat(j.s3.cantecePasari > 1,
+      "s-a auzit o pasăre de " + j.s3.cantecePasari + " ori în trei sferturi de minut");
+  });
+
+  test("natura tace când intri în galerie", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.intraInGalerie(0, j.ceas.t);
+    egal(j.naturaScena3(), null, "vântul se aude și în sala închisă a galeriei");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Scena 4 — galeria cu miniatura");
+
+  // Custodele cu haina desfăcută de tot și buzunarele care cheamă.
+  function hainaDesfacuta(j) {
+    const g = laMuzeu(j, "usaDeschisa");
+    j.s3.usa = 1;
+    j.avanseaza(4000);                    // cât să apuce buzunarele să cheme
+    return g;
+  }
+
+  test("custodele arată cu trompa spre buzunarul care cheamă", function () {
+    const j = porneste();
+    const g = hainaDesfacuta(j);
+    adevarat(j.s3.chemare > 0.5, "buzunarele nu cheamă încă");
+    const b = j.geomBuzunar(g, j.primulBuzunarNevizitat());
+    const varf = j.varfulTrompeiMuzeu();
+    const departare = Math.hypot(varf.x - b.cx, varf.y - b.cy);
+    adevarat(departare < b.w * 1.6,
+      "trompa arată aiurea: e la " + Math.round(departare) + "px de buzunar");
+  });
+
+  test("apăsarea unui buzunar deschide galeria", function () {
+    const j = porneste();
+    const g = hainaDesfacuta(j);
+    const b = j.geomBuzunar(g, 4);
+    j.cursor.x = b.cx; j.cursor.y = b.cy;
+    j.click3(j.ceas.t);
+    egal(j.stare(), "galerie", "buzunarul apăsat nu duce nicăieri");
+    egal(j.s4.buzunar, 4, "s-a deschis alt buzunar decât cel atins");
+  });
+
+  test("miniatura e mică, dar rama ei e mare și bogată", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    const m = j.geomMiniatura();
+    adevarat(m.picturaW < m.ramaW * 0.4,
+      "pictura ocupă " + Math.round(100 * m.picturaW / m.ramaW) + "% din ramă — nu e miniatură");
+    /* Rama poate fi mare — asta i-am și cerut, ca să i se vadă sculptura. Ce
+       nu are voie e să umple peretele din fund: trebuie să rămână o lucrare
+       atârnată pe un perete, nu un perete cu ramă. */
+    const S = j.geomSala();
+    adevarat(m.ramaW < (S.x1 - S.x0) * 0.8,
+      "rama umple peretele din fund, nu mai pare atârnată pe el");
+  });
+
+  // Lupa nu vine singură: trebuie luată de pe consolă, cu o atingere.
+  function iaLupa(j) {
+    j.cursor.x = j.s4.lupaX; j.cursor.y = j.s4.lupaY;
+    j.atinge(j.s4.lupaX / j.scalaPanzei(), j.s4.lupaY / j.scalaPanzei());
+  }
+
+  test("lupa stă pe consolă până o iei tu", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);
+    const unde = { x: j.s4.lupaX, y: j.s4.lupaY };
+    j.cursor.x = j.W() * 0.22; j.cursor.y = j.H() * 0.7;
+    j.avanseaza(1500);
+    adevarat(!j.s4.lupaLuata, "lupa se consideră luată fără să fi atins-o");
+    aproape(j.s4.lupaX, unde.x, 2, "lupa a plecat singură după deget");
+    aproape(j.s4.lupaY, unde.y, 2, "lupa a plecat singură după deget");
+  });
+
+  test("odată luată, lupa vine după deget", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);                    // trece intrarea
+    iaLupa(j);
+    adevarat(j.s4.lupaLuata, "atingerea lupei n-a ridicat-o");
+    j.cursor.x = j.W() * 0.25; j.cursor.y = j.H() * 0.7;
+    const inainte = Math.hypot(j.s4.lupaX - j.cursor.x, j.s4.lupaY - j.cursor.y);
+    j.avanseaza(1200);
+    const dupa = Math.hypot(j.s4.lupaX - j.cursor.x, j.s4.lupaY - j.cursor.y);
+    adevarat(dupa < inainte * 0.4,
+      "lupa nu urmează degetul: " + Math.round(inainte) + " → " + Math.round(dupa));
+  });
+
+  test("eticheta din lupă se citește: rândurile nu se calcă unul pe altul", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    adevarat(j.deseneazaEtichetaRamei !== null, "lipsește desenul etichetei");
+    const m = j.geomMiniatura();
+    const d = j.doar(function () {
+      j.deseneazaEtichetaRamei(m.etichetaX, m.etichetaY, j.s4.lupaR);
+    });
+    const randuri = d.filter(function (x) { return x.op === "text"; })
+                     .map(function (x) { return { y: x.puncte[0].y, m: x.marime }; })
+                     .sort(function (a, b) { return a.y - b.y; });
+    adevarat(randuri.length >= 2, "eticheta n-are text pe ea");
+    for (let k = 1; k < randuri.length; k++) {
+      const gol = randuri[k].y - randuri[k - 1].y;
+      const nevoie = Math.max(randuri[k].m, randuri[k - 1].m) * 0.95;
+      adevarat(gol >= nevoie,
+        "două rânduri se calcă: distanță " + Math.round(gol) +
+        "px, iar litera are " + Math.round(nevoie) + "px");
+    }
+  });
+
+  test("portalul nu redesenează rama sculptată la fiecare cadru", function () {
+    /* Rama are peste o mie de forme. Redesenată de șaizeci de ori pe secundă
+       cât crește portalul, mișcarea se poticnește — și tocmai acolo trebuie să
+       curgă. Se pictează o dată pe o ștampilă și pe urmă se întinde. */
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.s4.faza = "portal"; j.s4.portal = 0.5;
+    const d = j.cadruCurat();
+    adevarat(d.length < 60,
+      "un cadru din portal cere " + d.length + " operații de desen");
+    adevarat(d.filter(function (x) { return x.op === "imagine"; }).length >= 2,
+      "rama nu e întinsă dintr-o ștampilă");
+  });
+
+  test("ornamentele ramei nu sunt turnate la fel", function () {
+    /* O ramă sculptată de mână n-are două mărgele identice. Dacă toate ies din
+       aceeași ștanță, ochiul citește tipar, nu lemn cioplit. */
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    const m = j.geomMiniatura();
+    j.goleste();
+    j.pictezaRama(j.panza.ctx, m, 1);
+    const raze = [];
+    for (const d of j.desene) for (const c of d.cercuri || []) if (c.rx) raze.push(+c.rx.toFixed(2));
+    adevarat(raze.length > 80, "rama are prea puține ornamente rotunde: " + raze.length);
+    const felurite = new Set(raze).size;
+    adevarat(felurite > raze.length * 0.25,
+      "din " + raze.length + " ornamente rotunde, doar " + felurite +
+      " au mărimi diferite — sunt toate din aceeași ștanță");
+  });
+
+  test("rama are textura foiței: sclipiri și crăpături mărunte", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    const m = j.geomMiniatura();
+    j.goleste();
+    j.pictezaRama(j.panza.ctx, m, 1);
+    adevarat(j.desene.length > 700,
+      "rama are doar " + j.desene.length + " forme — prea puține ca să pară sculptată");
+  });
+
+  test("sala nu mai e o hală goală: are pereți laterali, tavan și lucruri în ea", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    const m = j.geomMiniatura();
+    adevarat(m.ramaW > j.W() * 0.3,
+      "rama ocupă doar " + Math.round(100 * m.ramaW / j.W()) + "% din lățime — se pierde pe perete");
+    j.goleste();
+    j.pictezaSala(j.panza.ctx);
+    adevarat(j.desene.length > 320,
+      "sala are doar " + j.desene.length + " forme — tot goală pare");
+  });
+
+  test("sala e un interior rococo adevărat: parchet, lambriuri, foiță de aur", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    adevarat(j.LEMN_PARCHET !== null && j.AUR_FOITA !== null && j.BOL_ROSU !== null,
+      "lipsesc culorile interiorului");
+    j.goleste();
+    j.pictezaSala(j.panza.ctx);
+    const d = j.desene;
+    adevarat(areCuloarea(d, j.LEMN_PARCHET), "podeaua nu e de parchet");
+    adevarat(d.length > 220,
+      "sala are doar " + d.length + " forme — e prea goală ca să pară o încăpere");
+  });
+
+  test("rama e din foiță de aur, cu bol roșu pe muchii și ornament sculptat", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    const m = j.geomMiniatura();
+    j.goleste();
+    j.pictezaRama(j.panza.ctx, m, 1);
+    const d = j.desene;
+    adevarat(areCuloarea(d, j.AUR_FOITA), "rama nu are foiță de aur");
+    adevarat(areCuloarea(d, j.BOL_ROSU), "nu se vede bolul roșu de sub foiță");
+    adevarat(d.length > 60,
+      "rama are doar " + d.length + " forme — nu e sculptată, e un dreptunghi");
+  });
+
+  test("ținută pe miniatură, lupa dezvăluie secretul", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);
+    iaLupa(j);
+    const m = j.geomMiniatura();
+    j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
+    j.avanseaza(3000);
+    egal(j.s4.faza, "descoperit", "lupa ținută pe miniatură nu descoperă nimic");
+  });
+
+  test("secretul e jucătorul însuși, în fața ecranului negru din prima scenă", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);
+    const m = j.geomMiniatura();
+    adevarat(j.NEGRU_SCENA1 !== null, "lipsește negrul primei scene");
+    const d = j.doar(function () {
+      j.deseneazaPrinLupa(m.picturaX, m.picturaY, j.s4.lupaR, j.ceas.t);
+    });
+    adevarat(areCuloarea(d, j.NEGRU_SCENA1), "nu se vede ecranul negru din scena întâi");
+    adevarat(areCuloarea(d, j.ALAMA), "avatarul nu ține nicio cheie");
+  });
+
+  test("în clipa recunoașterii se face tăcere", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);
+    adevarat(j.muzicaMuzeu(), "galeria n-are fundal sonor");
+    iaLupa(j);
+    const m = j.geomMiniatura();
+    j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
+    j.avanseaza(3000);
+    egal(j.muzicaMuzeu(), null, "în clipa recunoașterii sunetul merge mai departe");
+  });
+
+  test("eticheta de pe ramă se găsește tot cu lupa", function () {
+    const j = porneste();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);
+    iaLupa(j);
+    const m = j.geomMiniatura();
+    j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
+    j.avanseaza(3000);
+    egal(j.s4.faza, "descoperit", "n-a trecut prin descoperire");
+    j.cursor.x = m.etichetaX; j.cursor.y = m.etichetaY;
+    j.avanseaza(3000);
+    egal(j.s4.faza, "eticheta", "eticheta de pe ramă nu se lasă găsită");
+  });
+
+  test("atingerea ramei deschide portalul spre galeria următoare", function () {
+    const j = porneste();
+    const g = hainaDesfacuta(j);
+    const b = j.geomBuzunar(g, 2);
+    j.cursor.x = b.cx; j.cursor.y = b.cy;
+    j.click3(j.ceas.t);
+    j.avanseaza(2000);
+    iaLupa(j);
+    const m = j.geomMiniatura();
+    j.cursor.x = m.picturaX; j.cursor.y = m.picturaY; j.avanseaza(3000);
+    j.cursor.x = m.etichetaX; j.cursor.y = m.etichetaY; j.avanseaza(3000);
+    egal(j.s4.faza, "eticheta", "n-am ajuns la etichetă");
+    j.cursor.x = m.ramaX; j.cursor.y = m.ramaY;
+    j.atinge(m.ramaX / j.scalaPanzei(), m.ramaY / j.scalaPanzei());
+    egal(j.s4.faza, "portal", "atingerea ramei nu deschide portalul");
+    j.avanseaza(6000);
+    /* Portalul nu mai închide drumul, îl continuă: rama se face ușă spre sala
+       cu pânza uriașă. Însemnarea buzunarului o face scena aceea, la capăt. */
+    egal(j.stare(), "campie", "portalul nu duce în sala următoare");
+    egal(j.s5.buzunar, 2, "s-a pierdut din ce buzunar am pornit");
+  });
+
+  test("buzunarul vizitat nu mai cheamă; cheamă următorul", function () {
+    const j = porneste();
+    hainaDesfacuta(j);
+    egal(j.primulBuzunarNevizitat(), 0, "la început cheamă alt buzunar decât primul");
+    j.s3.vizitate[0] = true;
+    egal(j.primulBuzunarNevizitat(), 1, "după primul, nu trece la al doilea");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Când nu știi ce să faci în sala cu tabloul");
+
+  function inSala(j) {
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.avanseaza(2000);            // trece intrarea
+    return j.geomMiniatura();
+  }
+
+  test("lupa cheamă la luat cât timp stă pe consolă", function () {
+    /* Cine intră aici nu are de unde ști că obiectul de pe consolă se ia în
+       mână. Dacă nu se întâmplă nimic o vreme, lupa începe să cheme. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inSala(j);
+    egal(j.s4.chemareLupa, 0, "lupa cheamă înainte să apuci să te uiți la ea");
+    j.avanseaza(9000);
+    adevarat(j.s4.chemareLupa > 0.5,
+      "lupa nu cheamă nici după nouă secunde: " + j.s4.chemareLupa);
+  });
+
+  test("o atingere pe lângă lupă nu rămâne fără răspuns", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = inSala(j);
+    j.cursor.x = m.ramaX; j.cursor.y = m.ramaY;      // atinge tabloul, nu lupa
+    j.click4(j.ceas.t);
+    adevarat(!j.s4.lupaLuata, "s-a luat lupa dintr-o atingere care n-a nimerit-o");
+    egal(j.s4.incercari, 1, "încercarea ratată nu se ține minte");
+    adevarat(j.s4.chemareLupa > 0.3,
+      "lupa nu începe să cheme după o încercare ratată: " + j.s4.chemareLupa);
+  });
+
+  test("cu fiecare ratare, lupa se lasă mai ușor luată", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = inSala(j);
+    // atingem alături de lupă, la o distanță care la început nu ajunge
+    const incearcaDeDeparte = function () {
+      j.s4.lupaLuata = false;
+      // deasupra lupei, departe și de sticlă, și de coada ei
+      j.cursor.x = j.s4.lupaX; j.cursor.y = j.s4.lupaY - j.s4.lupaR * 2.4;
+      j.click4(j.ceas.t);
+      return j.s4.lupaLuata;
+    };
+    adevarat(!incearcaDeDeparte(), "de la prima atingere lupa se ia și de departe");
+    // încă două ratări, dar sub pragul de la care i-o dăm pur și simplu în mână
+    j.s4.incercari = 3;
+    adevarat(incearcaDeDeparte(),
+      "după trei ratări lupa tot nu se lasă luată de la aceeași distanță");
+  });
+
+  test("după destule încercări, lupa îți sare singură în mână", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inSala(j);
+    adevarat(j.PRAG_LUPA_IN_MANA !== null, "lipsește pragul de la care lupa se dă singură");
+    for (let k = 0; k < j.PRAG_LUPA_IN_MANA + 1; k++) {
+      j.cursor.x = 5; j.cursor.y = 5;
+      j.click4(j.ceas.t);
+    }
+    adevarat(j.s4.lupaLuata,
+      "după " + j.PRAG_LUPA_IN_MANA + " încercări lupa tot nu vine în mână");
+  });
+
+  test("dacă rătăcești cu lupa, miniatura începe să lumineze", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = inSala(j);
+    j.cursor.x = j.s4.lupaX; j.cursor.y = j.s4.lupaY;
+    j.atinge(j.s4.lupaX / j.scalaPanzei(), j.s4.lupaY / j.scalaPanzei());
+    adevarat(j.s4.lupaLuata, "n-am apucat să iau lupa");
+    j.cursor.x = j.W() * 0.12; j.cursor.y = j.H() * 0.85;   // departe de tablou
+    j.avanseaza(14000);
+    adevarat(j.s4.chemareTablou > 0.5,
+      "miniatura nu cheamă nici după paisprezece secunde de rătăcit: " + j.s4.chemareTablou);
+  });
+
+  test("îndemnul spune unde e lupa, nu doar că există", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inSala(j);
+    j.avanseaza(9000);
+    const text = totTextul(j.cadruCurat());
+    adevarat(/dreapta|consol/i.test(text),
+      "îndemnul nu spune unde s-o cauți: " + text);
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Scena 5 — pânza uriașă și cei zece pași înapoi");
+
+  function inCampie(j) {
+    j.mergiLaStarea("campie");
+    j.intraInCampie(0, j.ceas.t);
+    j.avanseaza(6000);              // trec pixelii haotici
+    return j.s5;
+  }
+
+  test("portalul din galerie duce mai departe, în sala cu pânza uriașă", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(0, j.ceas.t);
+    j.s4.faza = "portal"; j.s4.t0 = j.ceas.t; j.s5 && (j.s5.pasi = 0);
+    j.avanseaza(8000);
+    egal(j.stare(), "campie", "portalul nu duce în scena următoare");
+  });
+
+  test("la început nu se văd decât pixeli haotici", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(0, j.ceas.t);
+    egal(j.s5.faza, "pixeli", "scena nu începe cu pixeli");
+    j.avanseaza(400);
+    const d = j.cadruCurat();
+    adevarat(totTextul(d).length === 0, "se scrie ceva peste pixelii de la început");
+  });
+
+  test("pe podea scrie câți pași ai de făcut înapoi", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.PASI_INAPOI === 10, "nu sunt zece pași: " + j.PASI_INAPOI);
+    const d = j.cadruCurat();
+    adevarat(/10 pași în spate/i.test(totTextul(d)),
+      "instrucțiunea de pe podea lipsește: " + totTextul(d));
+  });
+
+  test("fiecare atingere te duce un pas înapoi, iar tabloul se limpezește", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    egal(j.s5.pasi, 0, "începem deja depărtați");
+    const claritateLaInceput = j.s5.claritate;
+    for (let k = 0; k < 3; k++) { j.click5(j.ceas.t); j.avanseaza(600); }
+    egal(j.s5.pasi, 3, "pașii nu se numără");
+    adevarat(j.s5.claritate > claritateLaInceput,
+      "tabloul nu se limpezește pe măsură ce te depărtezi");
+  });
+
+  test("cu cât te depărtezi, cu atât tabloul se vede mai mic", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    const aproape = j.s5.latimeTablou;
+    for (let k = 0; k < 6; k++) { j.click5(j.ceas.t); j.avanseaza(600); }
+    adevarat(j.s5.latimeTablou < aproape * 0.9,
+      "pânza rămâne la fel de mare deși ai făcut șase pași înapoi");
+  });
+
+  test("sala are perete și podea, ca la muzeu", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.PERETE_SALII !== null, "lipsește culoarea peretelui");
+    const d = j.cadruCurat();
+    adevarat(areCuloarea(d, j.PERETE_SALII), "peretele sălii lipsește");
+  });
+
+  test("pânza cea mare atârnă într-o ramă aurită, nu într-un chenar", function () {
+    /* O pânză de mărimea asta pusă direct pe perete arată a afiș. Rama e aceeași
+       sculptură de brâuri din galeria a patra, cu profilul subțiat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 4; k++) { j.click5(j.ceas.t); j.avanseaza(600); }
+    const d = j.cadruCurat();
+    adevarat(j.PROFIL_RAMEI > 0 && j.PROFIL_RAMEI < 0.2,
+      "profilul ramei mari nu s-a subțiat: " + j.PROFIL_RAMEI);
+    // rama e o ștampilă întinsă peste pânză: două imagini, pânza și rama
+    const imagini = d.filter(function (x) { return x.op === "imagine"; });
+    adevarat(imagini.length >= 2,
+      "s-a desenat o singură imagine — pânza n-are ramă peste ea");
+    adevarat(!areCuloarea(d, "#8a7f6d"), "a rămas chenarul cenușiu de dinainte");
+  });
+
+  test("la primul pas lucrarea ține tot ecranul", function () {
+    /* Începi cu nasul în pânză: nu se vede nici sală, nici margine, numai
+       pătratele ei. Abia pașii înapoi o strâng. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    egal(j.s5.pasi, 0, "începem deja depărtați");
+    adevarat(j.s5.latimeTablou >= j.W(),
+      "lucrarea are " + Math.round(j.s5.latimeTablou) + " din " + j.W() + " — nu ține tot ecranul");
+    // și se strânge repede: la trei pași pantofii trebuie să fi ieșit de sub ea
+    for (let k = 0; k < 3; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    adevarat(j.s5.latimeTablou < j.W(),
+      "după trei pași lucrarea tot acoperă ecranul");
+  });
+
+  test("pantofii se văd și peste pixelii de la intrare", function () {
+    /* La început lucrarea acoperă tot ecranul, așa că pantofii sunt singurul
+       lucru care spune unde stai. Sub ea nu-i vedea nimeni. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(0, j.ceas.t);
+    j.avanseaza(400);
+    egal(j.s5.faza, "pixeli", "nu mai suntem în faza pixelilor");
+    const d = j.cadruCurat();
+    egal(formeCu(d, j.PANTOFI_SALII).length, 2,
+      "peste pixeli nu se vede niciun pantof");
+  });
+
+  test("pantofii stau deasupra lucrării, nu în spatele ei", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    j.click5(j.ceas.t); j.avanseaza(600);
+    const d = j.cadruCurat();
+    let ultimaImagine = -1;
+    for (let k = 0; k < d.length; k++) if (d[k].op === "imagine") ultimaImagine = k;
+    // lacul pantofului e un gradient, deci culoarea lui stă printre opriri
+    const pantofi = formeCu(d, j.PANTOFI_SALII);
+    adevarat(pantofi.length === 2, "nu s-au desenat doi pantofi");
+    const primulPantof = d.indexOf(pantofi[0]);
+    adevarat(ultimaImagine >= 0, "nu s-a desenat nici pânza, nici rama");
+    adevarat(primulPantof > ultimaImagine,
+      "pantofii se desenează înaintea lucrării, deci rămân sub ea");
+  });
+
+  test("pe podea stau doi pantofi, în locul de unde se privește", function () {
+    /* Urmele de tălpi goale nu se vedeau pe podeaua deschisă. Un pantof lăcuit
+       se vede: e închis la culoare și are luciu. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 5; k++) { j.click5(j.ceas.t); j.avanseaza(600); }
+    const d = j.cadruCurat();
+    adevarat(j.PANTOFI_SALII !== null, "lipsește culoarea pantofilor");
+    const pantofi = formeCu(d, j.PANTOFI_SALII);
+    egal(pantofi.length, 2, "s-au desenat " + pantofi.length + " pantofi, nu doi");
+  });
+
+  test("pantofii stau jos, sub lucrare, și se văd de sub ea", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 5; k++) { j.click5(j.ceas.t); j.avanseaza(600); }
+    const d = j.cadruCurat();
+    const pantofi = formeCu(d, j.PANTOFI_SALII);
+    adevarat(pantofi.length === 2, "nu sunt doi pantofi");
+    for (const p of pantofi) {
+      adevarat(p.limite.y0 > j.H() * 0.62,
+        "un pantof e sus, la " + Math.round(p.limite.y0) + " — nu stă pe podea");
+    }
+    // rama, la cinci pași, s-a strâns destul cât să nu-i mai acopere
+    adevarat(j.s5.latimeTablou < j.W(),
+      "lucrarea ține tot ecranul la jumătatea drumului — pantofii rămân ascunși");
+  });
+
+  test("țăranii poartă port românesc, nu haine oarecare", function () {
+    /* Ia albă, roșu de catrință, negru de pălărie și de pieptar: fără ele nu
+       seamănă a nimic cunoscut. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.PORT_ROMANESC !== null, "lipsește paleta portului");
+    j.goleste();
+    j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "femeie", 0, 0);
+    const culori = culorileDin(j.desene);
+    for (const cheie of ["panza", "rosu", "negru"]) {
+      adevarat(culori.has(String(j.PORT_ROMANESC[cheie]).toLowerCase()),
+        "lipsește " + cheie + " din portul femeii");
+    }
+    j.goleste();
+    j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "barbat", 0, 0);
+    const ale = culorileDin(j.desene);
+    adevarat(ale.has(String(j.PORT_ROMANESC.negru).toLowerCase()),
+      "bărbatul n-are pălărie neagră");
+    adevarat(ale.has(String(j.PORT_ROMANESC.panza).toLowerCase()),
+      "bărbatul n-are cămașă albă");
+  });
+
+  test("catrința femeii are dungi, nu e o pată de culoare", function () {
+    /* Dunga verticală e semnul după care se recunoaște catrința de la o poștă.
+       Fără ea, femeia e o siluetă cu fustă roșie. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    j.goleste();
+    j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "femeie", 0, 0);
+    const dungi = j.desene.filter(function (x) {
+      if (!x.limite) return false;
+      const lat = x.limite.x1 - x.limite.x0, inalt = x.limite.y1 - x.limite.y0;
+      return inalt > lat * 2.5 && inalt > 500 * 0.08;
+    });
+    adevarat(dungi.length >= 5,
+      "catrința are doar " + dungi.length + " dungi — arată a fustă simplă");
+  });
+
+  test("după zece pași, țăranii prind viață și te strigă", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    egal(j.s5.pasi, 10, "n-am ajuns la zece pași");
+    aproape(j.s5.claritate, 1, 0.02, "tabloul nu s-a limpezit de tot");
+    egal(j.s5.faza, "viu", "țăranii nu prind viață");
+    const d = j.cadruCurat();
+    adevarat(/ne vezi mai bine/i.test(totTextul(d)), "nu strigă nimeni: " + totTextul(d));
+  });
+
+  test("pe urmă deschid larg ușile hambarului", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(9000);
+    egal(j.s5.faza, "hambar", "nu se ajunge la hambar");
+    adevarat(j.s5.usi > 0.5, "ușile hambarului stau închise: " + j.s5.usi);
+  });
+
+  test("hambarul deschis te întoarce în muzeu, cu galeria însemnată", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(3, j.ceas.t);
+    j.avanseaza(6000);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(24000);
+    egal(j.stare(), "muzeu", "nu ne întoarcem în muzeu");
+    adevarat(j.s3.vizitate[3], "galeria prin care am trecut n-a rămas însemnată");
+  });
+
+  test("pânza se pictează o dată și pe urmă se copiază", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.tabloul && j.tabloul.panza, "tabloul nu se pictează pe o pânză ascunsă");
+    const cate = j.panzeAscunse.length;
+    j.cadruCurat(); j.cadruCurat();
+    egal(j.panzeAscunse.length, cate, "tabloul se repictează la fiecare cadru");
+  });
+
+  test("tabloul e pictat impresionist: multe tușe, nu culori întinse", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(0, j.ceas.t);
+    j.goleste();
+    j.pictezaTablou(j.panza.ctx, 720, 450);
+    adevarat(j.desene.length > 900,
+      "tabloul are doar " + j.desene.length + " tușe — e pictat cu bidineaua");
+  });
+
+  test("un cadru din câmpie stă în bugetul lui de desen", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    const cate = j.cadruCurat().length;
+    adevarat(cate <= 200, "un cadru din câmpie cere " + cate + " operații de desen");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Mingea răspunde pe loc");
+
+  // Pregătește o minge liberă, în repaus, gata de atins.
+  function mingeInRepaus(j) {
+    j.mergiLaStarea("minge");
+    j.minge.sol = j.H() * 0.78;
+    j.minge.razaTinta = Math.min(j.W(), j.H()) * 0.155;
+    j.minge.raza = j.minge.razaTinta;
+    j.minge.y = j.minge.sol;
+    j.minge.x = j.W() * 0.4;
+    j.minge.mod = "liber"; j.minge.inBuzunar = false;
+    j.minge.vy = 0; j.minge.sarituriRamase = 0; j.minge.sareDeBucurie = false;
+    j.avanseaza(80);
+    j.cursor.viteza = 0.1;
+    return j.minge.y;
+  }
+
+  test("mingea răspunde și cât e încă în creștere", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    j.avanseaza(3500);
+    incepeJocul(j, 750, 425);              // trec paginile, se naște punctul
+    j.avanseaza(5000);                     // crește și devine balon
+    for (let i = 0; i < 8 && j.stare() === "balon"; i++) {
+      j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+      j.avanseaza(200);
+    }
+    egal(j.stare(), "transformare", "n-am prins-o în timpul metamorfozei");
+    j.avanseaza(400);                      // mingea abia se face, dar se vede deja
+    j.cursor.viteza = 0.1;
+    j.atinge(j.minge.x / j.scalaPanzei(), j.minge.y / j.scalaPanzei());
+    adevarat(j.minge.turtire > 0.5,
+      "mingea nu simte atingerea cât e în creștere: " + j.minge.turtire);
+    j.avanseaza(300);
+    egal(j.stare(), "minge", "atingerea n-a grăbit metamorfoza");
+    adevarat(j.minge.vy < 0 || j.minge.y < j.minge.sol,
+      "mingea nu a sărit după ce a fost atinsă în creștere");
+  });
+
+  test("mingea nu sare singură: stă pe loc până o atingi", function () {
+    /* Mingea e o jucărie care așteaptă, nu una care se agită. Dacă sare
+       singură, atingerea nu mai înseamnă nimic. */
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    mingeInRepaus(j);
+    const sol = j.minge.sol;
+    let ceaMaiInalta = 0;
+    for (let k = 0; k < 60; k++) {
+      j.avanseaza(500);
+      ceaMaiInalta = Math.max(ceaMaiInalta, sol - j.minge.y);
+    }
+    adevarat(ceaMaiInalta < j.minge.raza * 0.05,
+      "mingea a sărit singură " + Math.round(ceaMaiInalta) + "px în treizeci de secunde");
+  });
+
+  test("saltul se vede din primul cadru, nu după o clipă", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    const y0 = mingeInRepaus(j);
+    j.atinge(j.minge.x / j.scalaPanzei(), j.minge.y / j.scalaPanzei());
+    j.avanseaza(16);
+    const salt = y0 - j.minge.y;
+    adevarat(salt > j.minge.raza * 0.2,
+      "în primul cadru mingea urcă doar " + Math.round(100 * salt / j.minge.raza) +
+      "% din raza ei — pare că întârzie");
+  });
+
+  test("mingea sare pe măsura ei, la fel pe orice ecran", function () {
+    const mic = porneste({ latime: 900, inaltime: 600 });
+    const y1 = mingeInRepaus(mic);
+    mic.atinge(mic.minge.x / mic.scalaPanzei(), mic.minge.y / mic.scalaPanzei());
+    mic.avanseaza(16);
+    const proportieMic = (y1 - mic.minge.y) / mic.minge.raza;
+
+    const mare = porneste({ latime: 1500, inaltime: 850 });
+    const y2 = mingeInRepaus(mare);
+    mare.atinge(mare.minge.x / mare.scalaPanzei(), mare.minge.y / mare.scalaPanzei());
+    mare.avanseaza(16);
+    const proportieMare = (y2 - mare.minge.y) / mare.minge.raza;
+
+    aproape(proportieMic, proportieMare, 0.03,
+      "pe ecrane diferite mingea sare altfel față de mărimea ei");
+  });
+
+  test("mingea se turtește chiar în clipa atingerii", function () {
+    const j = porneste({ latime: 1500, inaltime: 850 });
+    mingeInRepaus(j);
+    j.atinge(j.minge.x / j.scalaPanzei(), j.minge.y / j.scalaPanzei());
+    adevarat(j.minge.turtire > 0.5,
+      "mingea nu se turtește la atingere: " + j.minge.turtire);
+    const d = j.cadruCurat();
+    const rotunde = cercurileDin(d).filter(function (c) {
+      return Math.abs(c.x - j.minge.x) < j.minge.raza * 0.5 && c.rx && c.ry;
+    });
+    adevarat(rotunde.some(function (c) { return c.rx > c.ry * 1.1; }),
+      "mingea turtită nu e desenată mai lată decât înaltă");
+    // oprim săriturile: altfel mingea se îndeasă din nou la fiecare aterizare,
+    // ceea ce e corect, dar ascunde tocmai destinderea pe care o verificăm
+    j.minge.sarituriRamase = 0; j.minge.vy = 0; j.minge.y = j.minge.sol;
+    j.avanseaza(400);
+    adevarat(j.minge.turtire < 0.05, "turtirea nu se destinde: " + j.minge.turtire);
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Când nu reușești să apeși cercelul");
+
+  // O atingere undeva departe de cercel, în colțul de sus-stânga.
+  function rateaza(j) {
+    j.cursor.x = 12; j.cursor.y = 12;
+    j.click3(j.ceas.t);
+  }
+
+  test("o atingere pe lângă cercel nu trece drept nepăsare", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    j.avanseaza(4000);
+    const inainte = j.s3.ultimaActiune;
+    rateaza(j);
+    egal(j.s3.incercari, 1, "ratarea nu s-a socotit");
+    adevarat(j.s3.ultimaActiune > inainte,
+      "ceasul nepăsării merge mai departe deși jucătorul chiar încearcă");
+  });
+
+  test("cu fiecare ratare, cercelul se lasă mai mult spre deget", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    const departe = function () {
+      j.cursor.x = j.s3.butonBaza.x;
+      j.cursor.y = j.s3.butonBaza.y + j.s3.butonR * 6;
+      j.avanseaza(700);
+      return j.s3.butonY - j.s3.butonBaza.y;
+    };
+    const fara = departe();
+    for (let i = 0; i < 6; i++) rateaza(j);
+    const cu = departe();
+    adevarat(cu > fara + 1,
+      "cercelul se apleacă la fel ca la început: " + Math.round(fara) + " → " + Math.round(cu));
+  });
+
+  test("locul în care socotim că l-ai atins se lărgește", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    const x = j.s3.butonX + j.s3.butonR * 2.2, y = j.s3.butonY;
+    adevarat(!j.peButon(x, y), "de la început nimerește prea ușor, testul nu spune nimic");
+    for (let i = 0; i < 6; i++) rateaza(j);
+    adevarat(j.peButon(x, y), "după șase ratări tot nu se lărgește ținta");
+  });
+
+  test("după destule încercări, custodele îți întinde cercelul", function () {
+    const j = porneste();
+    const g = laMuzeu(j, "sonerie");
+    adevarat(j.PRAG_PALMA !== null, "lipsește pragul de la care începe să ajute");
+    const razaVeche = j.s3.butonR;
+    for (let i = 0; i < j.PRAG_PALMA; i++) rateaza(j);
+    j.avanseaza(300);
+    adevarat(j.s3.cercelInPalma, "custodele nu a scos cercelul din ureche");
+    adevarat(j.s3.butonR > razaVeche * 1.5,
+      "cercelul întins e la fel de mic: " + Math.round(j.s3.butonR));
+    const departeDeUreche = Math.hypot(j.s3.butonBaza.x - (g.cx + g.urecheX),
+                                       j.s3.butonBaza.y - g.lobUreche);
+    adevarat(departeDeUreche > g.capR, "cercelul a rămas agățat de ureche");
+  });
+
+  test("cercelul întins în palmă se apasă și scena merge mai departe", function () {
+    const j = porneste();
+    laMuzeu(j, "sonerie");
+    for (let i = 0; i < j.PRAG_PALMA; i++) rateaza(j);
+    j.avanseaza(300);
+    j.cursor.x = j.s3.butonX; j.cursor.y = j.s3.butonY;
+    j.click3(j.ceas.t);
+    egal(j.s3.faza, "manual", "cercelul întins în palmă tot nu se lasă apăsat");
+  });
+
+  test("butonul care fuge obosește dacă nu izbutești să-l prinzi", function () {
+    const j = porneste();
+    laMuzeu(j, "nuMaApasa");
+    j.s3.butonFuge = true;
+    j.cursor.x = j.s3.butonX; j.cursor.y = j.s3.butonY + 4;
+    j.avanseaza(500);
+    const fugaLaInceput = Math.hypot(j.s3.butonX - j.cursor.x, j.s3.butonY - j.cursor.y);
+    adevarat(fugaLaInceput > 5, "butonul nu fuge deloc, testul nu spune nimic");
+    j.s3.incercari = 12;
+    j.s3.butonX = j.cursor.x; j.s3.butonY = j.cursor.y + 4;
+    j.avanseaza(500);
+    const fugaObosita = Math.hypot(j.s3.butonX - j.cursor.x, j.s3.butonY - j.cursor.y);
+    adevarat(fugaObosita < fugaLaInceput * 0.5,
+      "butonul fuge la fel de iute după douăsprezece ratări");
+  });
+
+  test("sfârșitul prin nepăsare știe dacă ai încercat sau nu", function () {
+    const a = porneste();
+    laMuzeu(a, "sonerie");
+    a.avanseaza(310000);                       // cinci minute fără nicio atingere
+    egal(a.s3.faza, "pace", "nu s-a ajuns la sfârșitul liniștit");
+    const textPasiv = totTextul(a.cadruCurat());
+    adevarat(/ignoran/i.test(textPasiv), "textul nu mai vorbește despre ignoranță: " + textPasiv);
+
+    const b = porneste();
+    laMuzeu(b, "sonerie");
+    b.s3.incercari = 20;                       // a încercat mult și n-a izbutit
+    b.faza3("pace");
+    const textIncercat = totTextul(b.cadruCurat());
+    adevarat(!/ignoran/i.test(textIncercat),
+      "cui a încercat de douăzeci de ori i se spune tot că a câștigat prin ignoranță: " + textIncercat);
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Grădina în jurul muzeului");
+
+  test("grădina crescută în scena a doua se vede și în jurul muzeului", function () {
+    const j = porneste();
+    pregatesteScena2(j);
+    for (let i = 0; i < 5; i++) {
+      j.elibereazaCuloare("#43a047", j.W() * (0.3 + i * 0.1), j.orizont() - 20, "planta");
+    }
+    j.avanseaza(12000);
+    adevarat(j.gradina.length >= 5, "n-a crescut grădina în scena a doua");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("sonerie");
+    j.cadruCurat();
+    // plantele se apasă acum ca ștampile, deci verdele lor stă în pânza ascunsă,
+    // nu în operațiile de pe ecran: numărăm ștampilele și ne uităm în ele
+    const d = j.doar(function () { j.deseneazaGradina(1, 0, 1.01); });
+    const stampe = d.filter(function (x) { return x.op === "imagine"; }).length;
+    adevarat(stampe >= 3, "în scena muzeului nu se ștampilează nicio plantă");
+    const verzi = j.panzeAscunse.some(function (el) {
+      return areCuloarea(el._panza.desene, j.VERDE_LIANA);
+    });
+    adevarat(verzi, "nicio ștampilă de plantă nu are verde pe ea");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Ce era deja bun (regresie)");
+
+  // Ce scrie pe ecranul negru la o anumită clipă de la pornire.
+  function paginaLa(j, cand) {
+    j.ceas.t = cand;
+    j.goleste();
+    j.cadru(cand);
+    return { text: totTextul(j.desene), desene: j.desene.slice() };
+  }
+
+  test("prima pagină arată doar titlul", function () {
+    const j = porneste();
+    adevarat(j.PAGINI_INVITATIE !== null, "lipsesc paginile invitației");
+    const p = paginaLa(j, j.PAGINI_INVITATIE[0].de + 1400);
+    adevarat(/VIAȚA DINTR-O ATINGERE/i.test(p.text.replace(/\s+/g, ' ')),
+      "prima pagină n-are titlul: " + p.text);
+    adevarat(!/scop/i.test(p.text), "pe prima pagină a intrat și vorba de pe a doua");
+    adevarat(!/Atinge ecranul/i.test(p.text), "pe prima pagină a intrat și îndemnul");
+  });
+
+  test("a doua pagină spune ce fel de jucărie e", function () {
+    const j = porneste();
+    const p = paginaLa(j, j.PAGINI_INVITATIE[1].de + 1400);
+    adevarat(/nu are scop/i.test(p.text), "a doua pagină nu spune despre ce e vorba: " + p.text);
+    adevarat(/punct/i.test(p.text), "a doua pagină nu pomenește punctul: " + p.text);
+    adevarat(!/VIAȚA DINTR-O ATINGERE/i.test(p.text.replace(/\s+/g, ' ')),
+      "titlul a rămas peste a doua pagină");
+  });
+
+  test("a treia pagină cheamă la atins și arată o mânuță albă", function () {
+    const j = porneste();
+    adevarat(j.ALB_MANUSA !== null, "lipsește culoarea mănușii");
+    const p = paginaLa(j, j.PAGINI_INVITATIE[2].de + 1400);
+    adevarat(/Atinge ecranul oriunde/i.test(p.text), "a treia pagină n-are îndemnul: " + p.text);
+    adevarat(/tot ce mișcă/i.test(p.text), "îndemnul e pe jumătate: " + p.text);
+    adevarat(areCuloarea(p.desene, j.ALB_MANUSA), "nu se vede nicio mânuță albă");
+  });
+
+  test("mânuța are cinci degete, și toate cinci se mișcă", function () {
+    /* O mână în care se mișcă doar un deget nu cheamă pe nimeni. Numărăm câte
+       forme și-au schimbat locul între două clipe: trebuie să fie cel puțin
+       cinci, câte un deget fiecare. */
+    const j = porneste();
+    const urma = function (t) {
+      j.goleste();
+      j.manutaAlba(400, 400, 100, t);
+      return j.desene.map(function (d) {
+        return (d.puncte || []).map(function (p) { return Math.round(p.x) + ',' + Math.round(p.y); }).join(' ');
+      });
+    };
+    const a = urma(0), b = urma(260);
+    let miscate = 0;
+    for (let k = 0; k < Math.min(a.length, b.length); k++) if (a[k] !== b[k] && a[k]) miscate++;
+    adevarat(miscate >= 5,
+      "doar " + miscate + " bucăți din mână se mișcă — trebuie cinci degete");
+  });
+
+  test("mânuța dă din degete", function () {
+    const j = porneste();
+    const cand = j.PAGINI_INVITATIE[2].de + 1400;
+    const unde = function (t) {
+      j.goleste();
+      j.manutaAlba(400, 300, 100, t);
+      return j.desene.map(function (d) {
+        return (d.puncte || []).map(function (p) { return Math.round(p.x) + ',' + Math.round(p.y); }).join(' ');
+      }).join('|');
+    };
+    adevarat(unde(cand) !== unde(cand + 420),
+      "degetele stau nemișcate — mânuța pare un desen lipit");
+  });
+
+  test("o atingere întoarce pagina, nu pornește jocul", function () {
+    /* Cine atinge din prima curiozitate n-ar vedea niciodată ce scrie mai
+       departe. Deci atingerea întoarce foaia, ca la o carte. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.avanseaza(2200);                       // suntem pe prima pagină
+    adevarat(/VIAȚA DINTR-O ATINGERE/i.test(totTextul(j.cadruCurat()).replace(/\s+/g, ' ')),
+      "nu suntem pe prima pagină");
+    j.atinge(700, 400);
+    egal(j.stare(), "intuneric", "atingerea de pe prima pagină a pornit jocul");
+    j.avanseaza(1400);
+    adevarat(/nu are scop/i.test(totTextul(j.cadruCurat())),
+      "atingerea n-a întors pagina spre a doua");
+    j.atinge(700, 400);
+    j.avanseaza(1400);
+    adevarat(/Atinge ecranul oriunde/i.test(totTextul(j.cadruCurat())),
+      "a doua atingere n-a dus la pagina cu mânuța");
+  });
+
+  test("de pe ultima pagină, atingerea chiar pornește jocul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.avanseaza(2200);
+    j.atinge(700, 400);                      // pagina a doua
+    j.atinge(700, 400);                      // pagina a treia
+    j.avanseaza(1400);
+    j.atinge(700, 400);
+    adevarat(j.stare() !== "intuneric",
+      "de pe ultima pagină atingerea tot întoarce foaia în loc să pornească");
+  });
+
+  test("paginile se întorc în ordine: întâi titlul, la urmă îndemnul", function () {
+    /* Ecranul negru nu poate spune trei lucruri deodată. Ordinea contează: cine
+       intră vede întâi ce e lucrul, pe urmă ce fel de lucru e, abia la sfârșit
+       ce are de făcut. */
+    const j = porneste();
+    const titlul = paginaLa(j, j.PAGINI_INVITATIE[0].de + 1400).text;
+    const indemnul = paginaLa(j, j.PAGINI_INVITATIE[2].de + 1400).text;
+    adevarat(/VIAȚA DINTR-O ATINGERE/i.test(titlul.replace(/\s+/g, ' ')),
+      "prima pagină n-are titlul");
+    adevarat(/Atinge ecranul/i.test(indemnul), "ultima pagină n-are îndemnul");
+    adevarat(j.PAGINI_INVITATIE[0].pana <= j.PAGINI_INVITATIE[2].de,
+      "titlul se vede încă în clipa în care apare îndemnul");
+  });
+
+  test("invitația dispare imediat ce jucăria a pornit", function () {
+    const j = porneste();
+    j.avanseaza(3500);
+    j.atinge(600, 400);
+    const d = j.cadruCurat();
+    adevarat(!/Viața dintr-o atingere/.test(totTextul(d)),
+      "titlul a rămas pe ecran după prima atingere");
+  });
+
+  test("mingea crește vizibil față de balonul din care s-a născut", function () {
+    const j = porneste();
+    j.avanseaza(3500);
+    incepeJocul(j, 600, 400);        // trec paginile, se naște punctul
+    j.avanseaza(5000);               // crește și devine balon
+    for (let i = 0; i < 6; i++) { j.atinge(j.balon.x, j.balon.y); j.avanseaza(200); }
+    adevarat(j.stare() === "transformare" || j.stare() === "minge",
+      "balonul nu a fost prins (a rămas în „" + j.stare() + "”)");
+    const razaBalon = j.balon.razaBaza;
+    j.avanseaza(j.DURATA_TRANSFORMARII + 500);
+    adevarat(j.minge.raza > razaBalon * 1.25,
+      "mingea (" + Math.round(j.minge.raza) + ") nu e mai mare decât balonul (" +
+      Math.round(razaBalon) + ")");
+  });
+
+  test("drumul întreg: din întuneric până în muzeu, numai din atingeri", function () {
+    const j = porneste();
+    j.avanseaza(3500);
+    incepeJocul(j, 600, 400);                 // trec paginile, se naște punctul
+    j.avanseaza(5000);                        // crește și devine balon
+    for (let i = 0; i < 8 && j.stare() === "balon"; i++) {
+      j.atinge(j.balon.x, j.balon.y);
+      j.avanseaza(200);
+    }
+    j.avanseaza(j.DURATA_TRANSFORMARII + 500);
+    egal(j.stare(), "minge", "nu s-a ajuns la minge");
+
+    // mingea mânjește pământul până elefantul se hotărăște să vină la curățenie
+    for (let i = 0; i < 20; i++) {
+      j.adaugaPata(j.W() * (0.2 + i * 0.03), j.H() * 0.85, 14);
+    }
+    let scurs = 0;
+    while (!(j.minge.inBuzunar && j.elefant.stare === "plimbare") && scurs < 60000) {
+      j.avanseaza(160); scurs += 160;
+    }
+    adevarat(j.minge.inBuzunar, "elefantul nu a strâns mingea în " + (scurs / 1000) + "s");
+    egal(j.pete.length, 0, "au rămas pete neaspirate");
+    adevarat(j.gradina.length > 0, "curățenia nu a lăsat nicio plantă în urmă");
+
+    j.atinge(j.elefant.x, j.picioareElefant() - 20);   // atingerea care deschide muzeul
+    egal(j.stare(), "muzeu", "atingerea elefantului nu a deschis muzeul");
+  });
+
+  test("manualul chiar spune ceva despre atelier", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("manual");
+    j.s3.manualPagina = 1; j.s3.articol = 0;
+    j.avanseaza(3000);                      // atât îi ia custodelui să-l deschidă
+    const d = j.cadruCurat();
+    const text = totTextul(d);
+    adevarat(/Art\. \d+/.test(text), "manualul nu arată niciun articol: " + text);
+    adevarat(j.ARTICOLE_MANUAL.length >= 8, "prea puține articole");
+  });
+
+  test("butonul soneriei nu are text scris pe el", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("nuMaApasa");
+    j.s3.bilet = null;
+    const d = j.cadruCurat();
+    adevarat(!/\bNU\b|\bDA\b/.test(totTextul(d)),
+      "butonul are etichetă: " + totTextul(d));
+  });
+
+  test("muzeul deschis arată nouă galerii numerotate", function () {
+    const j = porneste();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("usaDeschisa");
+    j.s3.usa = 1; j.s3.bilet = null;
+    const d = j.cadruCurat();
+    const numere = textele(d).filter(function (t) { return /^[1-9]$/.test(t); });
+    egal(numere.length, 9, "nu sunt nouă galerii: " + JSON.stringify(numere));
+  });
+}
+
+/* ==========================================================================
+   8. PORNIREA
+   ========================================================================== */
+
+(async function () {
+  const rezumat = document.getElementById("rezumat");
+  try {
+    sursa = await citesteSursa();
+  } catch (e) {
+    rezumat.className = "rosu";
+    rezumat.textContent = "nu am putut încărca jucăria: " + e.message;
+    return;
+  }
+  ruleaza();
+  rezumat.className = cazute ? "rosu" : "verde";
+  rezumat.textContent = cazute
+    ? cazute + " căzute, " + trecute + " trecute"
+    : "toate cele " + trecute + " teste trec";
+})();
+</script>
+</body>
+</html>
