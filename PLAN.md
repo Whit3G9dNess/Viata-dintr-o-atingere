@@ -359,5 +359,8 @@ mărimea ramei, cu destinația portalului și cu ordinea foilor din deschidere.
 - **Documentele proiectului** (`.docx`, `.pdf`) stau în folderul de deasupra,
   netrimise pe GitHub: repo-ul e public, iar ele poartă numele întreg al unui
   copil.
-- **Împărțirea în `js/`** a fost făcută din afara sesiunii de lucru. Merge, și
-  testele o urmează corect, dar n-a fost verificată bucată cu bucată.
+- **Împărțirea în `js/`** e verificată numai prin faptul că testele trec: ele
+  citesc lista din `index.html` și rulează exact fișierele pe care le încarcă
+  pagina, în ordinea lor. Deci codul e bun. Ce n-a cântărit nimeni e **unde s-a
+  tăiat**: dacă fiecare fișier ține un lucru întreg, sau dacă vreo funcție a
+  rămas despărțită de cele cu care lucrează.
