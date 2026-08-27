@@ -10,22 +10,30 @@ linie. Cinci scene, legate una de alta prin atingeri.
 fără niciun server. De-aia fișierele din `js/` sunt scripturi obișnuite, nu
 module — modulele nu se încarcă de pe disc.
 
-**Cu server** (îți trebuie pentru teste):
+**Cu server** (îți trebuie pentru teste). Îl pornești **din folderul acesta**, ca
+adresele să fie aceleași oriunde ai muta proiectul:
 
 ```bash
 python -m http.server 8765
 ```
 
-apoi deschizi `http://localhost:8765/Viata-dintr-o-atingere/index.html`.
+apoi deschizi `http://localhost:8765/index.html`.
 
 ## Cum rulezi testele
 
-Cu serverul pornit, deschizi `http://localhost:8765/Viata-dintr-o-atingere/teste.html`.
+Cu serverul pornit, deschizi `http://localhost:8765/teste.html`.
 Testele se rulează singure și scriu sus câte au trecut și câte au căzut.
 
 Nu copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
 aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
 un test poate să întrebe „câte forme s-au desenat aici" sau „ce scrie pe ecran".
+
+## Unde scrie ce
+
+| Fișier | Ce ține |
+| --- | --- |
+| [SPEC.md](SPEC.md) | Ce e jucăria și cum arată fiecare scenă |
+| [PLAN.md](PLAN.md) | Cum s-a construit, fază cu fază, și ce s-a stricat pe drum |
 
 ## Ce e în fiecare fișier
 
