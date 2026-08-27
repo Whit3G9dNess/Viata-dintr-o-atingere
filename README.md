@@ -33,6 +33,7 @@ un test poate să întrebe „câte forme s-au desenat aici" sau „ce scrie pe 
 | Fișier | Ce ține |
 | --- | --- |
 | [SPEC.md](SPEC.md) | Ce e jucăria și cum arată fiecare scenă |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Cum e construită pe dinăuntru, cu diagrame |
 | [PLAN.md](PLAN.md) | Cum s-a construit, fază cu fază, și ce s-a stricat pe drum |
 
 ## Ce e în fiecare fișier
