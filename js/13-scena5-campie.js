@@ -220,6 +220,60 @@ function pictezaTablou(c, w, h) {
              ['#f2d489', '#e0b45e', '#c99a45', '#a97c33', '#8d6f8e', '#6f6b96',
               '#f7e6ae', '#d9a94f'], 131);
 
+  /* Căpițele de fân. Prima încercare le-a făcut tot din tușe, ca restul
+     câmpului, cu aceeași paletă — și s-au topit în grâu fără urmă. O căpiță se
+     vede fiindcă are o formă și un ton al ei: trup plin, cu vârful aprins de
+     soare și poalele în umbră, iar peste el câteva fire răzlețe. Cea din față e
+     mare și jos; cele din spate, mărunte și lângă orizont. */
+  const CAPITE = [
+    { fx: 0.155, fy: 0.735, r: 0.145 },
+    { fx: 0.605, fy: 0.615, r: 0.082 },
+    { fx: 0.40, fy: 0.555, r: 0.055 },
+    { fx: 0.815, fy: 0.735, r: 0.072 }   // în fața hambarului, nu în spatele lui
+  ];
+  for (let k = 0; k < CAPITE.length; k++) {
+    const cap = CAPITE[k];
+    const cx = w * cap.fx, cy = h * cap.fy, r = h * cap.r;
+
+    // umbra lungă spre dreapta: soarele stă jos, în stânga
+    c.fillStyle = 'rgba(104, 82, 118, 0.42)';
+    c.beginPath();
+    c.ellipse(cx + r * 0.55, cy + r * 0.07, r * 1.35, r * 0.22, 0.03, 0, Math.PI * 2);
+    c.fill();
+
+    // trupul căpiței: o cupolă cu vârf, nu un con ascuțit
+    const fan = c.createLinearGradient(cx - r * 0.8, cy - r * 1.6, cx + r * 0.9, cy);
+    /* Mai deschisă decât grâul din jur, altfel se topește în el. Prima încercare
+       avea poalele mai închise decât câmpul, și căpița din față dispărea cu
+       totul: o formă se vede prin ce o desparte de fond, nu prin conturul ei. */
+    fan.addColorStop(0, '#fdf3d2');
+    fan.addColorStop(0.42, '#f0d183');
+    fan.addColorStop(1, '#c39a48');
+    c.fillStyle = fan;
+    c.beginPath();
+    c.moveTo(cx - r, cy);
+    c.bezierCurveTo(cx - r * 0.94, cy - r * 0.8, cx - r * 0.42, cy - r * 1.52, cx, cy - r * 1.62);
+    c.bezierCurveTo(cx + r * 0.42, cy - r * 1.52, cx + r * 0.94, cy - r * 0.8, cx + r, cy);
+    c.quadraticCurveTo(0.5 * (cx - r) + 0.5 * (cx + r), cy + r * 0.16, cx - r, cy);
+    c.closePath();
+    c.fill();
+
+    // firele răzlețe, care rup silueta ca s-o facă de fân, nu de lut
+    campDeTuse(c, cx - r * 0.86, cy - r * 1.45, r * 1.72, r * 1.3, 22, -1.2, 0.9,
+               r * 0.44, r * 0.09,
+               ['#fdf3d2', '#f2d78f', '#dcb45e'], 940 + k * 71);
+    // creasta aprinsă din vârf
+    campDeTuse(c, cx - r * 0.3, cy - r * 1.66, r * 0.6, r * 0.4, 14, -0.95, 0.6,
+               r * 0.34, r * 0.09, ['#fdf1c8', '#f6e2a4'], 980 + k * 37);
+    // țăpușa din creștet
+    c.strokeStyle = '#8a6a2e';
+    c.lineWidth = Math.max(1, r * 0.045);
+    c.beginPath();
+    c.moveTo(cx + r * 0.02, cy - r * 1.6);
+    c.lineTo(cx - r * 0.04, cy - r * 1.84);
+    c.stroke();
+  }
+
   // cărarea care intră în tablou
   campDeTuse(c, w * 0.3, oriz + h * 0.06, w * 0.22, h * 0.5, 220, 1.15, 0.4,
              h * 0.05, h * 0.014, ['#e8cfa0', '#d6b681', '#c3a273', '#efe0bb'], 211);
@@ -616,11 +670,24 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers) {
   c.restore();
 }
 
+/* Trei oameni, la departari diferite de privitor. `statura` e cat e de inalt
+   omul in sine, pe langa cat il micsoreaza departarea: fara ea, cei trei erau
+   croiti din aceeasi matrita si se vedea. Intr-un grup adevarat unul e lung si
+   desirat, altul indesat. Barbatul din fata e cel mai inalt, femeia e cu un cap
+   mai scunda, iar cel din spate e un flacaiandru. */
 const TARANI = [
-  { x: 0.21, y: 0.94, marime: 0.26, tip: 'barbat' },
-  { x: 0.35, y: 0.87, marime: 0.22, tip: 'femeie' },
-  { x: 0.47, y: 0.82, marime: 0.19, tip: 'barbat' }
+  { x: 0.21, y: 0.94, marime: 0.26, statura: 1.12, tip: 'barbat' },
+  { x: 0.35, y: 0.87, marime: 0.22, statura: 0.94, tip: 'femeie' },
+  { x: 0.47, y: 0.82, marime: 0.19, statura: 0.82, tip: 'barbat' }
 ];
+
+/* Cat de mare se vede un taran, socotind si statura lui, si cat s-a departat
+   spre hambar. Se socoteste intr-un singur loc, ca sa nu ramana vreunul
+   nemicsorat: doi care se departeaza si unul care sta pe loc rup departarea, iar
+   ochiul vede imediat ca al treilea nu merge nicaieri. */
+function marimeTaran(t, pleaca) {
+  return t.marime * (t.statura || 1) * intre(1, 0.56, Math.min(1, pleaca || 0));
+}
 
 function taraniiIn(c, w, h, acum) {
   const salut = s5.faza === 'viu' ? 1 : 0;
@@ -632,9 +699,12 @@ function taraniiIn(c, w, h, acum) {
   for (let k = 0; k < TARANI.length; k++) {
     const t = TARANI[k];
     // când pleacă spre hambar, se mută spre ușa lui
-    const x = intre(t.x, 0.62 + k * 0.035, pleaca);
-    const y = intre(t.y, 0.78, pleaca);
-    taranIn(c, w, h, x, y, intre(t.marime, t.marime * 0.72, pleaca), t.tip,
+    /* Se duc spre ușa hambarului, care e mai sus și mai departe decât locul lor
+       de acum. Înainte coborau spre y = 0.78, adică veneau spre privitor în timp
+       ce se micșorau — două lucruri care se bat cap în cap. */
+    const x = intre(t.x, 0.655 + k * 0.03, pleaca);
+    const y = intre(t.y, 0.70 + k * 0.012, pleaca);
+    taranIn(c, w, h, x, y, marimeTaran(t, pleaca), t.tip,
             salut * (1 - pleaca), acum + k * 260, mers);
   }
 }
@@ -677,7 +747,7 @@ function intraInCampie(k, acum) {
   pregatesteTablou();
   opresteMuzicaMuzeu();
   pornesteMuzicaGalerie();
-  pornesteNatura();               // scena e despre aer: vânt și păsări
+  pornesteNatura(true);           // scena e despre aer: vânt și păsări
   if (audio) sunetIntrareGalerie();
 }
 
@@ -713,7 +783,7 @@ function intoarceInMuzeuDinCampie(acum) {
   actiune3(acum);
   opresteMuzicaMuzeu();
   pornesteMuzicaMuzeu();
-  pornesteNatura();
+  pornesteNatura(true);
 }
 
 // Pânzele de lucru: una pe care compunem, una minusculă pe care pixelăm.
@@ -853,14 +923,17 @@ function deseneazaScena5(t, acum) {
       ctx.save();
       ctx.globalAlpha = 0.85;
       ctx.fillStyle = CREM_HARTIE;
-      /* Porunca stă sub ramă, oriunde ar ajunge poalele ei: la primii pași rama
-         coboară până peste podea, iar un rând scris călare pe brâul aurit nu se
-         mai citește. Mai jos de pantofi n-are unde, așa că se oprește deasupra
-         lor. */
-      const subRama = Math.min(H * 0.86, Math.max(H * 0.79, ry + inaltRama + H * 0.045));
-      dreptunghi(W * 0.5 - latV / 2 - 20, subRama - 12, latV + 40, 42, 13);
+      /* Porunca stă sub ramă, dar niciodată peste pantofi: ei sunt lucrul la care
+         te uiți ca să știi unde stai, iar un rând scris peste ei îi taie în două.
+         Dacă locul de sub ramă ajunge prea jos, se mută în stânga lor, pe podea. */
+      const susPantofi = H - Math.min(W, H) * 0.17 * 1.02;
+      const subRama = Math.max(H * 0.79, ry + inaltRama + H * 0.045);
+      const incape = subRama + 21 < susPantofi;
+      const cx = incape ? W * 0.5 : W * 0.5 - Math.min(W, H) * 0.17 * 0.62 - latV / 2 - 24;
+      const cy = incape ? subRama : Math.min(H - 34, susPantofi + Math.min(W, H) * 0.06);
+      dreptunghi(cx - latV / 2 - 20, cy - 12, latV + 40, 42, 13);
       ctx.restore();
-      textIncadrat(vorba, W * 0.5, subRama, W * 0.6, 26, 'bold 22px Georgia', '#3a3327');
+      textIncadrat(vorba, cx, cy, W * 0.6, 26, 'bold 22px Georgia', '#3a3327');
     }
   }
 

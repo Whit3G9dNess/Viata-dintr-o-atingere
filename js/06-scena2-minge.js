@@ -64,7 +64,11 @@ function elibereazaCuloare(culoare, x, y, soarta) {
   const merge = soarta || (randulCulorii++ % 2 === 0 ? 'nor' : 'planta');
   const b = {
     x, y, culoare, soarta: merge,
-    raza: Math.min(W, H) * (0.012 + Math.random() * 0.022),
+    /* Cel care urcă spre cer așteaptă un deget, deci trebuie să fie destul de
+       mare cât să-l nimerești — mai ales pe telefon. Cel care coboară spre
+       pământ nu așteaptă pe nimeni și rămâne mărunt. */
+    raza: Math.min(W, H) * (merge === 'nor' ? 0.034 + Math.random() * 0.026
+                                            : 0.012 + Math.random() * 0.02),
     faza: Math.random() * Math.PI * 2,
     nascut: performance.now(),
     viata: 1
@@ -594,20 +598,31 @@ function actualizeazaMingea(acum) {
     if (acum - minge.timpAscundere > 3000) minge.mod = 'revine';
   }
   else if (minge.mod === 'revine') {
-    // se întoarce timidă, cu sărituri mici
+    /* Se întoarce timidă, cu sărituri mici. Înainte, întoarcerea se termina
+       numai când două lucruri se nimereau în același cadru: să fie aproape de
+       locul ei și să atingă pământul. Dar sărea din nou la fiecare aterizare, iar
+       apropierea mergea cu pași din ce în ce mai mici — așa că putea să țopăie
+       pe loc zeci de secunde. Acum aterizarea o oprește pe loc, iar dacă tot n-a
+       ajuns, un răgaz o aduce înapoi oricum. */
     const tintaX = W * 0.42;
-    minge.x += (tintaX - minge.x) * 0.02;
+    minge.x += (tintaX - minge.x) * 0.06;
+    const ajunsa = Math.abs(minge.x - tintaX) < 15 || acum - minge.timpAscundere > 7000;
+    minge.rotatie += 0.04;
     if (minge.y < minge.sol || minge.vy < 0) {
       minge.vy += gravitatiaMingii();
       minge.y += minge.vy;
+      if (minge.y >= minge.sol) {
+        minge.y = minge.sol;
+        minge.vy = 0;
+        minge.turtire = 0.45;
+        if (audio) sunetBoing();
+      }
+    } else if (!ajunsa) {
+      minge.vy = saltulMingii(0.1);   // hop, hop, hop...
     } else {
-      minge.vy = saltulMingii(0.095);   // hop, hop, hop...
-    }
-    if (minge.y > minge.sol) minge.y = minge.sol;
-    minge.rotatie += 0.04;
-    if (Math.abs(minge.x - tintaX) < 15 && minge.y >= minge.sol - 1) {
       minge.mod = 'liber';
       minge.vy = 0;
+      minge.raza = minge.razaTinta || minge.raza;
       minge.ultimaProvocare = acum;   // nu provoacă imediat, e încă timidă
     }
   }

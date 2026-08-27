@@ -262,7 +262,7 @@ function intrareScena3(acum) {
   s3.urmatoareaPasare = acum + 2500; s3.cantecePasari = 0;
   if (audio) sunetClunc();
   pornesteMuzicaMuzeu();
-  pornesteNatura();
+  pornesteNatura(false);          // păsări, dar fără foșnetul care acoperă totul
 }
 
 /* Fundalul scenei a treia: cer cald și o pajiște verde. Aici a ajuns lumea

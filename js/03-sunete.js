@@ -195,11 +195,82 @@ function pornesteFundalSonor(frecvente, taiere, volum) {
   muzica3 = { voci, vol };
 }
 
-// Muzeul respiră mai sus și mai deschis; galeria, jos și adânc, ca o pivniță.
-function pornesteMuzicaMuzeu() { pornesteFundalSonor([110, 164.81, 220, 329.63], 620, 0.055); }
+// Galeria respiră jos și adânc, ca o pivniță: acolo rămâne acordul lung.
 function pornesteMuzicaGalerie() { pornesteFundalSonor([65.41, 98, 130.81, 196], 400, 0.07); }
 
+/* ---------- MUZICA MUZEULUI ----------
+   Un muzeu cu acord lung suna a lift. Aici se cântă o piesă adevărată, scrisă
+   în felul lui Mozart: o perioadă de opt măsuri în sol major, cu întrebare și
+   răspuns, peste un bas Alberti — jos, sus, mijloc, sus — care e chiar semnul
+   clasicismului vienez. Nu e nicio piesă anume, ci o pastișă scrisă aici: la fel
+   ca tot restul jucăriei, se naște din cod, notă cu notă.
+
+   Melodia se scrie în trepte de gamă, nu în frecvențe: așa se citește ce cântă,
+   și se poate muta în altă tonalitate schimbând o singură cifră. */
+const TON_MUZEU = 67;                    // sol, sub do-ul din mijloc
+const GAMA_MAJORA = [0, 2, 4, 5, 7, 9, 11];
+
+function inaltime(treapta) {
+  const octava = Math.floor(treapta / 7), rest = ((treapta % 7) + 7) % 7;
+  return TON_MUZEU + octava * 12 + GAMA_MAJORA[rest];
+}
+function frecventa(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+/* Perioada: patru măsuri care întreabă, patru care răspund. Fiecare notă e
+   [treaptă, câte pătrimi ține]; treapta 0 e tonica, 7 e octava de deasupra. */
+const MELODIE_MUZEU = [
+  [4, 0.5], [7, 0.5], [6, 0.5], [5, 0.5], [4, 1], [2, 1],
+  [3, 0.5], [4, 0.5], [5, 0.5], [4, 0.5], [2, 2],
+  [4, 0.5], [7, 0.5], [6, 0.5], [5, 0.5], [4, 1], [5, 1],
+  [6, 0.5], [5, 0.5], [4, 0.5], [3, 0.5], [0, 2]
+];
+
+// Armonia fiecărei măsuri, ca trepte de bas: tonica, dominanta, tonica...
+const ARMONIA_MUZEU = [
+  [-7, -3, -5, -3], [-6, -2, -4, -2], [-7, -3, -5, -3], [-6, -2, -4, -2],
+  [-7, -3, -5, -3], [-6, -2, -4, -2], [-3, 0, -2, 0], [-7, -3, -5, -3]
+];
+
+const PATRIME = 0.46;                    // secunde; un allegretto cuminte
+let muzicaClasica = null;
+
+function pornesteMuzicaMuzeu() {
+  if (!audio || muzicaClasica) return;
+  muzicaClasica = { panaLa: audio.currentTime + 0.15, oprita: false };
+}
+
+/* Se cheamă la fiecare cadru. Notele se programează cu un pas înainte, nu la
+   momentul în care trebuie auzite: ceasul cadrelor sare, ceasul sunetului nu. */
+function tineMuzicaMuzeului() {
+  if (!audio || !muzicaClasica || muzicaClasica.oprita) return;
+  if (audio.currentTime < muzicaClasica.panaLa - 0.7) return;
+
+  let t = muzicaClasica.panaLa;
+  const inceput = t;
+
+  // basul Alberti, opt optimi pe măsură
+  for (let m = 0; m < ARMONIA_MUZEU.length; m++) {
+    const acord = ARMONIA_MUZEU[m];
+    for (let k = 0; k < 8; k++) {
+      const treapta = acord[k % 4];
+      nota(frecventa(inaltime(treapta)), inceput + (m * 4 + k * 0.5) * PATRIME,
+           PATRIME * 0.42, 0.022, 'triangle');
+    }
+  }
+
+  // melodia, peste el
+  let cand = inceput;
+  for (const [treapta, batai] of MELODIE_MUZEU) {
+    nota(frecventa(inaltime(treapta)), cand, batai * PATRIME * 0.86, 0.03, 'triangle');
+    cand += batai * PATRIME;
+  }
+
+  muzicaClasica.panaLa = inceput + ARMONIA_MUZEU.length * 4 * PATRIME;
+}
+
 function opresteMuzicaMuzeu() {
+  if (muzicaClasica) muzicaClasica.oprita = true;
+  muzicaClasica = null;
   if (!muzica3 || !audio) return;
   const t = audio.currentTime;
   muzica3.vol.gain.cancelScheduledValues(t);
@@ -210,9 +281,10 @@ function opresteMuzicaMuzeu() {
 }
 
 /* ---------- NATURA DIN JURUL CUSTODELUI ----------
-   Muzeul nu stă într-o sală, ci într-o grădină. Peste acordul lung se aude
-   vântul prin frunze — zgomot alb trecut printr-un filtru care se plimbă
-   singur, ca rafalele — și, din când în când, o pasăre. */
+   Muzeul nu stă într-o sală, ci într-o grădină. Din când în când se aude o
+   pasăre. Foșnetul de vânt — zgomot alb trecut printr-un filtru care se plimbă
+   singur, ca rafalele — se cere anume, fiindcă în grădina custodelui vâjâia
+   peste tot și acoperea tocmai liniștea din care se aud păsările. */
 let naturaScena3 = null;
 
 function pregatesteZgomotul() {
@@ -222,9 +294,14 @@ function pregatesteZgomotul() {
   for (let i = 0; i < date.length; i++) date[i] = Math.random() * 2 - 1;
 }
 
-function pornesteNatura() {
+/* `cuVant` spune dacă se aude și foșnetul. În grădina custodelui nu: acolo
+   vâjâitul se așeza peste tot și acoperea liniștea în care se aud păsările.
+   Rămâne pentru câmpia din scena a cincea, unde e chiar despre aer.
+   Păsările nu depind de el — ele cântă cât timp grădina e în jur. */
+function pornesteNatura(cuVant) {
   if (!audio || naturaScena3) return;
   const t = audio.currentTime;
+  if (!cuVant) { naturaScena3 = { sursa: null, rafala: null, vol: null }; return; }
   pregatesteZgomotul();
 
   const sursa = audio.createBufferSource();
@@ -256,6 +333,7 @@ function pornesteNatura() {
 
 function opresteNatura() {
   if (!naturaScena3 || !audio) return;
+  if (!naturaScena3.sursa) { naturaScena3 = null; return; }
   const t = audio.currentTime;
   naturaScena3.vol.gain.cancelScheduledValues(t);
   naturaScena3.vol.gain.setValueAtTime(0.03, t);

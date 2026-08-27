@@ -2,6 +2,11 @@ function cadru(t) {
   reglezaCalitatea(t);
   const acum = performance.now();
 
+  /* Muzica muzeului se scrie cu un pas înainte, de la un cadru la altul. Notele
+     se programează pe ceasul sunetului, nu pe cel al cadrelor: al doilea sare,
+     primul nu — și o piesă cântată pe ceasul cadrelor șchioapătă. */
+  tineMuzicaMuzeului();
+
   if (acum - timpulAnterior > 100) cursor.viteza *= 0.9;
 
   if (stare === 'intuneric') {

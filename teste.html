@@ -321,6 +321,8 @@ return {
   nori: nori,
   baloaneCuloare: baloaneCuloare,
   BALOANE_IN_AER: typeof BALOANE_IN_AER !== "undefined" ? BALOANE_IN_AER : null,
+  TARANI: typeof TARANI !== "undefined" ? TARANI : null,
+  marimeTaran: typeof marimeTaran !== "undefined" ? marimeTaran : null,
   elibereazaCuloare: elibereazaCuloare,
   picioareElefant: picioareElefant,
   W: function () { return W; },
@@ -388,7 +390,9 @@ return {
   pornesteAudio: pornesteAudio,
   pictezaFundal3: typeof pictezaFundal3 !== "undefined" ? pictezaFundal3 : null,
   fundal3: typeof fundal3 !== "undefined" ? fundal3 : null,
-  muzicaMuzeu: function () { return typeof muzica3 !== "undefined" ? muzica3 : null; },
+  muzicaMuzeu: function () { return typeof muzicaClasica !== "undefined" ? muzicaClasica : null; },
+  muzicaGalerie: function () { return typeof muzica3 !== "undefined" ? muzica3 : null; },
+  MELODIE_MUZEU: typeof MELODIE_MUZEU !== "undefined" ? MELODIE_MUZEU : null,
   cursor: cursor
 };`;
 
@@ -689,6 +693,18 @@ function ruleaza() {
   function apasaBalonul(j, b) {
     j.atinge(b.x / j.scalaPanzei(), b.y / j.scalaPanzei());
   }
+
+  test("balonul de pe cer e destul de mare cât să-l nimerești", function () {
+    /* Un balon cât un bob de mazăre se atinge greu, mai ales cu degetul pe
+       telefon. Cel care așteaptă atingerea e mai mare decât cel care doar trece
+       spre pământ. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    const b = balonInAer(j, "#43a047");
+    const mic = Math.min(j.W(), j.H());
+    adevarat(b.raza > mic * 0.03,
+      "balonul are raza " + Math.round(b.raza) + ", sub o treizecime din ecran");
+  });
 
   test("un balon atins se face nor", function () {
     const j = porneste();
@@ -1168,12 +1184,19 @@ function ruleaza() {
       "ochiul are doar " + langaOchi.length + " straturi — pare un nasture");
   });
 
-  test("în muzeu se aude un fundal muzical", function () {
+  test("în muzeu se cântă o piesă, nu un acord lung", function () {
+    /* Un muzeu cu acord ținut sună a lift. Aici se cântă o perioadă adevărată,
+       cu întrebare și răspuns, scrisă în felul lui Mozart. */
     const j = porneste();
     j.pornesteAudio();
     j.mergiLaStarea("muzeu");
     j.intrareScena3(j.ceas.t);
     adevarat(j.muzicaMuzeu(), "nu s-a pornit nicio muzică în muzeu");
+    adevarat(j.MELODIE_MUZEU && j.MELODIE_MUZEU.length > 12,
+      "melodia muzeului are prea puține note ca să fie o frază");
+    // trepte diferite: o melodie pe o singură notă nu e melodie
+    const trepte = new Set(j.MELODIE_MUZEU.map(function (n) { return n[0]; }));
+    adevarat(trepte.size >= 5, "melodia se plimbă pe numai " + trepte.size + " trepte");
   });
 
   test("muzica muzeului nu pornește de două ori una peste alta", function () {
@@ -1272,8 +1295,20 @@ function ruleaza() {
     j.pornesteAudio();
     j.mergiLaStarea("muzeu");
     j.intrareScena3(j.ceas.t);
-    adevarat(j.naturaScena3(), "nu se aude vântul prin frunze");
+    adevarat(j.naturaScena3(), "grădina nu e pornită, deci n-au cum să cânte păsările");
     adevarat(j.muzicaMuzeu(), "s-a pierdut fundalul muzical");
+  });
+
+  test("în grădina custodelui nu vâjâie nimic", function () {
+    /* Foșnetul de vânt se așeza peste tot și acoperea tocmai liniștea din care
+       se aud păsările. Rămâne pentru câmpia din scena a cincea. */
+    const j = porneste();
+    j.pornesteAudio();
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    const n = j.naturaScena3();
+    adevarat(n, "grădina nu e pornită deloc");
+    adevarat(!n.sursa, "se aude tot foșnetul de vânt peste grădină");
   });
 
   test("păsările cântă din când în când, nu o singură dată", function () {
@@ -1515,12 +1550,12 @@ function ruleaza() {
     j.mergiLaStarea("galerie");
     j.intraInGalerie(0, j.ceas.t);
     j.avanseaza(2000);
-    adevarat(j.muzicaMuzeu(), "galeria n-are fundal sonor");
+    adevarat(j.muzicaGalerie(), "galeria n-are fundal sonor");
     iaLupa(j);
     const m = j.geomMiniatura();
     j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
     j.avanseaza(3000);
-    egal(j.muzicaMuzeu(), null, "în clipa recunoașterii sunetul merge mai departe");
+    egal(j.muzicaGalerie(), null, "în clipa recunoașterii sunetul merge mai departe");
   });
 
   test("eticheta de pe ramă se găsește tot cu lupa", function () {
@@ -1841,6 +1876,27 @@ function ruleaza() {
     egal(urma(0), urma(260), "țăranul oprit tot dă din picioare");
   });
 
+  test("porunca nu stă peste pantofi", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 6; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    const d = j.cadruCurat();
+    const pantofi = formeCu(d, j.PANTOFI_SALII);
+    adevarat(pantofi.length === 2, "nu sunt doi pantofi");
+    const scris = d.filter(function (x) { return x.op === "text"; });
+    adevarat(scris.length > 0, "nu scrie nimic pe ecran");
+    /* Suprapunere adevărată, nu doar „mai jos de": porunca are voie să coboare
+       pe lângă pantofi, atâta timp cât nu-i acoperă. */
+    for (const r of scris) {
+      if (!r.limite) continue;
+      for (const p of pantofi) {
+        const seAting = r.limite.x0 < p.limite.x1 && r.limite.x1 > p.limite.x0 &&
+                        r.limite.y0 < p.limite.y1 && r.limite.y1 > p.limite.y0;
+        adevarat(!seAting, "un rând scris se așază peste un pantof");
+      }
+    }
+  });
+
   test("pe podea stau doi pantofi, în locul de unde se privește", function () {
     /* Urmele de tălpi goale nu se vedeau pe podeaua deschisă. Un pantof lăcuit
        se vede: e închis la culoare și are luciu. */
@@ -1905,6 +1961,34 @@ function ruleaza() {
     });
     adevarat(dungi.length >= 5,
       "catrința are doar " + dungi.length + " dungi — arată a fustă simplă");
+  });
+
+  test("țăranii nu sunt de aceeași înălțime", function () {
+    /* Trei oameni croiți la fel arată a decupaje din aceeași matriță. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.TARANI !== null, "lipsește lista țăranilor");
+    const inaltimi = j.TARANI.map(function (t) { return t.marime * (t.statura || 1); });
+    const mic = Math.min.apply(null, inaltimi), mare = Math.max.apply(null, inaltimi);
+    adevarat(mare / mic > 1.25,
+      "cel mai înalt e cu numai " + Math.round((mare / mic - 1) * 100) + "% peste cel mai scund");
+  });
+
+  test("când pleacă spre hambar, se micșorează toți", function () {
+    /* Doi care se depărtează și unul care rămâne la fel rup depărtarea: ochiul
+       vede imediat că al treilea nu merge nicăieri. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(6000);                      // trece „viu", începe plecarea
+    j.avanseaza(2000);
+    adevarat(j.s5.plecare > 0.3, "n-au pornit încă spre hambar: " + j.s5.plecare);
+    // mărimea fiecăruia la plecare, față de cea de la început
+    for (let k = 0; k < j.TARANI.length; k++) {
+      const t = j.TARANI[k];
+      adevarat(j.marimeTaran(t, j.s5.plecare) < j.marimeTaran(t, 0) * 0.9,
+        "țăranul " + k + " nu s-a micșorat când a plecat spre hambar");
+    }
   });
 
   test("după zece pași, țăranii prind viață și te strigă", function () {
@@ -2063,6 +2147,18 @@ function ruleaza() {
     j.minge.sarituriRamase = 0; j.minge.vy = 0; j.minge.y = j.minge.sol;
     j.avanseaza(400);
     adevarat(j.minge.turtire < 0.05, "turtirea nu se destinde: " + j.minge.turtire);
+  });
+
+  test("mingea speriată se întoarce, nu țopăie la nesfârșit", function () {
+    /* Se ascundea după elefant, pe urmă se întorcea sărind — dar întoarcerea se
+       termina numai când două condiții se nimereau în același cadru: să fie
+       aproape și să atingă pământul. Putea să sară minute întregi. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.minge.mod = "fuge";
+    j.avanseaza(12000);
+    egal(j.minge.mod, "liber",
+      "mingea a ramas in starea " + j.minge.mod + " dupa douasprezece secunde");
   });
 
   /* ---------------------------------------------------------------- */

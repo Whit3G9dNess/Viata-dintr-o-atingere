@@ -73,7 +73,7 @@ function intoarceInMuzeu(acum) {
   actiune3(acum);
   opresteMuzicaMuzeu();
   pornesteMuzicaMuzeu();
-  pornesteNatura();
+  pornesteNatura(false);
   s3.urmatoareaPasare = acum + 2000;
 }
 

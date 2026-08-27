@@ -34,6 +34,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 14 | Baloanele se fac nori numai când le atingi | ✅ gata |
 | 15 | Sala a cincea: ramă, pantofi, port românesc | ✅ gata |
 | 16 | Țăranii calcă, sala respiră, rama vine mai târziu | ✅ gata |
+| 17 | Muzică de Mozart, liniște în grădină, nouă îndreptări | ✅ gata |
 
 ---
 
@@ -345,6 +346,42 @@ depărtarea.
 pe la șase apare rama și sala de sub ea; iar cei trei calcă spre hambar în loc să
 alunece.
 
+## Faza 17 — Muzică de Mozart, liniște în grădină, nouă îndreptări
+
+**Muzeul are acum o piesă**, nu un acord ținut — acordul suna a lift. E o
+perioadă de opt măsuri în sol major, cu întrebare și răspuns, peste un bas
+Alberti: jos, sus, mijloc, sus, semnul clasicismului vienez. Nu e nicio piesă
+anume, ci o pastișă scrisă aici, notă cu notă, ca tot restul jucăriei. Melodia se
+scrie în trepte de gamă, nu în frecvențe, ca să se poată citi ce cântă. Notele se
+programează cu un pas înainte, pe ceasul sunetului, nu pe cel al cadrelor: al
+doilea sare, primul nu, iar o piesă cântată pe ceasul cadrelor șchioapătă.
+
+**În grădina custodelui nu mai vâjâie nimic.** Foșnetul de vânt se așeza peste
+tot și acoperea tocmai liniștea din care se aud păsările. A rămas pentru câmpia
+din scena a cincea, unde scena chiar e despre aer.
+
+**Mingea speriată se întoarce.** Se ascundea după elefant și pe urmă se întorcea
+sărind — dar întoarcerea se termina numai când două lucruri se nimereau în
+același cadru: să fie aproape de locul ei și să atingă pământul. Cum sărea din
+nou la fiecare aterizare, iar apropierea mergea cu pași tot mai mici, putea să
+țopăie pe loc zeci de secunde. Asta era „elefantul ia mingea și o dă înapoi
+târziu". Acum aterizarea o oprește, iar un răgaz o aduce înapoi oricum.
+
+**Restul:** baloanele care așteaptă degetul s-au mărit — unul cât un bob de
+mazăre se atinge greu, mai ales pe telefon. Țăranii au fiecare statura lui, pe
+lângă cât îi micșorează depărtarea, fiindcă trei oameni croiți la fel arată a
+decupaje din aceeași matriță. La plecare se micșorează toți, dintr-o singură
+socoteală: doi care se depărtează și unul care stă pe loc rup depărtarea. În
+câmp au apărut patru căpițe de fân — prima încercare le-a făcut tot din tușe, cu
+paleta grâului, și s-au topit în el fără urmă; o formă se vede prin ce o desparte
+de fond, nu prin conturul ei. Iar porunca celor zece pași se mută în stânga
+pantofilor când n-are loc sub ramă.
+
+**Verificare:** în muzeu se aude o frază cu mai multe trepte, nu un bâzâit; în
+grădină nu vâjâie nimic; mingea speriată e înapoi în cel mult câteva secunde;
+căpițele se văd; toți trei se micșorează la plecare; niciun rând scris nu se
+așază peste un pantof.
+
 ---
 
 ## Reguli care nu se calcă
@@ -365,7 +402,7 @@ alunece.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 132 acum**, în douăsprezece secțiuni.
+au nevoie de nimic instalat. **Sunt 138 acum**, în douăsprezece secțiuni.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
