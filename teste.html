@@ -366,6 +366,8 @@ return {
   PERETE_SALII: typeof PERETE_SALII !== "undefined" ? PERETE_SALII : null,
   PANTOFI_SALII: typeof PANTOFI_SALII !== "undefined" ? PANTOFI_SALII : null,
   PROFIL_RAMEI: typeof PROFIL_RAMEI !== "undefined" ? PROFIL_RAMEI : null,
+  CALD_SALII: typeof CALD_SALII !== "undefined" ? CALD_SALII : null,
+  RECE_SALII: typeof RECE_SALII !== "undefined" ? RECE_SALII : null,
   PORT_ROMANESC: typeof PORT_ROMANESC !== "undefined" ? PORT_ROMANESC : null,
   taranIn: typeof taranIn !== "undefined" ? taranIn : null,
   PRAG_LUPA_IN_MANA: typeof PRAG_LUPA_IN_MANA !== "undefined" ? PRAG_LUPA_IN_MANA : null,
@@ -1739,10 +1741,10 @@ function ruleaza() {
     egal(j.s5.pasi, 0, "începem deja depărtați");
     adevarat(j.s5.latimeTablou >= j.W(),
       "lucrarea are " + Math.round(j.s5.latimeTablou) + " din " + j.W() + " — nu ține tot ecranul");
-    // și se strânge repede: la trei pași pantofii trebuie să fi ieșit de sub ea
-    for (let k = 0; k < 3; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    // și tot se strânge, până la urmă
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     adevarat(j.s5.latimeTablou < j.W(),
-      "după trei pași lucrarea tot acoperă ecranul");
+      "nici după toți pașii lucrarea nu s-a strâns sub lățimea ecranului");
   });
 
   test("pantofii se văd și peste pixelii de la intrare", function () {
@@ -1772,6 +1774,71 @@ function ruleaza() {
     adevarat(ultimaImagine >= 0, "nu s-a desenat nici pânza, nici rama");
     adevarat(primulPantof > ultimaImagine,
       "pantofii se desenează înaintea lucrării, deci rămân sub ea");
+  });
+
+  test("la intrare nu se vede nici ramă, nici sală — numai lucrarea", function () {
+    /* Intri cu nasul în pânză. O dungă de perete pe margine sau un colț de ramă
+       ar strica de la prima clipă tocmai lucrul pe care îl spune scena: că
+       stai prea aproape ca să vezi. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    egal(j.s5.pasi, 0, "începem deja depărtați");
+    adevarat(!j.s5.ramaSeVede, "rama se vede din prima clipă");
+    // lucrarea, nu rama, trebuie să acopere tot ecranul
+    adevarat(j.s5.latimeTablou * (1 - 2 * j.PROFIL_RAMEI) >= j.W(),
+      "pânza dinăuntrul ramei nu acoperă lățimea ecranului");
+  });
+
+  test("rama și sala apar abia după câțiva pași", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    j.click5(j.ceas.t); j.avanseaza(700);
+    adevarat(!j.s5.ramaSeVede, "rama a apărut de la primul pas");
+    for (let k = 0; k < 6; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    adevarat(j.s5.ramaSeVede, "nici după șapte pași nu se vede rama");
+  });
+
+  test("sala are și cald, și rece", function () {
+    /* Contrastul cald-rece ține sala în viață fără s-o coloreze: o notă discretă
+       de portocaliu pe unde bate lumina, una de albastru în umbră. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 9; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    const d = j.cadruCurat();
+    adevarat(j.CALD_SALII !== null && j.RECE_SALII !== null,
+      "lipsesc culorile de cald și rece ale sălii");
+    adevarat(areCuloarea(d, j.CALD_SALII), "sala n-are nicio notă caldă");
+    adevarat(areCuloarea(d, j.RECE_SALII), "sala n-are nicio notă rece");
+  });
+
+  test("țăranii calcă spre hambar, nu plutesc", function () {
+    /* Trei siluete care alunecă orizontal, cu picioarele nemișcate, se citesc ca
+       niște decupaje trase pe sfoară. Piciorul trebuie să se ducă și să vină. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const urma = function (t) {
+      j.goleste();
+      j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "barbat", 0, t, 1);
+      return j.desene.map(function (d) {
+        return (d.puncte || []).map(function (p) {
+          return Math.round(p.x) + "," + Math.round(p.y);
+        }).join(" ");
+      }).join("|");
+    };
+    adevarat(urma(0) !== urma(260), "țăranul care merge stă cu picioarele înțepenite");
+  });
+
+  test("țăranul care stă pe loc nu calcă degeaba", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const urma = function (t) {
+      j.goleste();
+      j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "barbat", 0, t, 0);
+      return j.desene.map(function (d) {
+        return (d.puncte || []).map(function (p) {
+          return Math.round(p.x) + "," + Math.round(p.y);
+        }).join(" ");
+      }).join("|");
+    };
+    egal(urma(0), urma(260), "țăranul oprit tot dă din picioare");
   });
 
   test("pe podea stau doi pantofi, în locul de unde se privește", function () {

@@ -23,6 +23,14 @@ const PERETE_SALII = '#f4f3ef';
 const PODEA_SALII = '#d8d5cc';
 const PANTOFI_SALII = '#241d26';
 
+/* Contrastul cald-rece, ținut discret: o notă de portocaliu pe unde bate lumina,
+   una de albastru în umbra din partea cealaltă. Sala rămâne albă — nu se
+   colorează, doar prinde viață. Un perete de un singur gri e o coală de hârtie,
+   oricâte gradiente ar avea, fiindcă lumina adevărată n-are niciodată o singură
+   temperatură. */
+const CALD_SALII = '#f6d9b8';
+const RECE_SALII = '#c3cfe0';
+
 /* Cât din lățimea ramei ține profilul aurit, și cât iese înălțimea ei din
    lățime. A doua se socotește din prima și din forma pânzei, o dată, aici:
    dacă cele două ar fi calculate în locuri diferite, rama și pânza ar începe
@@ -137,6 +145,7 @@ function pantofElegant(c, lung) {
 const s5 = {
   faza: 'pixeli', t0: 0, ultimulCadru: 0, buzunar: 0,
   pasi: 0, claritate: 0, latimeTablou: 0,
+  ramaSeVede: false,               // aurul a intrat în ecran, deci a apărut și sala
   usi: 0, plecare: 0
 };
 
@@ -296,6 +305,18 @@ function catrinta(c, s, jos, sus, latSus, latJos) {
     c.lineTo(xj + gros * 1.25, jos); c.lineTo(xj - gros * 1.25, jos);
     c.closePath(); c.fill();
   }
+  /* Volumul catrinței: lumina prinde șoldul din stânga, dreapta rămâne în umbră.
+     Fără el, dungile stau pe o placă plată și se vede că e un decupaj. */
+  const rotunjime = c.createLinearGradient(-latJos, 0, latJos, 0);
+  rotunjime.addColorStop(0, 'rgba(255, 246, 226, 0.28)');
+  rotunjime.addColorStop(0.42, 'rgba(255, 246, 226, 0)');
+  rotunjime.addColorStop(1, 'rgba(48, 26, 20, 0.32)');
+  c.fillStyle = rotunjime;
+  c.beginPath();
+  c.moveTo(-latSus, sus); c.lineTo(latSus, sus);
+  c.lineTo(latJos, jos); c.lineTo(-latJos, jos);
+  c.closePath(); c.fill();
+
   // poalele iei, ieșind albe de sub catrință
   c.fillStyle = PORT_ROMANESC.panza;
   c.beginPath();
@@ -304,67 +325,160 @@ function catrinta(c, s, jos, sus, latSus, latJos) {
   c.closePath(); c.fill();
 }
 
-/* Iţarii bărbatului: pantaloni albi, strâmți, din aceeași pânză ca iea. */
-function itari(c, s) {
-  c.fillStyle = PORT_ROMANESC.panza;
-  for (const lat of [-1, 1]) {
-    c.beginPath();
-    c.moveTo(lat * s * 0.02, -s * 0.44);
-    c.lineTo(lat * s * 0.21, -s * 0.44);
-    c.lineTo(lat * s * 0.17, -s * 0.02);
-    c.lineTo(lat * s * 0.05, -s * 0.02);
-    c.closePath(); c.fill();
-  }
+/* Un picior: coapsă și gambă dintr-o singură formă, care se leagănă din șold.
+   Opinca stă la capătul lui și se leagănă odată cu el — desenată separat, la un
+   loc fix, ar rămâne pe pământ în timp ce piciorul pleacă. */
+function piciorTaran(c, s, lat, unghi, ridicat, culoare) {
+  c.save();
+  c.translate(lat * s * 0.105, -s * 0.44);
+  c.rotate(unghi);
+  const lung = s * 0.44 - ridicat;
+  c.fillStyle = culoare;
+  c.beginPath();
+  c.moveTo(-s * 0.075, 0);
+  c.lineTo(s * 0.075, 0);
+  c.quadraticCurveTo(s * 0.062, lung * 0.55, s * 0.052, lung);
+  c.lineTo(-s * 0.052, lung);
+  c.quadraticCurveTo(-s * 0.068, lung * 0.55, -s * 0.075, 0);
+  c.closePath();
+  c.fill();
+  // cuta de pe cracul iţarilor
   c.strokeStyle = PORT_ROMANESC.umbra;
-  c.lineWidth = Math.max(0.6, s * 0.012);
-  for (const lat of [-1, 1]) {
-    c.beginPath();
-    c.moveTo(lat * s * 0.12, -s * 0.42); c.lineTo(lat * s * 0.10, -s * 0.04);
-    c.stroke();
-  }
+  c.lineWidth = Math.max(0.6, s * 0.011);
+  c.beginPath();
+  c.moveTo(0, lung * 0.1); c.lineTo(-s * 0.01, lung * 0.92);
+  c.stroke();
+  // opinca, la capătul piciorului
+  c.fillStyle = PORT_ROMANESC.opinca;
+  c.beginPath();
+  c.ellipse(lat * s * 0.02, lung + s * 0.012, s * 0.085, s * 0.032, lat * 0.12, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+}
+
+/* O mânecă: largă la umăr, strânsă la încheietură, cu capătul de sus rotunjit și
+   îngropat în trup. Tăiată drept și lipită lângă cămașă, umărul se citea ca o
+   bucată decupată din altă hârtie. */
+function manecaTaran(c, s, lung, lat) {
+  c.fillStyle = PORT_ROMANESC.panza;
+  c.beginPath();
+  c.moveTo(-s * 0.065, -s * 0.06);
+  c.quadraticCurveTo(0, -s * 0.11, s * 0.065, -s * 0.06);
+  c.quadraticCurveTo(s * 0.055, lung * 0.5, s * 0.036, lung);
+  c.quadraticCurveTo(0, lung + s * 0.014, -s * 0.036, lung);
+  c.quadraticCurveTo(-s * 0.055, lung * 0.5, -s * 0.065, -s * 0.06);
+  c.closePath();
+  c.fill();
+  // umbra care rotunjește mâneca: fără ea e o fâșie plată
+  const umbra = c.createLinearGradient(-s * 0.065, 0, s * 0.065, 0);
+  umbra.addColorStop(0, 'rgba(255, 255, 255, 0)');
+  umbra.addColorStop(0.6, 'rgba(120, 106, 84, 0)');
+  umbra.addColorStop(1, 'rgba(120, 106, 84, 0.28)');
+  c.fillStyle = umbra;
+  c.fill();
+  // râul roșu de pe mânecă
+  c.strokeStyle = PORT_ROMANESC.rosu;
+  c.lineWidth = Math.max(0.6, s * 0.014);
+  c.beginPath();
+  c.moveTo(-s * 0.022, lung * 0.22); c.lineTo(-s * 0.016, lung * 0.86);
+  c.stroke();
+  c.fillStyle = PORT_ROMANESC.piele;
+  c.beginPath();
+  c.ellipse(0, lung + s * 0.055, s * 0.042, s * 0.05, 0, 0, Math.PI * 2);
+  c.fill();
 }
 
 /* Un țăran în port: ie sau cămașă de pânză cu altiță cusută pe umăr, brâu,
-   catrință vărgată ori iţari, opinci. Femeia are năframă albă, bărbatul
-   pălărie neagră cu boruri mici și pieptar negru cu găitan auriu. */
-function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
+   catrință vărgată ori iţari, opinci. Femeia are năframă albă, bărbatul pălărie
+   neagră cu boruri mici și pieptar negru cu găitan auriu.
+
+   `mers` e cât de tare calcă, de la 0 la 1. Fără el, cei trei alunecau spre
+   hambar cu picioarele înțepenite, ca niște decupaje trase pe sfoară.
+
+   Ordinea de desen contează mai mult decât orice altceva aici: întâi picioarele,
+   pe urmă mânecile, abia apoi trupul peste ele. Desenate invers, fiecare mădular
+   își arăta muchia lipită de cămașă. */
+function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers) {
   const s = h * marime;
   const femeie = tip === 'femeie';
+  const calca = Math.max(0, Math.min(1, mers || 0));
+
+  /* Pasul și săltatul din el. Trupul urcă de două ori pe pas, în clipa în care
+     un picior trece pe lângă celălalt — de-aia cosinusul e la dublu. */
+  const faza = acum * 0.007;
+  const pas = Math.sin(faza) * calca;
+  const salt = calca * Math.abs(Math.cos(faza)) * s * 0.022;
+  const legan = Math.sin(faza * 2) * calca * 0.03;
+
   c.save();
-  c.translate(w * tx, h * ty);
-  /* În repaus brațul atârnă pe lângă trup, abia depărtat. Cu un unghi mare se
-     așeza de-a curmezișul pieptului, ca o curea de raniță. */
-  const bratul = salut > 0 ? -1.1 - Math.sin(acum * 0.008) * 0.45 * salut : -0.1;
+  c.translate(w * tx, h * ty - salt);
+  c.rotate(legan);
 
-  // opincile: tălpi mici de piele, cu gurgui
-  c.fillStyle = PORT_ROMANESC.opinca;
+  // umbra de sub el, care se strânge când sare
+  c.fillStyle = 'rgba(90, 72, 40, 0.22)';
+  c.beginPath();
+  c.ellipse(0, s * 0.02, s * 0.2 - salt * 0.6, s * 0.035, 0, 0, Math.PI * 2);
+  c.fill();
+
+  // ---- picioarele, primele, ca trupul să le acopere capătul de sus ----
+  const culoarePicior = femeie ? PORT_ROMANESC.piele : PORT_ROMANESC.panza;
+  /* Pasul, văzut din față. Nu se poate arăta din legănat lateral: rotite în
+     lături, picioarele se încrucișează prin mijloc și omul pare că dansează.
+     Din față, ce se vede dintr-un pas e că un picior se ridică și se scurtează
+     în timp ce celălalt rămâne pe pământ — și că trupul saltă odată cu el.
+     De-aia cele două picioare au faze opuse la ridicat, și abia o urmă de
+     legănat în lături, cât să nu pară un marș pe loc. */
   for (const lat of [-1, 1]) {
-    c.beginPath();
-    c.ellipse(lat * s * 0.11, s * 0.01, s * 0.085, s * 0.035, lat * 0.1, 0, Math.PI * 2);
-    c.fill();
+    const undaPasului = Math.sin(faza + (lat < 0 ? 0 : Math.PI));
+    const ridicat = Math.max(0, undaPasului) * calca * s * 0.13;
+    piciorTaran(c, s, lat, -lat * calca * 0.07 - undaPasului * calca * 0.1,
+                ridicat, culoarePicior);
   }
 
-  if (femeie) {
-    // catrința, de la brâu până aproape de pământ
-    catrinta(c, s, -s * 0.02, -s * 0.46, s * 0.21, s * 0.26);
-  } else {
-    itari(c, s);
-  }
+  // ---- mânecile, tot înaintea trupului ----
+  /* Brațele nu trec niciodată peste piept. Un braț rotit spre înăuntru se așază
+     de-a curmezișul trupului ca o curea de raniță — de-aia unghiul lui rămâne
+     de aceeași parte cu umărul din care crește, oricât s-ar legăna. Cele două
+     merg în contratimp, ca la orice om care umblă. */
+  const bratul = salut > 0 ? -1.1 - Math.sin(acum * 0.008) * 0.45 * salut
+                           : -0.2 - pas * 0.22;
+  c.save();
+  c.translate(s * 0.185, -s * 0.83);
+  c.rotate(bratul);
+  manecaTaran(c, s, s * 0.42);
+  c.restore();
 
-  // trupul: cămașa de pânză, largă, până sub brâu
+  c.save();
+  c.translate(-s * 0.185, -s * 0.83);
+  c.rotate(0.2 - pas * 0.22);
+  manecaTaran(c, s, s * 0.42);
+  c.restore();
+
+  // ---- fusta sau iţarii peste capătul picioarelor ----
+  if (femeie) catrinta(c, s, -s * 0.06, -s * 0.46, s * 0.21, s * 0.26);
+
+  // ---- trupul: cămașa de pânză, largă, peste umerii mânecilor ----
   c.fillStyle = PORT_ROMANESC.panza;
   c.beginPath();
   c.moveTo(-s * 0.20, -s * 0.40);
-  c.quadraticCurveTo(-s * 0.27, -s * 0.66, -s * 0.22, -s * 0.86);
-  c.quadraticCurveTo(0, -s * 0.94, s * 0.22, -s * 0.86);
+  c.quadraticCurveTo(-s * 0.27, -s * 0.66, -s * 0.215, -s * 0.87);
+  c.quadraticCurveTo(0, -s * 0.95, s * 0.215, -s * 0.87);
   c.quadraticCurveTo(s * 0.27, -s * 0.66, s * 0.20, -s * 0.40);
-  c.closePath(); c.fill();
+  c.closePath();
+  c.fill();
+  /* Modelarea cămășii: lumina vine de sus-stânga, ca soarele din tablou. Fără
+     ea, trupul e o pată albă decupată, oricât de bine i-ar fi conturul. */
+  const trup = c.createLinearGradient(-s * 0.24, -s * 0.95, s * 0.26, -s * 0.4);
+  trup.addColorStop(0, 'rgba(255, 252, 242, 0.55)');
+  trup.addColorStop(0.45, 'rgba(255, 252, 242, 0)');
+  trup.addColorStop(1, 'rgba(122, 108, 86, 0.3)');
+  c.fillStyle = trup;
+  c.fill();
 
-  /* Altița: banda deasă cusută de-a curmezișul umărului. E o dungă, nu o pată —
-     două pete rotunde pe umeri se citesc ca doi ochi. */
+  // altița: banda deasă cusută de-a curmezișul umărului
   for (const lat of [-1, 1]) {
     c.save();
-    c.translate(lat * s * 0.155, -s * 0.775);
+    c.translate(lat * s * 0.15, -s * 0.79);
     c.rotate(lat * 0.28);
     c.fillStyle = PORT_ROMANESC.rosu;
     c.fillRect(-s * 0.055, -s * 0.028, s * 0.11, s * 0.056);
@@ -374,45 +488,48 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
     }
     c.restore();
   }
-  // râurile: șiragurile subțiri care coboară de sub altiță pe mânecă
-  c.strokeStyle = PORT_ROMANESC.rosu;
-  c.lineWidth = Math.max(0.6, s * 0.013);
-  for (const lat of [-1, 1]) {
-    for (let k = 0; k < 2; k++) {
-      c.beginPath();
-      c.moveTo(lat * s * (0.145 + k * 0.038), -s * 0.72);
-      c.lineTo(lat * s * (0.175 + k * 0.038), -s * 0.56);
-      c.stroke();
-    }
-  }
 
   if (!femeie) {
     // pieptarul negru, cu găitan auriu pe margine
     c.fillStyle = PORT_ROMANESC.negru;
-    c.beginPath();
-    c.moveTo(-s * 0.19, -s * 0.84);
-    c.quadraticCurveTo(-s * 0.23, -s * 0.62, -s * 0.19, -s * 0.44);
-    c.lineTo(-s * 0.07, -s * 0.44);
-    c.lineTo(-s * 0.07, -s * 0.80);
-    c.closePath(); c.fill();
-    c.beginPath();
-    c.moveTo(s * 0.19, -s * 0.84);
-    c.quadraticCurveTo(s * 0.23, -s * 0.62, s * 0.19, -s * 0.44);
-    c.lineTo(s * 0.07, -s * 0.44);
-    c.lineTo(s * 0.07, -s * 0.80);
-    c.closePath(); c.fill();
+    for (const lat of [-1, 1]) {
+      c.beginPath();
+      c.moveTo(lat * s * 0.19, -s * 0.85);
+      c.quadraticCurveTo(lat * s * 0.235, -s * 0.62, lat * s * 0.19, -s * 0.44);
+      c.lineTo(lat * s * 0.07, -s * 0.44);
+      c.lineTo(lat * s * 0.07, -s * 0.81);
+      c.closePath();
+      c.fill();
+    }
     c.strokeStyle = PORT_ROMANESC.aur;
     c.lineWidth = Math.max(0.6, s * 0.014);
     for (const lat of [-1, 1]) {
       c.beginPath();
-      c.moveTo(lat * s * 0.075, -s * 0.80); c.lineTo(lat * s * 0.075, -s * 0.44);
+      c.moveTo(lat * s * 0.075, -s * 0.81); c.lineTo(lat * s * 0.075, -s * 0.44);
       c.stroke();
     }
   }
 
-  // brâul: roșu la femeie, chimir lat de piele la bărbat
+  /* Brâul: roșu la femeie, chimir lat de piele la bărbat. Se încovoaie pe trup,
+     nu stă ca o cărămidă pusă peste: o curbă abia simțită la marginea de sus și
+     de jos e tot ce trebuie ca să se vadă că trupul e rotund. */
+  const inaltBrau = femeie ? s * 0.07 : s * 0.1;
+  const brau = function () {
+    c.beginPath();
+    c.moveTo(-s * 0.21, -s * 0.50);
+    c.quadraticCurveTo(0, -s * 0.50 + s * 0.018, s * 0.21, -s * 0.50);
+    c.lineTo(s * 0.21, -s * 0.50 + inaltBrau);
+    c.quadraticCurveTo(0, -s * 0.50 + inaltBrau + s * 0.018, -s * 0.21, -s * 0.50 + inaltBrau);
+    c.closePath();
+  };
   c.fillStyle = femeie ? PORT_ROMANESC.rosu : PORT_ROMANESC.opinca;
-  c.fillRect(-s * 0.21, -s * 0.50, s * 0.42, femeie ? s * 0.07 : s * 0.1);
+  brau(); c.fill();
+  const luminaBraului = c.createLinearGradient(-s * 0.21, 0, s * 0.21, 0);
+  luminaBraului.addColorStop(0, 'rgba(255, 240, 214, 0.3)');
+  luminaBraului.addColorStop(0.45, 'rgba(255, 240, 214, 0)');
+  luminaBraului.addColorStop(1, 'rgba(30, 16, 8, 0.34)');
+  c.fillStyle = luminaBraului;
+  brau(); c.fill();
   if (femeie) {
     c.fillStyle = PORT_ROMANESC.negru;
     for (let k = -2; k <= 2; k++) {
@@ -423,52 +540,25 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
     c.fillRect(-s * 0.21, -s * 0.44, s * 0.42, s * 0.012);
   }
 
-  // brațul care salută
-  c.save();
-  c.translate(s * 0.205, -s * 0.845);
-  c.rotate(bratul);
-  // mâneca iei: largă la umăr, strânsă la încheietură
-  c.fillStyle = PORT_ROMANESC.panza;
-  c.beginPath();
-  c.moveTo(-s * 0.062, -s * 0.02); c.lineTo(s * 0.062, -s * 0.02);
-  c.lineTo(s * 0.036, s * 0.44); c.lineTo(-s * 0.036, s * 0.44);
-  c.closePath(); c.fill();
-  c.strokeStyle = PORT_ROMANESC.rosu; c.lineWidth = Math.max(0.6, s * 0.014);
-  c.beginPath(); c.moveTo(-s * 0.022, s * 0.10); c.lineTo(-s * 0.016, s * 0.36); c.stroke();
+  // ---- gâtul și capul ----
   c.fillStyle = PORT_ROMANESC.piele;
-  c.beginPath(); c.ellipse(0, s * 0.48, s * 0.042, s * 0.05, 0, 0, Math.PI * 2); c.fill();
-  c.restore();
-
-  // celălalt braț, pe lângă corp
-  c.fillStyle = PORT_ROMANESC.panza;
-  c.beginPath();
-  c.moveTo(-s * 0.145, -s * 0.855); c.lineTo(-s * 0.262, -s * 0.828);
-  c.lineTo(-s * 0.275, -s * 0.42); c.lineTo(-s * 0.202, -s * 0.42);
-  c.closePath(); c.fill();
-  c.strokeStyle = PORT_ROMANESC.rosu; c.lineWidth = Math.max(0.6, s * 0.014);
-  c.beginPath(); c.moveTo(-s * 0.235, -s * 0.70); c.lineTo(-s * 0.245, -s * 0.48); c.stroke();
+  c.fillRect(-s * 0.045, -s * 0.95, s * 0.09, s * 0.07);
+  c.fillStyle = 'rgba(120, 92, 66, 0.35)';
+  c.fillRect(-s * 0.045, -s * 0.95, s * 0.09, s * 0.022);
   c.fillStyle = PORT_ROMANESC.piele;
-  c.beginPath(); c.ellipse(-s * 0.24, -s * 0.375, s * 0.04, s * 0.048, 0, 0, Math.PI * 2); c.fill();
-
-  // gâtul și capul
-  c.fillStyle = PORT_ROMANESC.piele;
-  c.fillRect(-s * 0.045, -s * 0.94, s * 0.09, s * 0.06);
   c.beginPath();
   c.ellipse(0, -s * 1.02, s * 0.105, s * 0.125, 0, 0, Math.PI * 2);
   c.fill();
 
   if (femeie) {
     /* Năframa: se leagă peste creștet și pe după obraji, dar lasă fața la
-       vedere. Desenată peste tot capul, se face glugă, și din femeie iese un
-       om fără chip. */
+       vedere. Desenată peste tot capul, se face glugă. */
     c.fillStyle = PORT_ROMANESC.panza;
-    // colțul care atârnă pe umăr, desenat primul ca să rămână în spate
     c.beginPath();
     c.moveTo(-s * 0.128, -s * 1.03);
     c.quadraticCurveTo(-s * 0.205, -s * 0.93, -s * 0.175, -s * 0.79);
     c.quadraticCurveTo(-s * 0.115, -s * 0.88, -s * 0.105, -s * 0.99);
     c.closePath(); c.fill();
-    // creștetul și obrajii
     c.beginPath();
     c.moveTo(-s * 0.128, -s * 0.95);
     c.quadraticCurveTo(-s * 0.145, -s * 1.16, 0, -s * 1.165);
@@ -477,12 +567,10 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
     c.quadraticCurveTo(s * 0.10, -s * 1.10, 0, -s * 1.10);
     c.quadraticCurveTo(-s * 0.10, -s * 1.10, -s * 0.088, -s * 0.945);
     c.closePath(); c.fill();
-    // părul care se vede în față, sub năframă
     c.fillStyle = '#4a382a';
     c.beginPath();
     c.ellipse(0, -s * 1.075, s * 0.082, s * 0.03, 0, Math.PI, Math.PI * 2);
     c.fill();
-    // firul roșu de pe marginea năframei
     c.strokeStyle = PORT_ROMANESC.rosu;
     c.lineWidth = Math.max(0.6, s * 0.012);
     c.beginPath();
@@ -490,7 +578,6 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
     c.quadraticCurveTo(0, -s * 1.145, s * 0.115, -s * 1.02);
     c.stroke();
   } else {
-    // părul de sub pălărie
     c.fillStyle = '#3d2c1f';
     c.beginPath();
     c.ellipse(0, -s * 1.07, s * 0.10, s * 0.05, 0, Math.PI * 0.95, Math.PI * 2.05);
@@ -505,7 +592,6 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
     c.quadraticCurveTo(-s * 0.105, -s * 1.235, 0, -s * 1.235);
     c.quadraticCurveTo(s * 0.105, -s * 1.235, s * 0.10, -s * 1.115);
     c.closePath(); c.fill();
-    // panglica lucioasă de la baza calotei
     c.strokeStyle = PORT_ROMANESC.aur;
     c.lineWidth = Math.max(0.6, s * 0.012);
     c.beginPath();
@@ -530,9 +616,6 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum) {
   c.restore();
 }
 
-/* Trei oameni, la depărtări diferite de privitor: cel din față mai mare și mai
-   jos, cel din spate mai mic și mai sus. Așezați la aceeași înălțime, ar părea
-   lipiți pe un perete. */
 const TARANI = [
   { x: 0.21, y: 0.94, marime: 0.26, tip: 'barbat' },
   { x: 0.35, y: 0.87, marime: 0.22, tip: 'femeie' },
@@ -542,13 +625,17 @@ const TARANI = [
 function taraniiIn(c, w, h, acum) {
   const salut = s5.faza === 'viu' ? 1 : 0;
   const pleaca = s5.plecare;
+  /* Calcă numai cât sunt pe drum. Pornesc și se opresc lin: un om care începe
+     să meargă din prima cu pasul întreg, și se oprește la fel, arată tot a
+     păpușă trasă pe sfoară — doar una care dă din picioare. */
+  const mers = Math.min(1, Math.sin(Math.min(1, pleaca) * Math.PI) * 2.2);
   for (let k = 0; k < TARANI.length; k++) {
     const t = TARANI[k];
     // când pleacă spre hambar, se mută spre ușa lui
     const x = intre(t.x, 0.62 + k * 0.035, pleaca);
     const y = intre(t.y, 0.78, pleaca);
     taranIn(c, w, h, x, y, intre(t.marime, t.marime * 0.72, pleaca), t.tip,
-            salut * (1 - pleaca), acum + k * 260);
+            salut * (1 - pleaca), acum + k * 260, mers);
   }
 }
 
@@ -652,19 +739,60 @@ function deseneazaScena5(t, acum) {
   jos.addColorStop(1, '#bfbaae');
   ctx.fillStyle = jos; ctx.fillRect(0, podea, W, H - podea);
 
+  /* Lumina caldă vine din stânga-sus și se scurge pe podea; recele se strânge în
+     dreapta-jos, unde nu ajunge. Amândouă abia se văd — dacă le observi ca
+     pe niște culori, sunt prea tari. */
+  const cald = ctx.createRadialGradient(W * 0.18, -H * 0.1, 0, W * 0.18, -H * 0.1, H * 1.5);
+  cald.addColorStop(0, CALD_SALII);
+  cald.addColorStop(1, 'rgba(246, 217, 184, 0)');
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = cald; ctx.fillRect(0, 0, W, H);
+  const rece = ctx.createLinearGradient(W * 0.55, H * 0.2, W, H);
+  rece.addColorStop(0, 'rgba(195, 207, 224, 0)');
+  rece.addColorStop(1, RECE_SALII);
+  ctx.globalAlpha = 0.34;
+  ctx.fillStyle = rece; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
   /* Cât de mare se vede rama cu tot cu pânză. Pornește peste marginile
      ecranului — stai cu nasul în lucrare și nu-i vezi nici măcar rama — și se
      strânge repede la primii pași, ca pantofii de pe podea să iasă de sub ea. */
-  const stramtare = Math.pow(Math.max(0, Math.min(1, s5.claritate)), 0.6);
-  const latRama = intre(W * 1.02, Math.min(W * 0.46, podea * 0.86 / INALT_PE_LAT_RAMA),
+  /* Cât de mare se vede rama cu tot cu pânză. La intrare, **pânza dinăuntrul
+     ramei** — nu rama — acoperă tot ecranul: stai atât de aproape încât nu vezi
+     nici rama, nici sala, numai pătratele. Aurul rămâne pe dinafară, iar sala
+     apare de sub el abia după câțiva pași.
+
+     De-aia strâmtarea e leneșă la început: cu o curbă iute, rama se ivea din
+     primul pas și se pierdea tocmai momentul în care nu știi încă ce privești. */
+  const acopera = Math.max(W, H * T.latime / T.inaltime) * 1.03 / (1 - 2 * PROFIL_RAMEI);
+  /* Primii trei pași abia o strâng — în ei se limpezesc doar pătratele, și tot
+     nu se vede nici rama, nici sala. Restul drumului face toată depărtarea.
+     Cu o curbă simplă, oricât de leneșă, rama fie se ivea din primul pas, fie
+     nu mai apărea până la ultimul: o putere nu poate fi și înceată la început,
+     și iute la sfârșit. */
+  const c = Math.max(0, Math.min(1, s5.claritate));
+  const stramtare = c < 0.3 ? c * (0.25 / 0.3)
+                            : 0.25 + (c - 0.3) * (0.75 / 0.7);
+  const latRama = intre(acopera, Math.min(W * 0.46, podea * 0.86 / INALT_PE_LAT_RAMA),
                         stramtare);
   const inaltRama = latRama * INALT_PE_LAT_RAMA;
   const gr = latRama * PROFIL_RAMEI;
   const lat = latRama - gr * 2;
   const inalt = inaltRama - gr * 2;
-  const rx = W * 0.5 - latRama / 2, ry = podea * 0.47 - inaltRama / 2;
+  /* La intrare, lucrarea stă în mijlocul ecranului, ca să-l acopere de sus până
+     jos; pe măsură ce te depărtezi, urcă la locul unui tablou atârnat pe perete.
+     Centrată de la bun început ca un tablou, îi rămânea brâul de jos în ecran —
+     și se vedea o dungă de aur exact acolo unde nu trebuia să se vadă nimic. */
+  const cy = intre(H * 0.5, podea * 0.47, stramtare);
+  const rx = W * 0.5 - latRama / 2, ry = cy - inaltRama / 2;
   const x = rx + gr, y = ry + gr;
   s5.latimeTablou = latRama;
+  /* Rama „a apărut" când i-au intrat în ecran laturile aurite — atunci se vede
+     și sala de sub ea. Sus și jos intră ceva mai târziu, fiindcă pânza e mai
+     lată decât înaltă; asta se vede ca o ramă care se închide, nu ca o
+     întârziere. */
+  s5.ramaSeVede = rx > 0;
 
 
   // compunem tabloul cu tot cu oameni, apoi îl pixelăm după cât de departe ești

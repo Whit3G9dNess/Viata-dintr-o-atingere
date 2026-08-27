@@ -33,6 +33,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 13 | Nimeni nu rămâne blocat în galerie | ✅ gata |
 | 14 | Baloanele se fac nori numai când le atingi | ✅ gata |
 | 15 | Sala a cincea: ramă, pantofi, port românesc | ✅ gata |
+| 16 | Țăranii calcă, sala respiră, rama vine mai târziu | ✅ gata |
 
 ---
 
@@ -305,6 +306,45 @@ Ultima rundă de nemulțumiri, toate întemeiate.
 **Verificare:** sala are perete și podea, pânza are ramă, pantofii se văd din
 primul cadru, iar țăranii seamănă a ceva cunoscut.
 
+## Faza 16 — Țăranii calcă, sala respiră, rama vine mai târziu
+
+Trei nemulțumiri, toate despre lucruri care arătau *aproape* bine.
+
+**„Bucățile de corp par decupate și lipite."** Erau. Mădularele se desenau după
+trup, așa că fiecare își arăta muchia lipită de cămașă. Acum ordinea e inversă —
+întâi picioarele, pe urmă mânecile, abia apoi trupul peste ele — iar mâneca are
+capătul de sus rotunjit și îngropat în umăr. Peste tot, o modelare: cămașa prinde
+lumina din stânga-sus, brâul se încovoaie pe trup în loc să stea ca o cărămidă,
+catrința are șoldul luminat și cealaltă parte în umbră. O formă plată se citește
+ca hârtie decupată oricât de bun i-ar fi conturul.
+
+**„Ei nu merg, mai mult plutesc."** Nu mergeau: alunecau spre hambar cu
+picioarele înțepenite. Prima încercare de mers i-a pus să se legene din șold, și
+picioarele s-au încrucișat prin mijloc — **din față nu se poate arăta un pas din
+legănat lateral**. Ce se vede dintr-un pas, privit din față, e că un picior se
+ridică și se scurtează în timp ce celălalt rămâne pe pământ, și că trupul saltă
+odată cu el. De-aia cele două picioare au faze opuse la ridicat și abia o urmă de
+legănat. Brațele merg în contratimp și **nu trec niciodată peste piept**: un braț
+rotit spre înăuntru se așază de-a curmezișul trupului ca o curea de raniță.
+
+**Contrastul cald-rece în sală.** O notă de portocaliu pe unde bate lumina, una
+de albastru în umbra din partea cealaltă. Discret: dacă le observi ca pe niște
+culori, sunt prea tari. Sala rămâne albă, doar că nu mai e o coală de hârtie —
+lumina adevărată n-are niciodată o singură temperatură.
+
+**Intrarea, reașezată.** Se cerea: pixeli, pantofi, **nicio ramă**; abia pe urmă
+rama și sala. Două lucruri stăteau în cale. Rama își arăta brâul de jos, fiindcă
+lucrarea era centrată sus, ca un tablou pe perete — acum centrul urcă treptat, de
+la mijlocul ecranului la locul unui tablou atârnat. Și curba de strâmtare: o
+putere nu poate fi și înceată la început, și iute la sfârșit, așa că rama fie se
+ivea din primul pas, fie nu mai apărea până la ultimul. Acum primii trei pași
+abia o strâng — în ei se limpezesc doar pătratele — iar restul drumului face toată
+depărtarea.
+
+**Verificare:** la intrare nu se vede nici ramă, nici perete; la trei pași tot nu;
+pe la șase apare rama și sala de sub ea; iar cei trei calcă spre hambar în loc să
+alunece.
+
 ---
 
 ## Reguli care nu se calcă
@@ -325,7 +365,7 @@ primul cadru, iar țăranii seamănă a ceva cunoscut.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 127 acum**, în douăsprezece secțiuni.
+au nevoie de nimic instalat. **Sunt 132 acum**, în douăsprezece secțiuni.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
