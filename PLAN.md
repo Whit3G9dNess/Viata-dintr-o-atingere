@@ -173,7 +173,7 @@ brâurile se rup și în locul lor stă câte un cartuș de acant. În creștet,
 - Cu fiecare atingere te depărtezi un pas: pânza se micșorează și se limpezește.
   Claritatea urmează pașii **cu o mică lene**, ca depărtarea să se simtă.
 - La al zecelea pas, **țăranii prind viață**, îți fac cu mâna și te strigă. Pe
-  urmă se duc la hambar și-i deschid ușile.
+  urmă se duc la casă și-i deschid ușile.
 - Pictura e impresionistă: câmpuri de tușe scurte, pe direcții, cu paletă caldă
   lângă rece. Un **aleator cu sămânță** ține tușele pe loc de la o repictare la
   alta — altfel toată pânza ar fierbe.
@@ -320,7 +320,7 @@ lumina din stânga-sus, brâul se încovoaie pe trup în loc să stea ca o căr�
 catrința are șoldul luminat și cealaltă parte în umbră. O formă plată se citește
 ca hârtie decupată oricât de bun i-ar fi conturul.
 
-**„Ei nu merg, mai mult plutesc."** Nu mergeau: alunecau spre hambar cu
+**„Ei nu merg, mai mult plutesc."** Nu mergeau: alunecau spre casă cu
 picioarele înțepenite. Prima încercare de mers i-a pus să se legene din șold, și
 picioarele s-au încrucișat prin mijloc — **din față nu se poate arăta un pas din
 legănat lateral**. Ce se vede dintr-un pas, privit din față, e că un picior se
@@ -344,7 +344,7 @@ abia o strâng — în ei se limpezesc doar pătratele — iar restul drumului f
 depărtarea.
 
 **Verificare:** la intrare nu se vede nici ramă, nici perete; la trei pași tot nu;
-pe la șase apare rama și sala de sub ea; iar cei trei calcă spre hambar în loc să
+pe la șase apare rama și sala de sub ea; iar cei trei calcă spre casă în loc să
 alunece.
 
 ## Faza 17 — Muzică de Mozart, liniște în grădină, nouă îndreptări
@@ -462,7 +462,8 @@ mărimea ramei, cu destinația portalului și cu ordinea foilor din deschidere.
 
 ## Rămas de făcut
 
-- **Acoperișul hambarului** din scena a cincea e încă un bulgăre brun.
+- **Pridvorul casei** din scena a cincea e văzut din față, plat: stâlpii și
+  arcadele nu au adâncime.
 - **La zece pași** rămâne mult perete gol în jurul lucrării. S-ar putea ca ea să
   nu trebuiască să se micșoreze chiar atât.
 - **Documentele proiectului** (`.docx`, `.pdf`) stau în folderul de deasupra,

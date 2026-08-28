@@ -203,7 +203,7 @@ folositoare din tot ce e scris aici.
 flowchart TB
   subgraph ACUM["De pus mâna acum"]
     direction TB
-    N1["Acoperișul hambarului<br/>e încă un bulgăre brun<br/>scena 5, pictezaTablou"]
+    N1["Pridvorul casei<br/>e văzut din față, plat<br/>scena 5, casa cu pridvor"]
     N2["La zece pași rămâne<br/>prea mult perete gol<br/>poate nu trebuie atât de mic"]
     N3["Fișa din galerie:<br/>lupa trece peste colțul ei<br/>de mutat în stânga?"]
   end

@@ -7,7 +7,7 @@
    e toată scena: nu te apropii ca să vezi mai bine, te depărtezi.
 
    Când ajungi la zece, cei trei țărani din tablou prind viață, îți fac cu mâna
-   și te strigă. Pe urmă se duc la hambarul de alături și-i deschid ușile.
+   și te strigă. Pe urmă se duc la casa de alături și-i deschid ușile.
 
    Pictura e impresionistă: tușe scurte, așezate pe direcții, cald lângă rece,
    auriu lângă violet. Se pictează o dată pe o pânză ascunsă.
@@ -22,6 +22,32 @@ const PASI_INAPOI = 10;
 const PERETE_SALII = '#f4f3ef';
 const PODEA_SALII = '#d8d5cc';
 const PANTOFI_SALII = '#241d26';
+
+/* Albastrul caselor de pe Valea Bistriței și din Bucovina. Nu e o alegere de
+   gust: e culoarea cu care se dădea lemnul la casele de aici — stâlpi, arcade,
+   cercevele, ușă — și fără ea casa nu mai e de nicăieri. */
+const ALBASTRU_CASA = '#1560bd';
+const ALBASTRU_UMBRA = '#0e4185';
+const ALBASTRU_LUMINA = '#4d90d8';
+
+/* Măsurile casei cu pridvor, socotite într-un singur loc. Ușile se deschid exact
+   în golul lăsat pentru ele; socotite în două locuri, s-ar despărți — și s-ar
+   vedea, fiindcă tocmai pe ușa aceea intri la capătul drumului. */
+function geomCasa(w, h) {
+  /* Lățimea o dă streașina, nu peretele: acoperișul iese în afară cu o douăzecime
+     de fiecare parte, iar dacă socotim numai zidul, colțul de sus-dreapta cade
+     în afara pânzei. */
+  const lat = w * 0.325;
+  const x = w * 0.615;
+  const talpa = h * 0.79;              // unde stă casa pe pământ
+  const soclu = h * 0.045;             // piatra de râu de sub perete
+  const inalt = h * 0.20;              // înălțimea peretelui văruit
+  const sus = talpa - soclu - inalt;
+  const usaW = lat * 0.15, usaH = inalt * 0.78;
+  const usaX = x + lat * 0.375;
+  const usaY = talpa - soclu - usaH;
+  return { x, lat, talpa, soclu, inalt, sus, usaX, usaY, usaW, usaH };
+}
 
 const TEXT_FISA_IMPRESIONISM =
   'Impresionismul este un curent artistic apărut în Franța secolului al XIX-lea, ' +
@@ -228,7 +254,7 @@ function pictezaTablou(c, w, h) {
   /* Ordinea de aici e ordinea depărtării, nu ordinea în care ne-au venit ideile.
      Ce e mai departe se pune primul, ca ce e mai aproape să treacă peste el.
      Înainte plopii se desenau la urmă și cădeau peste căpița din stânga — un
-     copac crescut în vârful unei căpițe — iar hambarul acoperea căpița din fața
+     copac crescut în vârful unei căpițe — iar casa acoperea căpița din fața
      lui. Pe o pânză, cine acoperă pe cine spune unde stă fiecare; greșit,
      adâncimea se rupe, oricât de bine ar fi pictat fiecare lucru în parte. */
 
@@ -239,126 +265,188 @@ function pictezaTablou(c, w, h) {
                h * 0.03, h * 0.014, ['#6f8a52', '#587244', '#87a066', '#465e39'], 500 + k * 37);
   }
 
-  /* Hambarul. Era un nor dreptunghiular de tușe cărămizii cu un triunghi
-     deasupra: n-avea nici muchii, nici scânduri, nici umbră sub streașină, și de
-     departe arăta a pată. O clădire se recunoaște întâi după silueta ei — perete
-     drept, colț, streașină care iese în afară — și abia pe urmă după culoare.
-     Așa că se construiește: pereți plini, cu scânduri și cu partea dinspre soare
-     mai deschisă, acoperiș cu coamă și streașină, umbra ei pe perete, ușa cu
-     prag și buiandrug. Tușele vin la urmă, peste tot, ca să nu iasă din tablou. */
-  const hx = w * 0.7, hy = oriz - h * 0.03, hw = w * 0.24, hh = h * 0.34;
+  /* Casa cu pridvor. Înainte aici sta un hambar, iar la capătul drumului
+     jucătorul era poftit într-o dugheană — o șură cu ușa neagră. O casă e altceva:
+     te primește. Casa asta e cea de pe Valea Bistriței și din Bucovina: pereți
+     văruiți alb, soclu de piatră de râu, acoperiș de olane roșii în patru ape cu
+     un turn peste pridvor, și tot lemnul dat cu albastru — stâlpi, arcade
+     traforate, cercevele, ușă. Albastrul acela nu e o alegere de gust: e culoarea
+     cu care se dădea lemnul la casele de aici, și fără ea casa nu mai e de nicăieri.
 
-  // peretele: lumina vine din stânga, ca soarele din tablou
-  const lemn = c.createLinearGradient(hx, hy, hx + hw, hy + hh);
-  lemn.addColorStop(0, '#c07a55');
-  lemn.addColorStop(0.45, '#a4553f');
-  lemn.addColorStop(1, '#6f3128');
-  c.fillStyle = lemn;
-  c.fillRect(hx, hy, hw, hh);
+     Toate măsurile ies din `geomCasa`, ca ușile să se deschidă exact în golul
+     lăsat pentru ele — dacă s-ar socoti în două locuri, s-ar despărți. */
+  const K = geomCasa(w, h);
 
-  // scândurile bătute în picioare, una lângă alta
-  for (let k = 1; k * (hw * 0.075) < hw; k++) {
-    const sx = hx + k * hw * 0.075;
-    c.fillStyle = k % 2 ? 'rgba(58, 26, 18, 0.28)' : 'rgba(226, 160, 116, 0.18)';
-    c.fillRect(sx, hy, Math.max(1, hw * 0.012), hh);
-  }
-  // grinda de la jumătatea peretelui și talpa de piatră
-  c.fillStyle = 'rgba(70, 34, 22, 0.5)';
-  c.fillRect(hx, hy + hh * 0.46, hw, Math.max(1.5, hh * 0.035));
-  c.fillStyle = 'rgba(48, 34, 26, 0.55)';
-  c.fillRect(hx, hy + hh * 0.94, hw, hh * 0.06);
-
-  // ușa: golul întunecat, cu buiandrug și prag
-  const ux = hx + hw * 0.26, uy = hy + hh * 0.3, uw = hw * 0.48, uh = hh * 0.7;
-  const gol = c.createLinearGradient(ux, uy, ux, uy + uh);
-  gol.addColorStop(0, '#1d130d');
-  gol.addColorStop(1, '#3a281f');
-  c.fillStyle = gol;
-  c.fillRect(ux, uy, uw, uh);
-  c.fillStyle = '#7a4a34';
-  c.fillRect(ux - uw * 0.06, uy - uh * 0.05, uw * 1.12, uh * 0.06);
-  c.fillStyle = 'rgba(58, 30, 20, 0.6)';
-  c.fillRect(ux - uw * 0.06, uy + uh * 0.99, uw * 1.12, uh * 0.04);
-
-  /* Frontonul: peretele urcă în triunghi până sub coamă. Fără el, între zidul
-     drept și acoperiș rămânea o pană de cer — și tocmai golul acela făcea
-     hambarul să pară neterminat. */
-  const fronton = c.createLinearGradient(hx, hy - hh * 0.32, hx + hw, hy);
-  fronton.addColorStop(0, '#a86449');
-  fronton.addColorStop(1, '#6a2f26');
-  c.fillStyle = fronton;
+  // umbra casei pe iarbă, spre dreapta
+  c.fillStyle = 'rgba(96, 74, 108, 0.25)';
   c.beginPath();
-  c.moveTo(hx, hy + hh * 0.02);
-  c.lineTo(hx + hw * 0.5, hy - hh * 0.32);
-  c.lineTo(hx + hw, hy + hh * 0.02);
+  c.ellipse(K.x + K.lat * 0.6, K.talpa + h * 0.012, K.lat * 0.62, h * 0.022, 0, 0, Math.PI * 2);
+  c.fill();
+
+  // ---- soclul de piatră de râu ----
+  c.fillStyle = '#9a938a';
+  c.fillRect(K.x, K.talpa - K.soclu, K.lat, K.soclu);
+  for (let k = 0; k < 26; k++) {
+    const a = samanta(700 + k * 3.7), b = samanta(700 + k * 6.1);
+    c.fillStyle = ['#b3aca1', '#857f77', '#c2bcb2', '#6f6a63'][k % 4];
+    c.beginPath();
+    c.ellipse(K.x + a * K.lat, K.talpa - K.soclu * (0.2 + b * 0.6),
+              K.soclu * (0.18 + b * 0.2), K.soclu * (0.13 + a * 0.12), a * 2, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  // ---- peretele văruit ----
+  const var_ = c.createLinearGradient(K.x, K.sus, K.x + K.lat, K.talpa);
+  var_.addColorStop(0, '#fffdf6');
+  var_.addColorStop(0.55, '#f3eee1');
+  var_.addColorStop(1, '#d9d2c2');
+  c.fillStyle = var_;
+  c.fillRect(K.x, K.sus, K.lat, K.talpa - K.soclu - K.sus);
+
+  // ---- fereastra din peretele plin, cu ancadrament alb și cercevele albastre ----
+  const fx = K.x + K.lat * 0.79, fy = K.sus + K.inalt * 0.28;
+  const fw = K.lat * 0.14, fh = K.inalt * 0.36;
+  c.fillStyle = '#ffffff';
+  c.fillRect(fx - fw * 0.14, fy - fh * 0.12, fw * 1.28, fh * 1.2);
+  c.fillStyle = ALBASTRU_CASA;
+  c.fillRect(fx, fy, fw, fh);
+  c.fillStyle = '#cfe0ea';
+  c.fillRect(fx + fw * 0.1, fy + fh * 0.09, fw * 0.8, fh * 0.82);
+  c.fillStyle = ALBASTRU_CASA;
+  c.fillRect(fx + fw * 0.46, fy + fh * 0.09, fw * 0.08, fh * 0.82);
+  c.fillRect(fx + fw * 0.1, fy + fh * 0.45, fw * 0.8, fh * 0.06);
+
+  // ---- pridvorul: parapetul văruit cu coama albastră ----
+  const px0 = K.x + K.lat * 0.04, px1 = K.usaX - K.lat * 0.03;
+  const pSus = K.talpa - K.soclu - K.inalt * 0.36;
+  c.fillStyle = '#fbf7ec';
+  c.fillRect(px0, pSus, px1 - px0, K.talpa - K.soclu - pSus);
+  c.fillStyle = ALBASTRU_CASA;
+  c.fillRect(px0, pSus, px1 - px0, K.inalt * 0.045);
+
+  // ---- ușa: golul întunecat în care se vor deschide canaturile ----
+  c.fillStyle = '#ffffff';
+  c.fillRect(K.usaX - K.usaW * 0.16, K.usaY - K.usaH * 0.07, K.usaW * 1.32, K.usaH * 1.09);
+  const golUsa = c.createLinearGradient(K.usaX, K.usaY, K.usaX, K.usaY + K.usaH);
+  golUsa.addColorStop(0, '#241a12');
+  golUsa.addColorStop(1, '#3f2f22');
+  c.fillStyle = golUsa;
+  c.fillRect(K.usaX, K.usaY, K.usaW, K.usaH);
+
+  // ---- stâlpii pridvorului, cu capiteluri crestate ----
+  /* Stâlpii pridvorului. Erau subțiri cât o așchie și albaștri deschis pe perete
+     alb: nu se vedeau. Un pridvor se recunoaște după stâlpi — dacă ei nu se văd,
+     casa e doar un zid cu o ușă. */
+  for (const q of [0.05, 0.285, 0.53]) {
+    const sx = K.x + K.lat * q, sw = K.lat * 0.055;
+    const trup = c.createLinearGradient(sx, 0, sx + sw, 0);
+    trup.addColorStop(0, ALBASTRU_LUMINA);
+    trup.addColorStop(0.35, ALBASTRU_CASA);
+    trup.addColorStop(1, ALBASTRU_UMBRA);
+    c.fillStyle = trup;
+    c.fillRect(sx, K.sus + K.inalt * 0.04, sw, K.talpa - K.soclu - K.sus - K.inalt * 0.04);
+    // crestăturile de pe fusul stâlpului
+    c.fillStyle = 'rgba(10, 44, 92, 0.5)';
+    for (let r = 0; r < 3; r++) {
+      c.fillRect(sx, K.sus + K.inalt * (0.30 + r * 0.16), sw, K.inalt * 0.02);
+    }
+    // capitelul: o pernă lățită sub grindă
+    c.fillStyle = ALBASTRU_CASA;
+    c.fillRect(sx - sw * 0.42, K.sus + K.inalt * 0.04, sw * 1.84, K.inalt * 0.075);
+    c.fillStyle = ALBASTRU_LUMINA;
+    c.fillRect(sx - sw * 0.42, K.sus + K.inalt * 0.04, sw * 1.84, K.inalt * 0.018);
+  }
+
+  // ---- arcadele traforate dintre stâlpi ----
+  c.fillStyle = ALBASTRU_CASA;
+  c.fillRect(K.x, K.sus, K.lat * 0.60, K.inalt * 0.055);
+  for (let k = 0; k * (K.lat * 0.028) < K.lat * 0.58; k++) {
+    const ax = K.x + K.lat * 0.012 + k * K.lat * 0.028;
+    c.beginPath();
+    c.moveTo(ax, K.sus + K.inalt * 0.055);
+    c.lineTo(ax + K.lat * 0.011, K.sus + K.inalt * 0.115);
+    c.lineTo(ax + K.lat * 0.022, K.sus + K.inalt * 0.055);
+    c.closePath();
+    c.fill();
+  }
+
+  // ---- acoperișul: patru ape de olane, cu turnul peste pridvor ----
+  const streasina = K.sus - K.inalt * 0.02;
+  const coama = K.sus - K.inalt * 0.5;
+  const olan = c.createLinearGradient(K.x, coama, K.x + K.lat, streasina);
+  olan.addColorStop(0, '#e08a4e');
+  olan.addColorStop(0.5, '#c25f34');
+  olan.addColorStop(1, '#8f3f24');
+  c.fillStyle = olan;
+  c.beginPath();
+  c.moveTo(K.x - K.lat * 0.055, streasina);
+  c.lineTo(K.x + K.lat * 0.26, coama);
+  c.lineTo(K.x + K.lat * 0.80, coama);
+  c.lineTo(K.x + K.lat * 1.055, streasina);
   c.closePath();
   c.fill();
-  for (let k = 1; k * (hw * 0.075) < hw; k++) {
-    const sx = hx + k * hw * 0.075;
-    const inaltime = (hh * 0.34) * (1 - Math.abs(sx - (hx + hw * 0.5)) / (hw * 0.5));
-    c.fillStyle = k % 2 ? 'rgba(58, 26, 18, 0.24)' : 'rgba(226, 160, 116, 0.14)';
-    c.fillRect(sx, hy + hh * 0.02 - inaltime, Math.max(1, hw * 0.012), inaltime);
-  }
-
-  // acoperișul: două ape pline, cu streașină ieșită în afară
-  const olane = c.createLinearGradient(hx, hy - hh * 0.4, hx + hw, hy + hh * 0.1);
-  olane.addColorStop(0, '#9b7050');
-  olane.addColorStop(0.48, '#5d4033');
-  olane.addColorStop(1, '#33221a');
-  c.fillStyle = olane;
+  // turnul piramidal de deasupra intrării
   c.beginPath();
-  c.moveTo(hx - hw * 0.13, hy + hh * 0.055);
-  c.lineTo(hx + hw * 0.5, hy - hh * 0.4);
-  c.lineTo(hx + hw * 1.13, hy + hh * 0.055);
-  c.lineTo(hx + hw * 1.13, hy + hh * 0.115);
-  c.lineTo(hx + hw * 0.5, hy - hh * 0.33);
-  c.lineTo(hx - hw * 0.13, hy + hh * 0.115);
+  c.moveTo(K.x + K.lat * 0.30, coama + K.inalt * 0.02);
+  c.lineTo(K.x + K.lat * 0.53, coama - K.inalt * 0.42);
+  c.lineTo(K.x + K.lat * 0.78, coama + K.inalt * 0.02);
   c.closePath();
   c.fill();
-  // șipcile de pe apa dinspre noi
-  c.strokeStyle = 'rgba(38, 24, 16, 0.4)';
-  c.lineWidth = Math.max(0.8, hh * 0.008);
-  for (let k = 1; k < 9; k++) {
-    const q = k / 9;
+  // rândurile de olane, ca acoperișul să nu fie o pată roșie
+  c.strokeStyle = 'rgba(120, 48, 26, 0.45)';
+  c.lineWidth = Math.max(0.7, K.inalt * 0.008);
+  for (let k = 1; k < 6; k++) {
+    const q = k / 6;
     c.beginPath();
-    c.moveTo(intre(hx - hw * 0.13, hx + hw * 0.5, q), intre(hy + hh * 0.055, hy - hh * 0.4, q));
-    c.lineTo(intre(hx - hw * 0.13, hx + hw * 0.5, q), intre(hy + hh * 0.115, hy - hh * 0.33, q));
-    c.stroke();
-    c.beginPath();
-    c.moveTo(intre(hx + hw * 1.13, hx + hw * 0.5, q), intre(hy + hh * 0.055, hy - hh * 0.4, q));
-    c.lineTo(intre(hx + hw * 1.13, hx + hw * 0.5, q), intre(hy + hh * 0.115, hy - hh * 0.33, q));
+    c.moveTo(intre(K.x - K.lat * 0.055, K.x + K.lat * 0.26, q), intre(streasina, coama, q));
+    c.lineTo(intre(K.x + K.lat * 1.055, K.x + K.lat * 0.80, q), intre(streasina, coama, q));
     c.stroke();
   }
-  // coama, luminată de soare
-  c.strokeStyle = 'rgba(226, 186, 140, 0.55)';
-  c.lineWidth = Math.max(1.2, hh * 0.014);
+  // creasta de var de pe coamă, ca la casele văruite
+  c.strokeStyle = 'rgba(240, 232, 214, 0.75)';
+  c.lineWidth = Math.max(1, K.inalt * 0.016);
   c.beginPath();
-  c.moveTo(hx - hw * 0.11, hy + hh * 0.045);
-  c.lineTo(hx + hw * 0.5, hy - hh * 0.39);
+  c.moveTo(K.x + K.lat * 0.26, coama);
+  c.lineTo(K.x + K.lat * 0.80, coama);
   c.stroke();
-  // umbra streșinii, căzută pe perete
-  const subStreasina = c.createLinearGradient(0, hy + hh * 0.03, 0, hy + hh * 0.2);
-  subStreasina.addColorStop(0, 'rgba(40, 22, 14, 0.55)');
-  subStreasina.addColorStop(1, 'rgba(40, 22, 14, 0)');
-  c.fillStyle = subStreasina;
-  c.fillRect(hx, hy + hh * 0.03, hw, hh * 0.18);
 
-  // fereastra mică din fronton, prin care intră lumina în pod
-  c.fillStyle = '#241710';
+  // ---- streașina de lemn albastru, cu console crestate ----
+  c.fillStyle = ALBASTRU_CASA;
+  c.fillRect(K.x - K.lat * 0.05, streasina, K.lat * 1.1, K.inalt * 0.05);
+  c.fillStyle = ALBASTRU_UMBRA;
+  for (let k = 0; k * (K.lat * 0.055) < K.lat * 1.05; k++) {
+    c.fillRect(K.x - K.lat * 0.04 + k * K.lat * 0.055, streasina + K.inalt * 0.05,
+               K.lat * 0.014, K.inalt * 0.03);
+  }
+
+  // ---- fruntarul traforat de sub turn ----
+  c.fillStyle = ALBASTRU_CASA;
   c.beginPath();
-  c.moveTo(hx + hw * 0.5, hy - hh * 0.26);
-  c.lineTo(hx + hw * 0.60, hy - hh * 0.12);
-  c.lineTo(hx + hw * 0.40, hy - hh * 0.12);
+  c.moveTo(K.x + K.lat * 0.31, coama + K.inalt * 0.02);
+  c.lineTo(K.x + K.lat * 0.53, coama - K.inalt * 0.30);
+  c.lineTo(K.x + K.lat * 0.76, coama + K.inalt * 0.02);
+  c.lineTo(K.x + K.lat * 0.76, coama + K.inalt * 0.10);
+  c.lineTo(K.x + K.lat * 0.31, coama + K.inalt * 0.10);
   c.closePath();
   c.fill();
+  c.fillStyle = '#f6efdd';
+  for (let k = 0; k < 3; k++) {
+    c.fillRect(K.x + K.lat * (0.45 + k * 0.045), coama - K.inalt * 0.13,
+               K.lat * 0.022, K.inalt * 0.10);
+  }
 
-  // și, la urmă, pensula: hambarul intră înapoi în pictură
-  campDeTuse(c, hx, hy, hw, hh, 90, 1.5, 0.35, h * 0.032, h * 0.012,
-             ['rgba(196, 124, 88, 0.5)', 'rgba(120, 58, 42, 0.5)',
-              'rgba(226, 168, 120, 0.4)'], 307);
-  campDeTuse(c, hx - hw * 0.13, hy - hh * 0.4, hw * 1.26, hh * 0.46, 60, -0.32, 0.4,
-             h * 0.03, h * 0.011,
-             ['rgba(138, 98, 71, 0.5)', 'rgba(63, 42, 32, 0.5)'], 401);
+  // ---- treptele de piatră ----
+  for (let k = 0; k < 3; k++) {
+    c.fillStyle = ['#b7b0a5', '#a29b91', '#8d867d'][k];
+    c.fillRect(K.usaX - K.usaW * (0.2 + k * 0.14), K.talpa - K.soclu + k * K.soclu * 0.34,
+               K.usaW * (1.4 + k * 0.28), K.soclu * 0.36);
+  }
+
+  // ---- pensula peste toată casa, ca să intre în pictură ----
+  campDeTuse(c, K.x - K.lat * 0.05, coama - K.inalt * 0.42, K.lat * 1.1,
+             K.talpa - coama + K.inalt * 0.42, 110, 1.4, 0.5, h * 0.026, h * 0.01,
+             ['rgba(255, 250, 236, 0.32)', 'rgba(196, 96, 54, 0.3)',
+              'rgba(28, 92, 168, 0.28)', 'rgba(150, 142, 130, 0.3)'], 307);
 
   // cărarea care intră în tablou
   campDeTuse(c, w * 0.3, oriz + h * 0.06, w * 0.22, h * 0.5, 220, 1.15, 0.4,
@@ -373,7 +461,7 @@ function pictezaTablou(c, w, h) {
     { fx: 0.155, fy: 0.735, r: 0.145 },
     { fx: 0.605, fy: 0.615, r: 0.082 },
     { fx: 0.40, fy: 0.555, r: 0.055 },
-    { fx: 0.815, fy: 0.735, r: 0.072 }   // în fața hambarului, nu în spatele lui
+    { fx: 0.565, fy: 0.755, r: 0.078 }   // lângă casă, nu în pragul ei
   ];
   for (let k = 0; k < CAPITE.length; k++) {
     const cap = CAPITE[k];
@@ -436,7 +524,7 @@ function pregatesteTablou() {
   return tabloul;
 }
 
-/* ---- cei trei țărani și ușile hambarului, desenați vii ---- */
+/* ---- cei trei țărani și ușile casei, desenați vii ---- */
 
 /* Portul, cu culorile lui adevărate. Ele sunt tot ce trebuie ca o siluetă să fie
    recunoscută: pânza nealbită a iei, roșul catrinței, negrul pălăriei și al
@@ -751,7 +839,7 @@ function tuseDeTaran(c, s, femeie, samantaOmului) {
    neagră cu boruri mici și pieptar negru cu găitan auriu.
 
    `mers` e cât de tare calcă, de la 0 la 1. Fără el, cei trei alunecau spre
-   hambar cu picioarele înțepenite, ca niște decupaje trase pe sfoară.
+   casă cu picioarele înțepenite, ca niște decupaje trase pe sfoară.
 
    Ordinea de desen contează mai mult decât orice altceva aici: întâi picioarele,
    pe urmă mânecile, abia apoi trupul peste ele. Desenate invers, fiecare mădular
@@ -1007,8 +1095,8 @@ function taraniiIn(c, w, h, acum) {
   const mers = Math.min(1, Math.sin(Math.min(1, pleaca) * Math.PI) * 2.2);
   for (let k = 0; k < TARANI.length; k++) {
     const t = TARANI[k];
-    // când pleacă spre hambar, se mută spre ușa lui
-    /* Se duc spre ușa hambarului, care e mai sus și mai departe decât locul lor
+    // când pleacă spre casă, se mută spre ușa ei
+    /* Se duc spre ușa casei, care e mai sus și mai departe decât locul lor
        de acum. Înainte coborau spre y = 0.78, adică veneau spre privitor în timp
        ce se micșorau — două lucruri care se bat cap în cap. */
     const x = intre(t.x, 0.655 + k * 0.03, pleaca);
@@ -1018,28 +1106,44 @@ function taraniiIn(c, w, h, acum) {
   }
 }
 
-// Ușile duble ale hambarului, care se deschid larg.
-function usileHambarului(c, w, h, deschidere) {
-  const oriz = h * 0.44;
-  const hx = w * 0.7, hy = oriz - h * 0.03, hw = w * 0.24, hh = h * 0.34;
-  const ux = hx + hw * 0.26, uy = hy + hh * 0.3, uw = hw * 0.48, uh = hh * 0.7;
+/* Ușa casei: două canaturi albastre cu tăblii, care se dau în lături. Era o ușă
+   de șură, din scânduri brune bătute în cuie — se potrivea cu hambarul, nu cu o
+   casă în care ești poftit. */
+function usileCasei(c, w, h, deschidere) {
+  const K = geomCasa(w, h);
+  const ux = K.usaX, uy = K.usaY, uw = K.usaW, uh = K.usaH;
+
   for (const lat of [-1, 1]) {
     c.save();
     c.translate(lat < 0 ? ux : ux + uw, uy);
     c.rotate(lat * deschidere * 1.15);
-    c.fillStyle = '#7a5136';
-    c.fillRect(lat < 0 ? 0 : -uw / 2, 0, uw / 2, uh);
-    c.strokeStyle = '#4e3323'; c.lineWidth = Math.max(1, w * 0.003);
-    for (let k = 0; k < 3; k++) {
-      const dx = (lat < 0 ? 0 : -uw / 2) + uw * 0.08 + k * uw * 0.16;
-      c.beginPath(); c.moveTo(dx, 0); c.lineTo(dx, uh); c.stroke();
-    }
+    const x0 = lat < 0 ? 0 : -uw / 2;
+    // canatul
+    const lemn = c.createLinearGradient(x0, 0, x0 + uw / 2, uh);
+    lemn.addColorStop(0, ALBASTRU_LUMINA);
+    lemn.addColorStop(0.4, ALBASTRU_CASA);
+    lemn.addColorStop(1, ALBASTRU_UMBRA);
+    c.fillStyle = lemn;
+    c.fillRect(x0, 0, uw / 2, uh);
+    // cele două tăblii, una sus și una jos
+    c.fillStyle = ALBASTRU_UMBRA;
+    c.fillRect(x0 + uw * 0.06, uh * 0.07, uw * 0.38, uh * 0.36);
+    c.fillRect(x0 + uw * 0.06, uh * 0.52, uw * 0.38, uh * 0.4);
+    c.fillStyle = ALBASTRU_LUMINA;
+    c.fillRect(x0 + uw * 0.08, uh * 0.09, uw * 0.34, uh * 0.32);
+    c.fillRect(x0 + uw * 0.08, uh * 0.54, uw * 0.34, uh * 0.36);
+    // clanța de alamă
+    c.fillStyle = '#c9a227';
+    c.beginPath();
+    c.arc(x0 + (lat < 0 ? uw * 0.44 : uw * 0.06), uh * 0.5, uw * 0.03, 0, Math.PI * 2);
+    c.fill();
     c.restore();
   }
+
   // lumina care iese pe ușa deschisă
   if (deschidere > 0.2) {
     const lum = c.createLinearGradient(ux, uy, ux, uy + uh);
-    lum.addColorStop(0, `rgba(255, 236, 180, ${0.5 * deschidere})`);
+    lum.addColorStop(0, `rgba(255, 236, 180, ${0.55 * deschidere})`);
     lum.addColorStop(1, 'rgba(255, 236, 180, 0)');
     c.fillStyle = lum;
     c.fillRect(ux, uy, uw, uh);
@@ -1075,8 +1179,8 @@ function actualizeazaCampia(acum) {
   const tinta = s5.pasi / PASI_INAPOI;
   s5.claritate += (tinta - s5.claritate) * Math.min(1, dt / 260);
 
-  if (s5.faza === 'viu' && acum - s5.t0 > 5200) { s5.faza = 'hambar'; s5.t0 = acum; }
-  if (s5.faza === 'hambar') {
+  if (s5.faza === 'viu' && acum - s5.t0 > 5200) { s5.faza = 'casa'; s5.t0 = acum; }
+  if (s5.faza === 'casa') {
     s5.plecare = Math.min(1, s5.plecare + dt / 2600);
     if (s5.plecare >= 1) s5.usi = Math.min(1, s5.usi + dt / 2200);
     if (s5.usi >= 1 && acum - s5.t0 > 9000) intoarceInMuzeuDinCampie(acum);
@@ -1177,7 +1281,7 @@ function deseneazaScena5(t, acum) {
   const cc = comp.getContext('2d');
   cc.clearRect(0, 0, T.latime, T.inaltime);
   cc.drawImage(T.panza, 0, 0);
-  usileHambarului(cc, T.latime, T.inaltime, s5.usi);
+  usileCasei(cc, T.latime, T.inaltime, s5.usi);
   taraniiIn(cc, T.latime, T.inaltime, acum);
 
   if (s5.faza === 'pixeli') {
@@ -1266,7 +1370,7 @@ function deseneazaScena5(t, acum) {
     ctx.restore();
     textIncadrat(vorba, W * 0.5, H * 0.84, W * 0.7, 26, 'bold 22px Georgia', '#3a3327');
   }
-  if (s5.faza === 'hambar' && s5.usi > 0.5) {
+  if (s5.faza === 'casa' && s5.usi > 0.5) {
     textIncadrat('Hai înăuntru.', W * 0.5, H * 0.86, W * 0.5, 26,
                  'bold 21px Georgia', '#4a4132');
   }

@@ -155,14 +155,17 @@ pânza se micșorează pe ecran și se limpezește. Asta e toată scena: **nu te
 ca să vezi mai bine, te depărtezi.**
 
 La al zecelea pas, cei trei **țărani** din tablou prind viață, îți fac cu mâna și
-te strigă: *De acolo, de departe, ne vezi mai bine?* Pe urmă se duc la hambarul de
-alături și-i deschid ușile.
+te strigă: *De acolo, de departe, ne vezi mai bine?* Pe urmă se duc la casa de
+alături și-i deschid ușile, poftindu-te înăuntru.
 
 ### 7.1 Pictura
 
 Impresionistă: tușe scurte, așezate pe direcții, cald lângă rece, auriu lângă
 violet. Cer cu contrast simultan, soare jos în stânga, dealuri violete în zare,
-grâu pe diagonală, o cărare, plopi, un hambar.
+grâu pe diagonală, o cărare, plopi, căpițe de fân și o **casă țărănească cu
+pridvor**: pereți văruiți albi, soclu de piatră de râu, acoperiș de olane roșii în
+patru ape cu turn peste intrare, și tot lemnul dat cu albastrul caselor de pe
+Valea Bistriței — stâlpi, arcade traforate, cercevele, ușă.
 
 Țăranii poartă **port românesc**, nu haine oarecare: ie de pânză de casă cu altiță
 cusută de-a curmezișul umărului și râuri pe mânecă, catrință vărgată cu dungi
@@ -170,7 +173,7 @@ negre și aurii pe roșu, brâu, năframă care încadrează fața, pălărie ne
 boruri mici, pieptar cu găitan, chimir de piele, iţari, opinci. Stau la depărtări
 diferite, ca să nu pară lipiți pe un plan.
 
-Fazele: `pixeli`, `sala`, `viu`, `hambar`. La capăt, te întorci în muzeu.
+Fazele: `pixeli`, `sala`, `viu`, `casa`. La capăt, te întorci în muzeu.
 
 ## 8. Reguli de implementare
 

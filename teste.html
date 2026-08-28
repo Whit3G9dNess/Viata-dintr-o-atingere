@@ -1912,7 +1912,7 @@ function ruleaza() {
     adevarat(areCuloarea(d, j.RECE_SALII), "sala n-are nicio notă rece");
   });
 
-  test("țăranii calcă spre hambar, nu plutesc", function () {
+  test("țăranii calcă spre casă, nu plutesc", function () {
     /* Trei siluete care alunecă orizontal, cu picioarele nemișcate, se citesc ca
        niște decupaje trase pe sfoară. Piciorul trebuie să se ducă și să vină. */
     const j = porneste({ latime: 1400, inaltime: 800 });
@@ -2047,7 +2047,7 @@ function ruleaza() {
       "cel mai înalt e cu numai " + Math.round((mare / mic - 1) * 100) + "% peste cel mai scund");
   });
 
-  test("când pleacă spre hambar, se micșorează toți", function () {
+  test("când pleacă spre casă, se micșorează toți", function () {
     /* Doi care se depărtează și unul care rămâne la fel rup depărtarea: ochiul
        vede imediat că al treilea nu merge nicăieri. */
     const j = porneste({ latime: 1400, inaltime: 800 });
@@ -2055,12 +2055,12 @@ function ruleaza() {
     for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     j.avanseaza(6000);                      // trece „viu", începe plecarea
     j.avanseaza(2000);
-    adevarat(j.s5.plecare > 0.3, "n-au pornit încă spre hambar: " + j.s5.plecare);
+    adevarat(j.s5.plecare > 0.3, "n-au pornit încă spre casă: " + j.s5.plecare);
     // mărimea fiecăruia la plecare, față de cea de la început
     for (let k = 0; k < j.TARANI.length; k++) {
       const t = j.TARANI[k];
       adevarat(j.marimeTaran(t, j.s5.plecare) < j.marimeTaran(t, 0) * 0.9,
-        "țăranul " + k + " nu s-a micșorat când a plecat spre hambar");
+        "țăranul " + k + " nu s-a micșorat când a plecat spre casă");
     }
   });
 
@@ -2075,16 +2075,16 @@ function ruleaza() {
     adevarat(/ne vezi mai bine/i.test(totTextul(d)), "nu strigă nimeni: " + totTextul(d));
   });
 
-  test("pe urmă deschid larg ușile hambarului", function () {
+  test("pe urmă deschid larg ușile casei", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inCampie(j);
     for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     j.avanseaza(9000);
-    egal(j.s5.faza, "hambar", "nu se ajunge la hambar");
-    adevarat(j.s5.usi > 0.5, "ușile hambarului stau închise: " + j.s5.usi);
+    egal(j.s5.faza, "casa", "nu se ajunge la casă");
+    adevarat(j.s5.usi > 0.5, "ușile casei stau închise: " + j.s5.usi);
   });
 
-  test("hambarul deschis te întoarce în muzeu, cu galeria însemnată", function () {
+  test("casa deschisă te întoarce în muzeu, cu galeria însemnată", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     j.mergiLaStarea("campie");
     j.intraInCampie(j.ceas.t);
