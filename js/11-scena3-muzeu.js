@@ -1397,7 +1397,14 @@ function actualizeazaMuzeu(acum) {
     if (niv >= 1 && acum - s3.ultimTic > 1000) { s3.ultimTic = acum; if (audio) sunetTicTac(); }
 
     // dacă utilizatorul refuză (nu apasă) după avertisment → diploma, apoi butonul fuge
-    if (s3.faza === 'nuMaApasa' && !s3.refuzArmat && acum - s3.ultimaActiune > 6500) {
+    /* Cercelul se supără fie când îl lași în pace o vreme, fie când îl apeși
+       prea des. Înainte se supăra numai de la liniște, iar fiecare apăsare
+       repornea socoteala — așa că cine apăsa întruna nu ajungea niciodată la
+       partea în care fuge, ci la a cincizecea apăsare, unde scoate aburi și reia
+       scena de la capăt. Din afară arăta ca un blocaj: apeși, apeși, și te
+       trezești iar la început. */
+    if (s3.faza === 'nuMaApasa' && !s3.refuzArmat &&
+        (acum - s3.ultimaActiune > 6500 || s3.presari >= 12)) {
       s3.refuzArmat = true;
       daDiploma();
     }

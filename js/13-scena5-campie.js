@@ -1149,6 +1149,20 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului)
   // pensula trece peste tot omul, ca peste restul tabloului
   tuseDeTaran(c, s, femeie, (samantaOmului || 0) * 97.3 + 5);
 
+  /* Și, la urmă, câteva fire de grâu cresc peste tălpi și peste poale. Fără ele,
+     omul stă *pe* pictură, ca un decupaj așezat deasupra; cu ele, stă *în* ea —
+     câmpul trece prin fața lui, așa cum trece prin fața oricui stă în lan.
+     Ăsta e lucrul care lipsea, nu încă un strat de tușe peste haine. */
+  const samGrau = (samantaOmului || 0) * 53.9 + 71;
+  for (let k = 0; k < 14; k++) {
+    const a = samanta(samGrau + k * 3.3), b = samanta(samGrau + k * 7.1);
+    tusa(c, (a - 0.5) * s * 0.66, s * (0.06 - b * 0.26),
+         s * (0.16 + b * 0.16), s * (0.016 + a * 0.018),
+         -1.35 + (a - 0.5) * 0.7,
+         ['#e8cf8a', '#d6b681', '#f2dc9d', '#c9a24a'][k % 4],
+         0.5 + b * 0.4);
+  }
+
   c.restore();
 }
 

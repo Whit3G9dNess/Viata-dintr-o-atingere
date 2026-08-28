@@ -12,6 +12,28 @@ const balon = {
 const urma = [];         // linia lăsată de balon când e urmărit (punctul devine linie!)
 let numarEvadari = 0;    // de câte ori a scăpat balonul de sub deget
 
+/* Cât de obosit e balonul, de la 0 la 1. Obosea și înainte — fugea tot mai
+   încet, cu fiecare scăpare — dar **nu se vedea**. Jucătorul atingea, balonul
+   fugea, și nimic nu-i spunea că se apropie de izbândă: aceeași imagine, aceeași
+   fugă, la nesfârșit. Un joc care cere răbdare trebuie să arate că răbdarea
+   lucrează, altfel e doar un joc care nu răspunde.
+
+   Aceeași cifră hrănește și fizica, și desenul: dacă ar fi socotită în două
+   locuri, balonul ar arăta obosit fără să fie, sau invers. */
+const EVADARI_PANA_SE_PREDA = 3;
+
+function catDeObositEBalonul() {
+  return Math.min(1, numarEvadari / EVADARI_PANA_SE_PREDA);
+}
+
+/* Cât de aproape trebuie să atingi ca să-l prinzi. Se lărgește cu fiecare
+   scăpare peste prag: cine a avut răbdare până aici n-are voie să rateze din
+   milimetri. */
+function razaDePrindere() {
+  const peste = Math.max(0, numarEvadari - EVADARI_PANA_SE_PREDA);
+  return balon.razaBaza * Math.min(2.4, 1 + peste * 0.45);
+}
+
 /* Membrana elastică a balonului: conturul e un inel de puncte legate cu
    „arcuri" invizibile. Când degetul apasă, punctele din dreptul lui se
    înfundă; arcurile transmit unda mai departe și balonul tremură ca o
@@ -84,7 +106,7 @@ function actualizeazaBalonul(acum) {
   const distanta = Math.hypot(dx, dy);
   const razaDeFuga = balon.razaBaza * Math.max(2.6 - numarEvadari * 0.2, 1.5);
   if (distanta < razaDeFuga && distanta > 0.001) {
-    const oboseala = Math.max(1 - numarEvadari * 0.12, 0.45);
+    const oboseala = Math.max(1 - catDeObositEBalonul() * 0.5, 0.4);
     const putere = (1 - distanta / razaDeFuga) * 0.55 * oboseala;
     balon.vx += (dx / distanta) * putere;
     balon.vy += (dy / distanta) * putere;

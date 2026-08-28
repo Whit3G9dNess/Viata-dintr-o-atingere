@@ -186,8 +186,28 @@ function traseuBalon(raza) {
 
 // Balonul de săpun: corp transparent, contur irizat (curcubeu), două reflexii
 function deseneazaBalonul(t, razaFortata = null, transparenta = 1) {
-  const respiratie = 1 + 0.045 * Math.sin(t * 0.0011 + balon.faza);
+  /* Cu cât e mai obosit, cu atât respiră mai rar și mai adânc — ca orice ființă
+     care a fugit destul. E singurul semn pe care îl are jucătorul că răbdarea
+     lui lucrează: altfel atinge, balonul fuge, și nimic nu se schimbă. */
+  const obosit = razaFortata !== null ? 0 : catDeObositEBalonul();
+  const respiratie = 1 + (0.045 + obosit * 0.05) *
+                     Math.sin(t * (0.0011 - obosit * 0.0005) + balon.faza);
   const raza = razaFortata !== null ? razaFortata : balon.razaBaza * respiratie;
+
+  /* Și i se aprinde o aură caldă, tot mai limpede, cât ține cât e de aproape să
+     se lase prins. Aceeași lumină care cheamă la buzunarul custodelui și la lupa
+     de pe consolă: în toată jucăria, lucrul care se lasă atins strălucește. */
+  if (obosit > 0.02) {
+    const bat = 0.6 + 0.4 * Math.sin(t * 0.004);
+    const aura = ctx.createRadialGradient(balon.x, balon.y, raza * 0.75,
+                                          balon.x, balon.y, raza * 1.85);
+    aura.addColorStop(0, `rgba(255, 246, 214, ${0.4 * obosit * bat * transparenta})`);
+    aura.addColorStop(1, 'rgba(255, 246, 214, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(balon.x, balon.y, raza * 1.85, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   const vitezaLui = Math.hypot(balon.vx, balon.vy);
   const turtire = Math.min(vitezaLui * 0.012, 0.16);

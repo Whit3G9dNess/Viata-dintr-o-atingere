@@ -367,6 +367,10 @@ return {
   DEFINITIE_LINIE: typeof DEFINITIE_LINIE !== "undefined" ? DEFINITIE_LINIE : null,
   DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   DURATA_TRANSFORMARII: typeof DURATA_TRANSFORMARII !== "undefined" ? DURATA_TRANSFORMARII : null,
+  EVADARI_PANA_SE_PREDA: typeof EVADARI_PANA_SE_PREDA !== "undefined" ? EVADARI_PANA_SE_PREDA : null,
+  catDeObositEBalonul: typeof catDeObositEBalonul !== "undefined" ? catDeObositEBalonul : null,
+  razaDePrindere: typeof razaDePrindere !== "undefined" ? razaDePrindere : null,
+  initMembrana: typeof initMembrana !== "undefined" ? initMembrana : null,
   numarEvadari: function () { return typeof numarEvadari !== "undefined" ? numarEvadari : null; },
   TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
   TEXT_FISA_IMPRESIONISM: typeof TEXT_FISA_IMPRESIONISM !== "undefined" ? TEXT_FISA_IMPRESIONISM : null,
@@ -2418,6 +2422,96 @@ function ruleaza() {
     const scris = totTextul(j.cadruCurat());
     adevarat(/suprafață bine delimitată de pigment/.test(scris),
       "definiția petei de culoare lipsește de pe cer");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Ca să nu rămâi blocat");
+
+  function laBalon(j) {
+    j.mergiLaStarea("balon");
+    j.balon.x = j.W() * 0.5; j.balon.y = j.H() * 0.5;
+    j.balon.razaBaza = Math.min(j.W(), j.H()) * 0.11;
+    j.initMembrana();          // pielea elastică, altfel n-are ce desena
+    j.avanseaza(100);
+  }
+
+  test("balonul arată că obosește, nu doar că obosește", function () {
+    /* Obosea și înainte — fugea tot mai încet — dar nimic nu se vedea. Jucătorul
+       atingea, balonul fugea, și nimic nu-i spunea că se apropie de izbândă. Un
+       joc care cere răbdare trebuie să arate că răbdarea lucrează. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    laBalon(j);
+    egal(j.catDeObositEBalonul(), 0, "balonul e obosit înainte să-l atingă cineva");
+    j.goleste();
+    j.avanseaza(16);
+    const odihnit = j.desene.length;
+
+    for (let k = 0; k < 2; k++) {
+      j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+      j.avanseaza(120);
+    }
+    adevarat(j.catDeObositEBalonul() > 0.5,
+      "după două scăpări balonul nu dă niciun semn de oboseală: " + j.catDeObositEBalonul());
+    j.goleste();
+    j.avanseaza(16);
+    adevarat(j.desene.length > odihnit,
+      "oboseala nu se vede pe ecran: același desen ca la început");
+  });
+
+  test("cine a avut răbdare nu ratează din milimetri", function () {
+    /* Peste pragul de scăpări, locul în care balonul se lasă prins se lărgește.
+       Altfel jocul cere și răbdare, și ochire — două lucruri deodată, dintre care
+       al doilea nu e nicăieri scris. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    laBalon(j);
+    const laInceput = j.razaDePrindere();
+    for (let k = 0; k < 6; k++) {
+      j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+      j.avanseaza(120);
+      if (j.stare() !== "balon") break;
+    }
+    adevarat(j.stare() === "transformare" || j.razaDePrindere() > laInceput * 1.3,
+      "nici după șase încercări nu se lasă prins mai ușor");
+  });
+
+  test("cercelul se supără și de la prea multe apăsări, nu doar de la liniște", function () {
+    /* Înainte se supăra numai după șase secunde și jumătate în care nu-l atingea
+       nimeni, iar fiecare apăsare repornea socoteala. Cine apăsa întruna nu
+       ajungea niciodată la partea în care fuge, ci la a cincizecea apăsare, unde
+       scoate aburi și reia scena de la capăt — din afară, un blocaj. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("nuMaApasa");
+    j.s3.presari = 0; j.s3.refuzArmat = false; j.s3.butonFuge = false;
+    // apăsări dese, fără nicio pauză în care s-ar putea supăra de plictiseală
+    for (let k = 0; k < 20 && j.s3.faza === "nuMaApasa" && !j.s3.butonFuge; k++) {
+      j.cursor.x = j.s3.butonX; j.cursor.y = j.s3.butonY;
+      j.click3(j.ceas.t);
+      j.avanseaza(120);
+    }
+    adevarat(j.s3.refuzArmat || j.s3.butonFuge || j.s3.faza === "usaDeschisa",
+      "cercelul nu s-a supărat nici după douăzeci de apăsări dese");
+    adevarat(j.s3.faza !== "aburi", "s-a ajuns la aburi, adică scena a luat-o de la capăt");
+  });
+
+  test("țăranii stau în lan, nu pe el", function () {
+    /* Câteva fire de grâu cresc peste tălpi și peste poale. Fără ele, omul stă
+       *pe* pictură, ca un decupaj așezat deasupra. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    j.goleste();
+    j.taranIn(j.panza.ctx, 800, 500, 0.5, 0.9, 0.5, "barbat", 0, 0, 0, 1);
+    const graul = ["#e8cf8a", "#d6b681", "#f2dc9d", "#c9a24a"];
+    let fire = 0;
+    for (const g of graul) fire += formeCu(j.desene, g).length;
+    adevarat(fire >= 8,
+      "peste tălpile țăranului cresc doar " + fire + " fire de grâu");
+    // și cresc jos, peste picioare, nu pe cap
+    const jos = [];
+    for (const g of graul) for (const f of formeCu(j.desene, g)) if (f.limite) jos.push(f.limite.y1);
+    adevarat(jos.length > 0 && Math.max.apply(null, jos) > 0.9 * 0.9 * 500,
+      "firele de grâu nu ajung până la tălpi");
   });
 
   /* ---------------------------------------------------------------- */

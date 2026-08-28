@@ -38,7 +38,7 @@ window.addEventListener('pointerdown', (e) => {
     const distanta = Math.hypot(balon.x - cursor.x, balon.y - cursor.y);
 
     // după ce a scăpat de câteva ori, balonul obosit poate fi prins cu un click precis
-    if (numarEvadari >= 3 && distanta < balon.razaBaza) {
+    if (numarEvadari >= EVADARI_PANA_SE_PREDA && distanta < razaDePrindere()) {
       stare = 'transformare';
       inceputulTransformarii = acum;
       minge.x = balon.x;
