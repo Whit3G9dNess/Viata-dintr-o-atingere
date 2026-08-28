@@ -628,8 +628,35 @@ function actualizeazaMingea(acum) {
   }
 }
 
+/* Stanga jos e a scrisului: acolo sta definitia petei de culoare, iar un elefant
+   care trece peste un text il face de necitit — si textul e tocmai lucrul pe care
+   scena il are de spus.
+
+   Marginea nu e o fractiune scrisa de mana, ci se socoteste din locul scrisului
+   si din latimea elefantului. Asa, daca se muta vreodata textul, se muta si
+   elefantul dupa el, fara sa mai caute nimeni cifra potrivita. */
+const MARGINEA_ELEFANTULUI = { dreapta: 0.9 };
+
+/* Cat de departe spre stanga ajunge silueta, socotit din mijlocul elefantului.
+   Capul si trompa stau pe partea aia, deci nu e simetric: masurat pe desen, in
+   unitatile lui, ca sa tina si cand se apropie si creste. */
+function intindereaSpreStanga() { return unitateElefant(elefant.scara) * 118; }
+
+/* Unde se opreste, ca sa nu intre cu capul in scris. Nu mai mult de 0.86 din
+   latime: pe un ecran ingust ar fi impins pana afara din cadru. */
+function margineaDinStanga() {
+  const dreaptaScrisului = W * 0.235 + Math.min(W * 0.34, 420) / 2 + W * 0.012;
+  return Math.min(W * 0.86, dreaptaScrisului + intindereaSpreStanga());
+}
+
 function actualizeazaElefantul(acum) {
-  elefant.fazaMers += 0.05;
+  /* Pasul ține de cât se mișcă, nu de cât trece ceasul. Cu o cadență fixă,
+     picioarele umblau de vreo trei ori pe secundă în timp ce trupul înainta cu
+     o treime de pixel — și elefantul părea că aleargă isteric pe loc. Când stă,
+     abia se leagănă: atât cât să respire, nu cât să bată pasul. */
+  const merge = elefant.stare === 'plimbare' || elefant.stare === 'vine' ||
+                elefant.stare === 'retrage';
+  elefant.fazaMers += merge ? 0.022 : 0.004;
   actualizeazaTrompa();   // netezește vârful trompei (mișcare firească)
 
   // clipitul: din când în când, ochiul se închide o clipită
@@ -640,8 +667,8 @@ function actualizeazaElefantul(acum) {
 
   if (elefant.stare === 'plimbare') {
     elefant.x += elefant.directie * 0.35;
-    if (elefant.x < W * 0.15) elefant.directie = 1;
-    if (elefant.x > W * 0.85) elefant.directie = -1;
+    if (elefant.x < margineaDinStanga()) elefant.directie = 1;
+    if (elefant.x > W * MARGINEA_ELEFANTULUI.dreapta) elefant.directie = -1;
 
     // au apărut destule culori? elefantul devine curios și se apropie
     if (pete.length >= PETE_PENTRU_ELEFANT && minge.mod === 'liber' && !minge.inBuzunar) {
@@ -653,9 +680,15 @@ function actualizeazaElefantul(acum) {
     }
   }
   else if (elefant.stare === 'vine') {
-    elefant.x += (elefant.tintaX - elefant.x) * 0.02;
+    /* Tinta se socoteste din nou in fiecare cadru, nu o data la plecare: pe drum
+       elefantul se apropie si creste, si odata cu el creste si locul de care are
+       nevoie ca sa nu intre cu capul in scris. Socotita o singura data, tinta
+       ramane in urma marginii — elefantul impinge in ea la nesfarsit, nu ajunge
+       niciodata, si mingea nu mai e ridicata: jocul se opreste acolo. */
+    const tinta = Math.max(margineaDinStanga(), elefant.tintaX);
+    elefant.x += (tinta - elefant.x) * 0.02;
     elefant.scara += (elefant.tintaScara - elefant.scara) * 0.02;
-    if (Math.abs(elefant.x - elefant.tintaX) < 5 && Math.abs(elefant.scara - elefant.tintaScara) < 0.02) {
+    if (Math.abs(elefant.x - tinta) < 5 && Math.abs(elefant.scara - elefant.tintaScara) < 0.02) {
       elefant.stare = 'priveste';
       elefant.inceputPrivit = acum;
       elefant.urmatorulClipit = acum + 300;   // clipește curios spre utilizator
@@ -741,11 +774,20 @@ function actualizeazaElefantul(acum) {
     }
   }
   else if (elefant.stare === 'retrage') {
-    elefant.x += (elefant.tintaX - elefant.x) * 0.015;
+    const tinta = Math.max(margineaDinStanga(), elefant.tintaX);
+    elefant.x += (tinta - elefant.x) * 0.015;
     elefant.scara += (elefant.tintaScara - elefant.scara) * 0.015;
-    if (Math.abs(elefant.x - elefant.tintaX) < 8 && Math.abs(elefant.scara - elefant.tintaScara) < 0.02) {
+    if (Math.abs(elefant.x - tinta) < 8 && Math.abs(elefant.scara - elefant.tintaScara) < 0.02) {
       elefant.stare = 'plimbare';
-      elefant.directie = Math.random() < 0.5 ? -1 : 1;
+      /* Cand se intoarce la plimbare, porneste tot spre stanga: din dreapta spre
+         stanga, ca la intrare. La intamplare, jumatate din reluari il trimiteau
+         inapoi spre marginea din dreapta, unde nu mai are unde merge. */
+      elefant.directie = -1;
     }
   }
+
+  /* Si, la urma de tot, o oprire ferma. Oricine l-ar chema spre stanga — mingea,
+     o pata, drumul lui —, aici se opreste. E singurul loc din care nu poate scapa
+     nicio stare noua, adaugata mai tarziu si uitand de scris. */
+  elefant.x = Math.max(margineaDinStanga(), elefant.x);
 }

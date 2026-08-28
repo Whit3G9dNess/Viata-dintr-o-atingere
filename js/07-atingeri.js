@@ -49,7 +49,9 @@ window.addEventListener('pointerdown', (e) => {
       // se ducă la ea, nu la elefantul care tocmai se ivește în depărtare
       minge.razaTinta = Math.min(W, H) * 0.155;
       minge.sol = H * 0.78;
-      elefant.x = W * 0.72;
+      /* Intră din dreapta și vine spre stânga. E partea liberă a ecranului —
+         în stânga jos stă scrisă definiția petei de culoare. */
+      elefant.x = W * 0.88;
       elefant.scara = 0.62;
       elefant.directie = -1;
       sunetTransformare();

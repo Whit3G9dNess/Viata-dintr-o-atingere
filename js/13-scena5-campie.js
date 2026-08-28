@@ -195,9 +195,30 @@ const marunt = { panza: null };
 /* ---- pictura ---- */
 
 // O tușă: o dâră scurtă de culoare, așezată pe o direcție anume.
+/* Amesteca doua culori scrise in hex. Perspectiva aeriana cere asta la tot
+   pasul: cu cat un lucru e mai departe, cu atat culoarea lui se trage mai mult
+   spre albastrul aerului dintre noi si el. */
+function amesteca(a, b, cat) {
+  const c1 = parseInt(a.slice(1), 16), c2 = parseInt(b.slice(1), 16);
+  const k = Math.max(0, Math.min(1, cat));
+  const r = Math.round(((c1 >> 16) & 255) * (1 - k) + ((c2 >> 16) & 255) * k);
+  const g = Math.round(((c1 >> 8) & 255) * (1 - k) + ((c2 >> 8) & 255) * k);
+  const b2 = Math.round((c1 & 255) * (1 - k) + (c2 & 255) * k);
+  return `rgb(${r}, ${g}, ${b2})`;
+}
+
+/* Mijlocul unei case din planul secundar, pe latimea panzei. */
+function cx0(cz, w) { return w * cz.x; }
+
 function tusa(c, x, y, lung, gros, unghi, culoare, alfa) {
   c.save();
-  c.globalAlpha = alfa === undefined ? 1 : alfa;
+  /* Transparenta tusei se *inmulteste* cu cea din jur, nu o inlocuieste. Scrisa
+     absolut, orice incercare de a trece o pensula mai usoara peste ceva — pui
+     globalAlpha mai mic si chemi campDeTuse — nu avea niciun efect: fiecare tusa
+     isi punea la loc transparenta ei si casa se umplea de bulgari. Aceeasi
+     capcana ca la manuta-balon, unde lasa un oval alb dupa ce se spargea. */
+  const stinsul = c.globalAlpha;
+  c.globalAlpha = (alfa === undefined ? 1 : alfa) * stinsul;
   c.translate(x, y);
   c.rotate(unghi);
   c.fillStyle = culoare;
@@ -259,6 +280,111 @@ function pictezaTablou(c, w, h) {
              ['#f2d489', '#e0b45e', '#c99a45', '#a97c33', '#8d6f8e', '#6f6b96',
               '#f7e6ae', '#d9a94f'], 131);
 
+  /* Satul din planul secundar. Fara el, campul era doar un camp: grau, un copac,
+     o casa — putea fi oriunde. Cateva acoperisuri si un pilc de copaci intre
+     zare si oameni spun ca astia au de unde veni si unde se intoarce, iar dealul
+     din spate capata masura.
+
+     Prima oara le-am pus chiar pe linia orizontului, cat un bob de mazare. Erau
+     acolo, dar nu se vedeau: la marimea la care se arata tabloul pe ecran, ajungeau
+     de cativa pixeli si se stergeau cu totul in albastru. Un lucru pe care nu-l vezi
+     nu e sugerat, e lipsa. Planul secundar e mai incoace, iar acolo au voie sa fie
+     cat o palma — tot fara ferestre si fara olane, ca sa nu sara in fata.
+
+     Culorile se trag spre albastrul aerului cu atat mai mult cu cat casa e mai
+     departe: asa lucreaza perspectiva aeriana, si tot ea leaga satul de dealuri. */
+  const CASE_IN_ZARE = [
+    { x: 0.055, d: 0.62, s: 1.05 }, { x: 0.150, d: 0.34, s: 0.86 },
+    { x: 0.245, d: 0.78, s: 0.78 }, { x: 0.330, d: 0.20, s: 0.70 },
+    { x: 0.395, d: 0.50, s: 0.80 }, { x: 0.470, d: 0.74, s: 0.62 },
+    { x: 0.545, d: 0.28, s: 0.95 }, { x: 0.900, d: 0.56, s: 0.80 },
+    { x: 0.965, d: 0.86, s: 0.62 }
+  ];
+  const ADANC = h * 0.14;   // cat tine planul secundar, de la zare in jos
+  for (let k = 0; k < CASE_IN_ZARE.length; k++) {
+    const cz = CASE_IN_ZARE[k];
+    /* `d` e cat de departe sta: 0 lipit de zare, 1 la marginea planului secundar.
+       Din el ies deodata si locul, si marimea, si cat de spalacita e culoarea —
+       trei lucruri care in natura vin din acelasi singur lucru, departarea. */
+    const cy = oriz + ADANC * cz.d;
+    const marime = (0.5 + cz.d * 0.5) * cz.s;
+    const cw = w * 0.105 * marime, ch = h * 0.088 * marime;
+    /* Cat de spalacita e culoarea. Prima oara le-am facut aproape albastre de
+       tot: erau acolo, dar nu se vedeau, si un lucru pe care nu-l vezi nu e
+       sugerat, e lipsa. */
+    const pierdut = 0.44 - cz.d * 0.24;
+
+    // umbra pe grau, ca sa stea pe pamant, nu pe el
+    c.fillStyle = `rgba(110, 96, 138, ${0.2 + cz.d * 0.1})`;
+    c.beginPath();
+    c.ellipse(cx0(cz, w) + cw * 0.1, cy + ch * 0.06, cw * 0.62, ch * 0.1, 0, 0, Math.PI * 2);
+    c.fill();
+
+    // peretele varuit, cu latura din umbra
+    c.fillStyle = amesteca('#f6ecd6', '#93a0c2', pierdut * 0.8);
+    c.fillRect(cx0(cz, w) - cw / 2, cy - ch * 0.55, cw, ch * 0.55);
+    c.fillStyle = amesteca('#c9b898', '#8590b4', pierdut * 0.9);
+    c.fillRect(cx0(cz, w) + cw * 0.22, cy - ch * 0.55, cw * 0.28, ch * 0.55);
+    /* Acoperisul e singurul lucru care da caracter unei case de departe: dupa el
+       stii ca e un sat, si nu niste pietre albe. De-aia se spalaceste mai putin
+       decat peretii — daca se trage tot in albastru, ramane o pata cenusie si nu
+       se mai citeste nimic. */
+    c.fillStyle = amesteca('#a85b34', '#8a92b8', pierdut * 0.62);
+    c.beginPath();
+    c.moveTo(cx0(cz, w) - cw * 0.66, cy - ch * 0.55);
+    c.lineTo(cx0(cz, w) - cw * 0.06, cy - ch * 1.02);
+    c.lineTo(cx0(cz, w) + cw * 0.72, cy - ch * 0.55);
+    c.closePath();
+    c.fill();
+    // o dunga de lumina pe muchia acoperisului: soarele bate din stanga
+    c.strokeStyle = amesteca('#f0c49c', '#a8b0cc', pierdut * 0.7);
+    c.lineWidth = Math.max(0.8, ch * 0.05);
+    c.beginPath();
+    c.moveTo(cx0(cz, w) - cw * 0.66, cy - ch * 0.55);
+    c.lineTo(cx0(cz, w) - cw * 0.06, cy - ch * 1.02);
+    c.stroke();
+  }
+
+  /* Pilcurile de copaci dintre case. Cresc mai sus decat acoperisurile, ca intr-un
+     sat adevarat, si sunt tot pete — doua tuse si un trunchi. */
+  const COPACI_IN_ZARE = [
+    { x: 0.020, d: 0.70, s: 1.05 }, { x: 0.105, d: 0.22, s: 0.75 },
+    { x: 0.200, d: 0.50, s: 0.95 }, { x: 0.290, d: 0.82, s: 0.80 },
+    { x: 0.365, d: 0.32, s: 0.88 }, { x: 0.435, d: 0.62, s: 1.00 },
+    { x: 0.505, d: 0.40, s: 0.85 }, { x: 0.590, d: 0.72, s: 0.95 },
+    { x: 0.655, d: 0.30, s: 0.78 }, { x: 0.845, d: 0.38, s: 0.85 },
+    { x: 0.955, d: 0.64, s: 1.05 }
+  ];
+  for (let k = 0; k < COPACI_IN_ZARE.length; k++) {
+    const t = COPACI_IN_ZARE[k];
+    const ty = oriz + ADANC * t.d;
+    const marime = (0.5 + t.d * 0.5) * t.s;
+    const tr = h * 0.055 * marime;
+    const tx = w * t.x;
+    const pierdut = 0.42 - t.d * 0.22;
+    // trunchiul, o dunga scurta
+    c.strokeStyle = amesteca('#5a4630', '#8590b4', pierdut + 0.1);
+    c.lineWidth = Math.max(0.9, tr * 0.16);
+    c.beginPath();
+    c.moveTo(tx, ty); c.lineTo(tx, ty - tr * 1.05);
+    c.stroke();
+    /* Coroana, din cinci pete asezate neregulat. Cu trei pete puse una peste
+       alta ieseau acadele: bile verzi identice pe betisoare, aliniate ca intr-o
+       gradina de plastic. Un pom vazut de departe are o parte mai grea, alta mai
+       rara, si nu seamana cu vecinul lui. */
+    for (let q = 0; q < 5; q++) {
+      const a = samanta(2400 + k * 11.3 + q * 3.7), b = samanta(2470 + k * 7.9 + q * 5.1);
+      const e = samanta(2530 + k * 4.3 + q * 9.1);
+      c.fillStyle = amesteca(['#6f8f52', '#587a45', '#82a05f', '#4e6b3a', '#93ab63'][q],
+                             '#93a0c2', pierdut + b * 0.14);
+      c.beginPath();
+      c.ellipse(tx + (a - 0.5) * tr * 1.15, ty - tr * (0.95 + b * 0.85),
+                tr * (0.34 + a * 0.3), tr * (0.3 + e * 0.34),
+                (a - 0.5) * 0.8, 0, Math.PI * 2);
+      c.fill();
+    }
+  }
+
   /* Ordinea de aici e ordinea depărtării, nu ordinea în care ne-au venit ideile.
      Ce e mai departe se pune primul, ca ce e mai aproape să treacă peste el.
      Înainte plopii se desenau la urmă și cădeau peste căpița din stânga — un
@@ -274,7 +400,9 @@ function pictezaTablou(c, w, h) {
      greutatea, iar oamenii care trec pe lângă el spun cât e de mare. Stă în
      spatele lor, cu rădăcina mai sus pe câmp — de-aia se și desenează aici, cu
      mult înaintea oamenilor. */
-  const cpX = w * 0.145, cpTalpa = h * 0.70, cpSus = h * 0.085;
+  /* Putin mai spre dreapta decat as fi pus din instinct: coroana tine w*0.11 in
+     lateral, si de la 0.145 ii iesea o treime din ea afara din panza. */
+  const cpX = w * 0.175, cpTalpa = h * 0.70, cpSus = h * 0.085;
   const cpInalt = cpTalpa - cpSus;
 
   // trunchiul: se subțiază de jos în sus, cu o îndoitură, ca orice copac crescut
@@ -284,16 +412,21 @@ function pictezaTablou(c, w, h) {
   scoarta.addColorStop(1, '#2f2418');
   c.fillStyle = scoarta;
   c.beginPath();
-  c.moveTo(cpX - w * 0.021, cpTalpa);
-  c.bezierCurveTo(cpX - w * 0.016, cpTalpa - cpInalt * 0.35,
-                  cpX - w * 0.011, cpTalpa - cpInalt * 0.6,
-                  cpX - w * 0.006, cpTalpa - cpInalt * 0.86);
-  c.lineTo(cpX + w * 0.006, cpTalpa - cpInalt * 0.86);
-  c.bezierCurveTo(cpX + w * 0.013, cpTalpa - cpInalt * 0.6,
-                  cpX + w * 0.018, cpTalpa - cpInalt * 0.35,
-                  cpX + w * 0.023, cpTalpa);
+  c.moveTo(cpX - w * 0.0135, cpTalpa);
+  c.bezierCurveTo(cpX - w * 0.010, cpTalpa - cpInalt * 0.35,
+                  cpX - w * 0.007, cpTalpa - cpInalt * 0.6,
+                  cpX - w * 0.004, cpTalpa - cpInalt * 0.86);
+  c.lineTo(cpX + w * 0.004, cpTalpa - cpInalt * 0.86);
+  c.bezierCurveTo(cpX + w * 0.008, cpTalpa - cpInalt * 0.6,
+                  cpX + w * 0.011, cpTalpa - cpInalt * 0.35,
+                  cpX + w * 0.015, cpTalpa);
   c.closePath();
   c.fill();
+  /* Scoarta, in tuse verticale. Fara ele trunchiul e o pana de lemn turnata
+     dintr-o bucata — singurul lucru neted intr-un tablou facut tot din pete. */
+  campDeTuse(c, cpX - w * 0.014, cpTalpa - cpInalt * 0.88, w * 0.028, cpInalt * 0.88,
+             40, -1.57, 0.4, h * 0.05, h * 0.006,
+             ['#6b5237', '#3f3122', '#7d6242', '#2f2418'], 1210);
   // trei crengi care ies din trunchi spre coroană
   c.strokeStyle = '#3f3122';
   c.lineCap = 'round';
@@ -319,18 +452,31 @@ function pictezaTablou(c, w, h) {
     { fx: -0.11, fy: 0.29, r: 0.070, l: 0.8 },
     { fx: 0.11, fy: 0.28, r: 0.074, l: 0.9 }
   ];
+  /* Doua treceri peste fiecare palc: intai una deasa, care face masa, apoi una
+     rara pe deasupra, cu tuse mai mari si mai deschise, care prinde lumina.
+     Cu o singura trecere de patruzeci de tuse, coroana ramanea o mana de frunze
+     razlete — se vedea cerul prin ea mai mult decat frunzisul. */
   for (let k = 0; k < PALCURI.length; k++) {
     const p = PALCURI[k];
     const px = cpX + w * p.fx, py = cpSus + cpInalt * p.fy, pr = h * p.r;
     const paleta = p.l > 0.8
-      ? ['#8fae5c', '#a6c06e', '#7a9a4c', '#c2d489']
-      : (p.l > 0.65 ? ['#6f9048', '#88a85a', '#5c7c3c'] : ['#4e6b34', '#5f7f40', '#3d5628']);
-    campDeTuse(c, px - pr, py - pr * 0.8, pr * 2, pr * 1.6, 46, -0.5, 1.6,
-               h * 0.028, h * 0.017, paleta, 1300 + k * 61);
+      ? ['#8fae5c', '#a6c06e', '#7a9a4c', '#c2d489', '#9dba68']
+      : (p.l > 0.65 ? ['#6f9048', '#88a85a', '#5c7c3c', '#7f9c52']
+                    : ['#4e6b34', '#5f7f40', '#3d5628', '#556f3a']);
+    campDeTuse(c, px - pr, py - pr * 0.82, pr * 2, pr * 1.64, 130, -0.5, 1.6,
+               h * 0.034, h * 0.021, paleta, 1300 + k * 61);
+    campDeTuse(c, px - pr * 0.86, py - pr * 0.7, pr * 1.72, pr * 1.4, 34, -0.9, 1.9,
+               h * 0.042, h * 0.016,
+               p.l > 0.8 ? ['#c2d489', '#d6e0a2'] : ['#8fae5c', '#a6c06e'],
+               1380 + k * 47);
   }
-  // câteva frunze răzlețe pe cer, ca marginea coroanei să nu fie tăiată cu foarfeca
-  campDeTuse(c, cpX - w * 0.10, cpSus - h * 0.02, w * 0.20, cpInalt * 0.62, 26, -0.5, 2.2,
-             h * 0.02, h * 0.012, ['#8fae5c', '#6f9048', '#a6c06e'], 1450);
+  /* Cateva frunze razlete chiar la marginea coroanei, ca sa nu para taiata cu
+     foarfeca. Cat coroana, nu mai mult: prima oara se imprastiau pe o cutie cu
+     mult mai lata decat copacul si ramanea o dunga verde plutind singura pe cer,
+     in stanga, lipita de nimic. */
+  campDeTuse(c, cpX - w * 0.062, cpSus + cpInalt * 0.10, w * 0.124, cpInalt * 0.52,
+             30, -0.5, 2.2, h * 0.022, h * 0.013,
+             ['#8fae5c', '#6f9048', '#a6c06e'], 1450);
 
   // umbra copacului pe grâu
   c.fillStyle = 'rgba(104, 88, 130, 0.28)';
@@ -596,6 +742,35 @@ function pictezaTablou(c, w, h) {
   campDeTuse(c, w * 0.3, oriz + h * 0.06, w * 0.22, h * 0.5, 220, 1.15, 0.4,
              h * 0.05, h * 0.014, ['#e8cfa0', '#d6b681', '#c3a273', '#efe0bb'], 211);
 
+  /* Pensula trece si peste casa. Pana aici, casa era singurul lucru din tablou
+     desenat — contururi curate, culori intinse plat, olane numarate — intr-un
+     peisaj facut numai din pete. Se citea ca un decupaj lipit peste pictura, si
+     tocmai despre asta era vorba: „este pictata impresionist. Doar taranii sunt
+     realisti". Tusele nu ascund casa, ii rup doar marginile si ii sparg
+     suprafetele, atat cat sa fie de aceeasi mana cu restul.
+
+     Culorile sunt luate din ea insasi: alb de var, albastru de tamplarie, rosu de
+     olane. O paleta straina ar mansti-o, nu ar picta-o. */
+  const KC = geomCasa(w, h);
+  c.save();
+  /* Usor de tot. Prima incercare a fost cu tuse pline, si casa s-a umplut de
+     bulgari rosii — parea stropita cu noroi, nu pictata. O pensula care se vede
+     mai tare decat lucrul peste care trece nu picteaza, murdareste: destul cat sa
+     rupa conturul si sa sparga suprafata plata, si sa se opreasca acolo.
+     Fiecare culoare pe locul ei: rosul numai pe acoperis, varul si albastrul
+     numai pe pereti. O singura cutie peste toata casa arunca olane pe pereti. */
+  c.globalAlpha = 0.26;
+  campDeTuse(c, KC.x - KC.lat * 0.05, KC.sus - KC.inalt * 0.04,
+             KC.lat * 1.10, KC.inalt * 0.44,
+             70, -0.25, 1.2, h * 0.022, h * 0.009,
+             ['#c0553a', '#a8462f', '#e8956b', '#f0c49c'], 1610);
+  c.globalAlpha = 0.22;
+  campDeTuse(c, KC.x - KC.lat * 0.02, KC.sus + KC.inalt * 0.40,
+             KC.lat * 1.04, (KC.talpa + KC.soclu) - (KC.sus + KC.inalt * 0.40),
+             90, -0.4, 1.5, h * 0.02, h * 0.009,
+             ['#f2ece0', '#ded4c0', '#b6a893', ALBASTRU_LUMINA, '#8d7f6c'], 1660);
+  c.restore();
+
   // lumina care trece peste tot, la sfârșit: unifică tușele
   const suflu = c.createLinearGradient(w * 0.2, 0, w, h);
   suflu.addColorStop(0, 'rgba(255, 236, 190, 0.22)');
@@ -748,7 +923,7 @@ function manecaTaran(c, s, lung, lat) {
 
    Toate măsurile sunt în `s`, mărimea omului, ca fața să se strângă odată cu el
    când se depărtează. */
-function chipTaran(c, s, femeie, acum) {
+function chipTaran(c, s, femeie, acum, dinSpate) {
   const cy = -s * 1.02, rx = s * 0.105, ry = s * 0.128;
 
   // craniul: un ou, lat la tâmple, îngustat spre bărbie
@@ -783,6 +958,61 @@ function chipTaran(c, s, femeie, acum) {
     c.quadraticCurveTo(lat * rx * 0.82, cy - ry * 0.2, lat * rx * 0.72, cy - ry * 0.5);
     c.closePath();
     c.fill();
+  }
+
+  if (dinSpate) {
+    /* Ceafa. Cand pleaca spre casa, oamenii se intorc cu spatele — nimeni nu
+       merge cu spatele inainte, si un chip care te priveste in timp ce se
+       departeaza strica tot drumul.
+
+       De la spate nu se schimba mai nimic din port: camasa, pieptarul, braul,
+       altita sunt la fel si pe dinapoi. Se schimba capul, si atat: in locul
+       ochilor, al nasului si al gurii vine parul, iar ceafa ramane in umbra,
+       fiindca soarele bate din fata tabloului. */
+    const par = femeie ? '#4b3524' : '#3b2a1c';
+    c.fillStyle = par;
+    c.beginPath();
+    c.ellipse(0, cy - ry * 0.12, rx * 0.94, ry * 0.9, 0, 0, Math.PI * 2);
+    c.fill();
+    if (femeie) {
+      // conciul strans sub naframa, cu nodul lui
+      c.fillStyle = PORT_ROMANESC.panza;
+      c.beginPath();
+      c.ellipse(0, cy - ry * 0.3, rx * 0.98, ry * 0.82, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = 'rgba(120, 96, 66, 0.35)';
+      c.beginPath();
+      c.ellipse(0, cy + ry * 0.42, rx * 0.5, ry * 0.3, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = par;
+      c.fillRect(-rx * 0.13, cy + ry * 0.5, rx * 0.26, ry * 0.55);
+    } else {
+      // cateva suvite peste ceafa, sub borul palariei
+      c.strokeStyle = '#2c1f14';
+      c.lineWidth = Math.max(0.5, s * 0.008);
+      for (let k = -2; k <= 2; k++) {
+        c.beginPath();
+        c.moveTo(k * rx * 0.3, cy - ry * 0.2);
+        c.quadraticCurveTo(k * rx * 0.34, cy + ry * 0.4, k * rx * 0.26, cy + ry * 0.72);
+        c.stroke();
+      }
+    }
+    // umbra pe ceafa: lumina vine din fata tabloului, deci spatele capului sta in umbra
+    const umbraCefei = c.createRadialGradient(0, cy - ry * 0.4, 0, 0, cy, ry * 1.3);
+    umbraCefei.addColorStop(0, 'rgba(40, 28, 18, 0)');
+    umbraCefei.addColorStop(1, 'rgba(40, 28, 18, 0.45)');
+    c.fillStyle = umbraCefei;
+    c.beginPath();
+    c.ellipse(0, cy - ry * 0.12, rx * 0.96, ry * 0.94, 0, 0, Math.PI * 2);
+    c.fill();
+    // urechile, la marginea siluetei
+    c.fillStyle = '#c99a6d';
+    for (const lat of [-1, 1]) {
+      c.beginPath();
+      c.ellipse(lat * rx * 0.93, cy, rx * 0.13, ry * 0.2, 0, 0, Math.PI * 2);
+      c.fill();
+    }
+    return;
   }
 
   // sprâncenele
@@ -948,7 +1178,7 @@ function tuseDeTaran(c, s, femeie, samantaOmului) {
    Ordinea de desen contează mai mult decât orice altceva aici: întâi picioarele,
    pe urmă mânecile, abia apoi trupul peste ele. Desenate invers, fiecare mădular
    își arăta muchia lipită de cămașă. */
-function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului) {
+function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului, pleaca) {
   const s = h * marime;
   const femeie = tip === 'femeie';
   const calca = Math.max(0, Math.min(1, mers || 0));
@@ -960,9 +1190,21 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului)
   const salt = calca * Math.abs(Math.cos(faza)) * s * 0.022;
   const legan = Math.sin(faza * 2) * calca * 0.03;
 
+  /* Intoarcerea spre casa. Nu o clipire de la fata la ceafa, ci o rasucire: cat
+     tine, omul se ingusteaza pana se vede din muchie, apoi se largeste la loc —
+     acelasi lucru care se intampla si cu canaturile usii, si din acelasi motiv,
+     ca panza e plata si nu are adancime in care sa se roteasca ceva.
+     La jumatatea rasucirii, cand oricum nu se vede aproape nimic, chipul lasa
+     locul cefei. */
+  const intors = Math.max(0, Math.min(1, ((pleaca || 0) - 0.02) / 0.13));
+  const dinSpate = intors > 0.5;
+  const ingustare = intors > 0 && intors < 1
+    ? Math.max(0.14, Math.abs(Math.cos(intors * Math.PI))) : 1;
+
   c.save();
   c.translate(w * tx, h * ty - salt);
   c.rotate(legan);
+  if (ingustare < 1) c.scale(ingustare, 1);
 
   // umbra de sub el, care se strânge când sare
   c.fillStyle = 'rgba(90, 72, 40, 0.22)';
@@ -1095,7 +1337,7 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului)
   c.fillRect(-s * 0.045, -s * 0.95, s * 0.09, s * 0.07);
   c.fillStyle = 'rgba(120, 92, 66, 0.35)';
   c.fillRect(-s * 0.045, -s * 0.95, s * 0.09, s * 0.022);
-  chipTaran(c, s, femeie, acum);
+  chipTaran(c, s, femeie, acum, dinSpate);
 
   if (femeie) {
     /* Năframa: se leagă peste creștet și pe după obraji, dar lasă fața la
@@ -1147,6 +1389,7 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului)
   }
 
   // pensula trece peste tot omul, ca peste restul tabloului
+  /* (chipul s-a desenat mai sus, cu fata sau cu ceafa, dupa cum merge) */
   tuseDeTaran(c, s, femeie, (samantaOmului || 0) * 97.3 + 5);
 
   /* Și, la urmă, câteva fire de grâu cresc peste tălpi și peste poale. Fără ele,
@@ -1180,10 +1423,13 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului)
    depărtarea și se aduna peste ea, așa că cel din fund ieșea de două ori mai mic
    decât cel din față — o depărtare pe care ochiul o citea ca pe o greșeală, nu
    ca pe o distanță. */
+/* Doi oameni, o femeie si un barbat. Erau trei, si al treilea nu spunea nimic
+   in plus: statea intre ceilalti doi ca sa umple locul. Doi se citesc dintr-o
+   privire — el mai in fata, ea mai in adanc — si intre ei ramane camp, care e
+   tocmai subiectul tabloului. */
 const TARANI = [
-  { x: 0.24, y: 0.93, statura: 1.00, tip: 'barbat' },
-  { x: 0.37, y: 0.86, statura: 0.92, tip: 'femeie' },
-  { x: 0.49, y: 0.81, statura: 1.08, tip: 'barbat' }
+  { x: 0.255, y: 0.935, statura: 1.00, tip: 'barbat' },
+  { x: 0.430, y: 0.815, statura: 0.94, tip: 'femeie' }
 ];
 
 /* Cât de mare se vede un om care stă pe câmp.
@@ -1223,51 +1469,102 @@ function taraniiIn(c, w, h, acum) {
     const x = intre(t.x, 0.775 + k * 0.018, pleaca);
     const y = intre(t.y, 0.565 + k * 0.006, pleaca);
     taranIn(c, w, h, x, y, marimeTaran(t, pleaca), t.tip,
-            salut * (1 - pleaca), acum + k * 260, mers, k + 1);
+            salut * (1 - pleaca), acum + k * 260, mers, k + 1, pleaca);
   }
 }
 
 /* Ușa casei: două canaturi albastre cu tăblii, care se dau în lături. Era o ușă
    de șură, din scânduri brune bătute în cuie — se potrivea cu hambarul, nu cu o
    casă în care ești poftit. */
+/* Usile casei, care se deschid la capatul drumului.
+
+   Se roteau, pur si simplu: fiecare canat se invartea in jurul balamalei cu
+   `c.rotate`. Dar pe o pinza plata nu exista adancime in care sa se roteasca, asa
+   ca amandoua se rasturnau lateral — doua scanduri care cad, nu o usa care se
+   deschide.
+
+   O usa vazuta din fata face altceva: nu se inclina deloc, ci se *ingusteaza*.
+   Canatul ramane drept si vertical, iar latimea lui pe care o mai vezi scade cu
+   cosinusul unghiului, pana cand, deschis de tot, nu mai vezi decat muchia. Ce
+   creste in loc e golul negru dintre canaturi, si dungita de lemn a muchiei, cu
+   atat mai lata cu cat usa e mai deschisa. Asta face ochiul sa citeasca „se
+   deschide", nu rotatia. */
 function usileCasei(c, w, h, deschidere) {
   const K = geomCasa(w, h);
   const ux = K.usaX, uy = K.usaY, uw = K.usaW, uh = K.usaH;
+  const unghi = Math.max(0, Math.min(1, deschidere)) * 1.32;
+  const ramas = Math.cos(unghi);      // cat din latimea canatului se mai vede
+  const muchie = Math.sin(unghi);     // cat din grosimea lui a iesit la vedere
+
+  /* Intai golul: intunericul tindei, care se lumineaza dinauntru. Se vede numai
+     pe unde s-au dat canaturile la o parte, fiindca peste el vin ele. */
+  const tinda = c.createLinearGradient(ux, uy, ux, uy + uh);
+  tinda.addColorStop(0, '#241c15');
+  tinda.addColorStop(1, '#120d09');
+  c.fillStyle = tinda;
+  c.fillRect(ux, uy, uw, uh);
+
+  if (deschidere > 0.05) {
+    /* Lumina din casa. Cade pe pragul de jos, nu pe tot golul: asa se simte ca
+       vine dinauntru, de la o lampa asezata pe masa, nu ca e o folie galbena
+       lipita peste usa. */
+    const lum = c.createRadialGradient(ux + uw / 2, uy + uh * 0.72, 0,
+                                       ux + uw / 2, uy + uh * 0.72, uh * 0.72);
+    lum.addColorStop(0, `rgba(255, 226, 158, ${0.72 * deschidere})`);
+    lum.addColorStop(0.55, `rgba(232, 176, 96, ${0.3 * deschidere})`);
+    lum.addColorStop(1, 'rgba(232, 176, 96, 0)');
+    c.fillStyle = lum;
+    c.fillRect(ux, uy, uw, uh);
+  }
 
   for (const lat of [-1, 1]) {
+    /* Balamaua sta la tocul din partea ei, iar canatul se ingusteaza *spre*
+       balama. Stanga tine de la ux spre dreapta, dreapta de la ux+uw spre
+       stanga — de-aia semnul intra numai in capetele intervalului, nu in scara:
+       amandoua se scurteaza la fel, doar ca fiecare spre partea ei. */
+    const bx = lat < 0 ? ux : ux + uw;
     c.save();
-    c.translate(lat < 0 ? ux : ux + uw, uy);
-    c.rotate(lat * deschidere * 1.15);
+    c.translate(bx, uy);
+    c.scale(ramas, 1);
     const x0 = lat < 0 ? 0 : -uw / 2;
-    // canatul
+
+    // canatul: fata vopsita, cu lumina dinspre stanga sus
     const lemn = c.createLinearGradient(x0, 0, x0 + uw / 2, uh);
     lemn.addColorStop(0, ALBASTRU_LUMINA);
     lemn.addColorStop(0.4, ALBASTRU_CASA);
     lemn.addColorStop(1, ALBASTRU_UMBRA);
     c.fillStyle = lemn;
     c.fillRect(x0, 0, uw / 2, uh);
-    // cele două tăblii, una sus și una jos
+    // cele doua tablii, una sus si una jos
     c.fillStyle = ALBASTRU_UMBRA;
     c.fillRect(x0 + uw * 0.06, uh * 0.07, uw * 0.38, uh * 0.36);
     c.fillRect(x0 + uw * 0.06, uh * 0.52, uw * 0.38, uh * 0.4);
     c.fillStyle = ALBASTRU_LUMINA;
     c.fillRect(x0 + uw * 0.08, uh * 0.09, uw * 0.34, uh * 0.32);
     c.fillRect(x0 + uw * 0.08, uh * 0.54, uw * 0.34, uh * 0.36);
-    // clanța de alamă
+    // clanta de alama, pe marginea libera — pleaca odata cu canatul
     c.fillStyle = '#c9a227';
     c.beginPath();
     c.arc(x0 + (lat < 0 ? uw * 0.44 : uw * 0.06), uh * 0.5, uw * 0.03, 0, Math.PI * 2);
     c.fill();
     c.restore();
+
+    if (muchie > 0.02) {
+      /* Grosimea canatului, iesita la vedere. Fara ea, usa deschisa arata ca o
+         hartie taiata: se ingusteaza pana dispare, fara sa fi fost vreodata din
+         lemn. E umbrita, fiindca sta intoarsa dinspre soare. */
+      const liber = lat < 0 ? ux + uw / 2 * ramas : ux + uw - uw / 2 * ramas;
+      c.fillStyle = 'rgba(30, 40, 58, 0.62)';
+      c.fillRect(liber - (lat < 0 ? 0 : uw * 0.075 * muchie), uy,
+                 uw * 0.075 * muchie, uh);
+    }
   }
 
-  // lumina care iese pe ușa deschisă
-  if (deschidere > 0.2) {
-    const lum = c.createLinearGradient(ux, uy, ux, uy + uh);
-    lum.addColorStop(0, `rgba(255, 236, 180, ${0.55 * deschidere})`);
-    lum.addColorStop(1, 'rgba(255, 236, 180, 0)');
-    c.fillStyle = lum;
-    c.fillRect(ux, uy, uw, uh);
+  /* Pragul: o dunga de piatra tocita de atatea intrari, care leaga golul de
+     drum. Se vede numai cand usa e deschisa — inainte, canaturile il acopera. */
+  if (deschidere > 0.15) {
+    c.fillStyle = `rgba(168, 152, 128, ${0.5 * deschidere})`;
+    c.fillRect(ux, uy + uh - uh * 0.022, uw, uh * 0.022);
   }
 }
 
@@ -1479,9 +1776,10 @@ function deseneazaScena5(t, acum) {
     }
   }
 
-  // strigătul lor
+  /* Strigatul lor, scris. A fost o vreme rostit cu vocea calculatorului — se
+     auzea, dar suna a robot, nu a om care striga peste camp. Mai bine citit. */
   if (s5.faza === 'viu') {
-    const vorba = 'De acolo, de departe, ne vezi mai bine?';
+    const vorba = 'De acolo, de departe, ne vezi mai bine? Hai cu noi!';
     ctx.font = 'bold 22px Georgia';
     const latV = ctx.measureText(vorba).width;
     ctx.save();

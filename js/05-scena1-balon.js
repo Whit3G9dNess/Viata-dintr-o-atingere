@@ -20,7 +20,11 @@ let numarEvadari = 0;    // de câte ori a scăpat balonul de sub deget
 
    Aceeași cifră hrănește și fizica, și desenul: dacă ar fi socotită în două
    locuri, balonul ar arăta obosit fără să fie, sau invers. */
-const EVADARI_PANA_SE_PREDA = 3;
+/* De cate ori scapa balonul inainte sa se lase prins. Erau trei — se termina
+   inainte sa apuci sa citesti definitiile scrise pe fundal, si atunci scrisul
+   statea degeaba acolo. Fuga e chiar timpul de citit: cat alergi dupa punct, ai
+   sub ochi ce e punctul si ce e linia. */
+const EVADARI_PANA_SE_PREDA = 5;
 
 function catDeObositEBalonul() {
   return Math.min(1, numarEvadari / EVADARI_PANA_SE_PREDA);
@@ -129,10 +133,20 @@ function actualizeazaBalonul(acum) {
   if (balon.y < m)     { balon.y = m;     balon.vy = Math.abs(balon.vy) * 0.6; }
   if (balon.y > H - m) { balon.y = H - m; balon.vy = -Math.abs(balon.vy) * 0.6; }
 
-  // odată gâdilat, balonul emoționat lasă în urmă o linie — punctul devine linie
+  /* Odata gadilat, balonul lasa in urma o linie — punctul devine linie, si asta
+     e tot ce are pagina de spus. Inainte urma se stergea din coada dupa vreo doua
+     secunde si jumatate: ramanea o codita in urma balonului, nu o linie. Acum
+     ramane tot drumul, de la prima fuga incoace, si se vede negru pe alb ca linia
+     nu e altceva decat un punct care a mers.
+
+     Punctele prea apropiate nu se mai tin minte: cand balonul abia se clatina, ar
+     aduna sute de puncte in acelasi loc fara sa adauge un milimetru de linie. */
   if (numarEvadari >= 1) {
-    urma.push({ x: balon.x, y: balon.y });
-    if (urma.length > 160) urma.shift();
+    const ultim = urma[urma.length - 1];
+    if (!ultim || Math.hypot(balon.x - ultim.x, balon.y - ultim.y) > 2.5) {
+      urma.push({ x: balon.x, y: balon.y });
+      if (urma.length > 2600) urma.shift();
+    }
   }
 
   if (esteAbsent() && acum - balon.ultimaChemare > 9000) {

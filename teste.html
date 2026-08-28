@@ -368,6 +368,14 @@ return {
   DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   DURATA_TRANSFORMARII: typeof DURATA_TRANSFORMARII !== "undefined" ? DURATA_TRANSFORMARII : null,
   EVADARI_PANA_SE_PREDA: typeof EVADARI_PANA_SE_PREDA !== "undefined" ? EVADARI_PANA_SE_PREDA : null,
+  MARGINEA_ELEFANTULUI: typeof MARGINEA_ELEFANTULUI !== "undefined" ? MARGINEA_ELEFANTULUI : null,
+  margineaDinStanga: typeof margineaDinStanga !== "undefined" ? margineaDinStanga : null,
+  intindereaSpreStanga: typeof intindereaSpreStanga !== "undefined" ? intindereaSpreStanga : null,
+  amesteca: typeof amesteca !== "undefined" ? amesteca : null,
+  usileCasei: typeof usileCasei !== "undefined" ? usileCasei : null,
+  geomCasa: typeof geomCasa !== "undefined" ? geomCasa : null,
+  urma: typeof urma !== "undefined" ? urma : null,
+  deseneazaUrma: typeof deseneazaUrma !== "undefined" ? deseneazaUrma : null,
   catDeObositEBalonul: typeof catDeObositEBalonul !== "undefined" ? catDeObositEBalonul : null,
   razaDePrindere: typeof razaDePrindere !== "undefined" ? razaDePrindere : null,
   initMembrana: typeof initMembrana !== "undefined" ? initMembrana : null,
@@ -2041,7 +2049,7 @@ function ruleaza() {
   });
 
   test("țăranii nu sunt de aceeași înălțime", function () {
-    /* Trei oameni croiți la fel arată a decupaje din aceeași matriță. */
+    /* Oameni croiți la fel arată a decupaje din aceeași matriță. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     inCampie(j);
     adevarat(j.TARANI !== null, "lipsește lista țăranilor");
@@ -2075,8 +2083,8 @@ function ruleaza() {
     egal(j.s5.pasi, 10, "n-am ajuns la zece pași");
     aproape(j.s5.claritate, 1, 0.02, "tabloul nu s-a limpezit de tot");
     egal(j.s5.faza, "viu", "țăranii nu prind viață");
-    const d = j.cadruCurat();
-    adevarat(/ne vezi mai bine/i.test(totTextul(d)), "nu strigă nimeni: " + totTextul(d));
+    const scris = totTextul(j.cadruCurat());
+    adevarat(/ne vezi mai bine/i.test(scris), "nu strigă nimeni: " + scris);
   });
 
   test("pe urmă deschid larg ușile casei", function () {
@@ -2435,6 +2443,96 @@ function ruleaza() {
     j.avanseaza(100);
   }
 
+  test("elefantul nu calcă peste scrisul din stânga jos", function () {
+    /* În stânga jos stă definiția petei de culoare. Un elefant care trece peste
+       un text îl face de necitit — și textul e tocmai ce are scena de spus.
+       Se măsoară marginea siluetei, nu mijlocul lui: capul și trompa stau tocmai
+       pe partea dinspre scris. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    adevarat(typeof j.margineaDinStanga === "function", "lipsește marginea elefantului");
+    const dreaptaScrisului = j.W() * 0.235 + Math.min(j.W() * 0.34, 420) / 2;
+    j.elefant.stare = "plimbare";
+    let celMaiLaStanga = j.W();
+    for (let k = 0; k < 4000; k++) {
+      j.avanseaza(16);
+      celMaiLaStanga = Math.min(celMaiLaStanga, j.elefant.x - j.intindereaSpreStanga());
+    }
+    adevarat(celMaiLaStanga >= dreaptaScrisului,
+      "capul elefantului ajunge la " + Math.round(celMaiLaStanga) +
+      ", iar scrisul ține până la " + Math.round(dreaptaScrisului));
+  });
+
+  test("nici când fuge după minge nu intră în scris", function () {
+    /* Mingea poate să cadă oriunde, iar elefantul vine după ea. Dacă oprirea ar
+       fi scrisă numai în plimbare, prima minge aruncată în stânga l-ar duce peste
+       text — și tot așa orice stare adăugată mai târziu. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    const dreaptaScrisului = j.W() * 0.235 + Math.min(j.W() * 0.34, 420) / 2;
+    j.minge.x = j.W() * 0.08;
+    j.elefant.stare = "vine";
+    j.elefant.tintaX = j.W() * 0.05;
+    let celMaiLaStanga = j.W();
+    for (let k = 0; k < 1500; k++) {
+      j.avanseaza(16);
+      celMaiLaStanga = Math.min(celMaiLaStanga, j.elefant.x - j.intindereaSpreStanga());
+    }
+    adevarat(celMaiLaStanga >= dreaptaScrisului,
+      "după minge, capul ajunge la " + Math.round(celMaiLaStanga) +
+      ", peste scrisul care ține până la " + Math.round(dreaptaScrisului));
+  });
+
+  test("nu rămâne împins în margine, cu mingea pe jos", function () {
+    /* Marginea crește odată cu elefantul: pe drum se apropie și se face mai mare,
+       deci îi trebuie mai mult loc ca să nu intre cu capul în scris. O țintă
+       socotită o singură dată, la plecare, rămâne în urma marginii — iar el
+       împinge în ea la nesfârșit, nu ajunge niciodată, și mingea nu mai e ridicată.
+       Din afară: jocul s-a blocat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.minge.x = j.W() * 0.15;              // mingea cade tocmai peste scris
+    j.elefant.stare = "vine";
+    j.elefant.tintaX = j.W() * 0.2;
+    j.elefant.tintaScara = 1.1;
+    let ajuns = false;
+    for (let k = 0; k < 1200 && !ajuns; k++) {
+      j.avanseaza(16);
+      if (j.elefant.stare !== "vine") ajuns = true;
+    }
+    adevarat(ajuns, "a rămas în 'vine' la nesfârșit, împins în margine");
+  });
+
+  test("când stă, elefantul vine din dreapta spre stânga", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.elefant.stare = "plimbare";
+    j.elefant.x = j.W() * 0.88;
+    j.elefant.directie = -1;
+    const pornire = j.elefant.x;
+    j.avanseaza(3000);
+    adevarat(j.elefant.x < pornire, "n-a pornit spre stânga");
+    egal(j.elefant.directie, -1, "s-a răzgândit prea devreme");
+  });
+
+  test("elefantul nu aleargă isteric când stă pe loc", function () {
+    /* Pasul ține de cât se mișcă, nu de cât trece ceasul. Cu o cadență fixă,
+       picioarele umblau de trei ori pe secundă în timp ce trupul înainta cu o
+       treime de pixel. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.elefant.stare = "priveste";
+    const inainte = j.elefant.fazaMers;
+    j.avanseaza(1000);
+    const cSta = j.elefant.fazaMers - inainte;
+    j.elefant.stare = "plimbare";
+    const inainte2 = j.elefant.fazaMers;
+    j.avanseaza(1000);
+    const cMerge = j.elefant.fazaMers - inainte2;
+    adevarat(cSta < cMerge * 0.35,
+      "stând pe loc calcă aproape la fel de tare ca mergând: " + cSta.toFixed(2) + " față de " + cMerge.toFixed(2));
+  });
+
   test("balonul arată că obosește, nu doar că obosește", function () {
     /* Obosea și înainte — fugea tot mai încet — dar nimic nu se vedea. Jucătorul
        atingea, balonul fugea, și nimic nu-i spunea că se apropie de izbândă. Un
@@ -2446,12 +2544,12 @@ function ruleaza() {
     j.avanseaza(16);
     const odihnit = j.desene.length;
 
-    for (let k = 0; k < 2; k++) {
+    for (let k = 0; k < 3; k++) {
       j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
       j.avanseaza(120);
     }
     adevarat(j.catDeObositEBalonul() > 0.5,
-      "după două scăpări balonul nu dă niciun semn de oboseală: " + j.catDeObositEBalonul());
+      "după trei scăpări balonul nu dă niciun semn de oboseală: " + j.catDeObositEBalonul());
     j.goleste();
     j.avanseaza(16);
     adevarat(j.desene.length > odihnit,
@@ -2512,6 +2610,179 @@ function ruleaza() {
     for (const g of graul) for (const f of formeCu(j.desene, g)) if (f.limite) jos.push(f.limite.y1);
     adevarat(jos.length > 0 && Math.max.apply(null, jos) > 0.9 * 0.9 * 500,
       "firele de grâu nu ajung până la tălpi");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Peisajul spune unde suntem");
+
+  test("in zare se vede un sat, nu numai camp gol", function () {
+    /* Grau, un copac si o casa pot fi oriunde. Cateva acoperisuri pe linia
+       orizontului spun ca oamenii astia au de unde veni si unde se intoarce. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    const panze = j.panzeAscunse.map(function (p) { return p._panza; })
+      .filter(function (p) { return p && p.desene && p.desene.length > 400; });
+    adevarat(panze.length > 0, "n-am gasit panza tabloului");
+    const d = panze[0].desene;
+    const oriz = 800 * 0.44;   // ORIZONT_TABLOU din inaltimea panzei
+    let marunte = 0;
+    for (const f of d) {
+      if (!f.limite) continue;
+      const inalt = f.limite.y1 - f.limite.y0, lat = f.limite.x1 - f.limite.x0;
+      if (f.limite.y0 > oriz - 34 && f.limite.y1 < oriz + 44 &&
+          lat > 2 && lat < 64 && inalt > 2 && inalt < 44) marunte++;
+    }
+    adevarat(marunte >= 12,
+      "in zare se vad doar " + marunte + " pete marunte - nu se citeste un sat");
+  });
+
+  test("satul din zare sta spalacit, nu sare in fata", function () {
+    /* Perspectiva aeriana: cu cat un lucru e mai departe, cu atat culoarea lui se
+       trage spre albastrul aerului. Un sat pictat in culori tari ar veni in fata
+       si ar strica departarea, oricat de frumos ar fi desenat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(typeof j.amesteca === "function", "lipseste amestecul de culori");
+    const departe = j.amesteca("#a8623f", "#8a92b8", 0.6);
+    const aproape = j.amesteca("#a8623f", "#8a92b8", 0);
+    adevarat(departe !== aproape, "departarea nu schimba deloc culoarea");
+    const nr = departe.match(/[0-9]+/g).map(Number);
+    adevarat(nr[2] > nr[0] * 0.9,
+      "acoperisul din zare a ramas rosu, nu s-a tras spre albastru: " + departe);
+  });
+
+  test("in tablou sunt doi oameni, o femeie si un barbat", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    egal(j.TARANI.length, 2, "in tablou nu sunt doi oameni");
+    const tipuri = j.TARANI.map(function (t) { return t.tip; }).sort().join(",");
+    egal(tipuri, "barbat,femeie", "nu sunt o femeie si un barbat");
+  });
+
+  test("usa se ingusteaza cand se deschide, nu se rastoarna", function () {
+    /* Pe o panza plata nu exista adancime in care sa se roteasca un canat: daca il
+       invartesti, se rastoarna lateral ca o scandura care cade. O usa vazuta din
+       fata ramane dreapta si se ingusteaza spre balama. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    const K = j.geomCasa(1400, 800);
+    function latimeaCanaturilor(deschidere) {
+      j.goleste();
+      j.usileCasei(j.panza.ctx, 1400, 800, deschidere);
+      /* Masor tablia de sus a canatului, nu tot canatul: golul usii si lumina
+         dinauntru sunt si ele inalte cat usa, si mi-ar da mereu aceeasi latime. */
+      let lat = 0;
+      for (const f of j.desene) {
+        if (!f.limite) continue;
+        const h = f.limite.y1 - f.limite.y0;
+        if (h > K.usaH * 0.28 && h < K.usaH * 0.42) lat = Math.max(lat, f.limite.x1 - f.limite.x0);
+      }
+      return lat;
+    }
+    const inchisa = latimeaCanaturilor(0);
+    const deschisa = latimeaCanaturilor(1);
+    adevarat(inchisa > K.usaW * 0.3, "canatul inchis nu se vede deloc: " + inchisa);
+    adevarat(deschisa < inchisa * 0.6,
+      "canatul deschis e tot lat (" + Math.round(deschisa) + " fata de " +
+      Math.round(inchisa) + ") - nu se ingusteaza");
+  });
+
+  test("dupa zece pasi, strigatul lor scrie pe ecran", function () {
+    /* A fost o vreme rostit cu vocea calculatorului. Se auzea, dar suna a robot,
+       nu a om care striga peste camp - asa ca a ramas scris. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    const scris = totTextul(j.cadruCurat());
+    adevarat(/ne vezi mai bine/i.test(scris), "nu striga nimeni: " + scris);
+    adevarat(/hai cu noi/i.test(scris), "lipseste chemarea: " + scris);
+  });
+
+  test("cand pleaca spre casa, se intorc cu spatele", function () {
+    /* Nimeni nu merge cu spatele inainte, iar un chip care te priveste in timp
+       ce se departeaza strica tot drumul. De la spate nu se schimba portul, ci
+       capul: in locul ochilor si al gurii vine parul. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    function chipuriCuOchi(pleaca) {
+      j.goleste();
+      // clipa 900: la 0 omul tocmai clipeste, si atunci n-are ochi nici din fata
+      j.taranIn(j.panza.ctx, 1400, 800, 0.3, 0.9, 0.5, "barbat", 0, 900, 0, 1, pleaca);
+      // albul ochiului si pupila: nu apar nicaieri altundeva pe om
+      return formeCu(j.desene, "#f6efe4").length + formeCu(j.desene, "#20150c").length;
+    }
+    const cuFata = chipuriCuOchi(0);
+    const dupaIntoarcere = chipuriCuOchi(1);
+    adevarat(cuFata > 0, "nici din fata nu se vad ochii");
+    egal(dupaIntoarcere, 0, "se departeaza, dar tot se uita la jucator");
+  });
+
+  test("intoarcerea nu e o clipire, ci o rasucire", function () {
+    /* La jumatatea rasucirii omul se vede din muchie: se ingusteaza si se
+       largeste la loc, ca un canat de usa. Fara asta, chipul ar sari brusc in
+       ceafa, de la un cadru la altul. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    function latimea(pleaca) {
+      j.goleste();
+      j.taranIn(j.panza.ctx, 1400, 800, 0.3, 0.9, 0.5, "barbat", 0, 0, 0, 1, pleaca);
+      let lat = 0;
+      for (const f of j.desene) if (f.limite) lat = Math.max(lat, f.limite.x1 - f.limite.x0);
+      return lat;
+    }
+    const dreptInFata = latimea(0);
+    const dinMuchie = latimea(0.085);
+    const intors = latimea(0.3);
+    adevarat(dinMuchie < dreptInFata * 0.6,
+      "la mijlocul rasucirii e tot lat: " + Math.round(dinMuchie) + " fata de " + Math.round(dreptInFata));
+    adevarat(intors > dinMuchie * 1.6, "nu se mai largeste la loc dupa ce s-a intors");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Punctul care merge face o linie");
+
+  test("balonul fuge destul cat sa apuci sa citesti", function () {
+    /* Pe fundal stau scrise definitia punctului si a liniei. Fuga e chiar timpul
+       de citit: daca se lasa prins din trei atingeri, scrisul sta degeaba. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.EVADARI_PANA_SE_PREDA >= 5,
+      "balonul se preda dupa numai " + j.EVADARI_PANA_SE_PREDA + " scapari");
+  });
+
+  test("linia ramane la vedere, toata", function () {
+    /* Ea e demonstratia paginii: un punct care se misca face o linie. Inainte urma
+       se stergea din coada dupa vreo doua secunde si jumatate - ramanea o codita
+       dupa balon, nu o linie. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    laBalon(j);
+    j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+    j.avanseaza(1200);
+    adevarat(j.urma.length > 1, "balonul n-a lasat nicio urma");
+    const scurt = j.urma.length;
+    const capat = { x: j.urma[0].x, y: j.urma[0].y };
+    j.avanseaza(9000);
+    adevarat(j.urma.length > scurt,
+      "linia nu mai creste dupa cateva secunde: " + scurt + " -> " + j.urma.length);
+    egal(j.urma[0].x, capat.x, "inceputul liniei s-a sters");
+    egal(j.urma[0].y, capat.y, "inceputul liniei s-a sters");
+  });
+
+  test("linia veche se vede, nu doar coada dinspre balon", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    laBalon(j);
+    j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+    j.avanseaza(6000);
+    adevarat(j.urma.length > 60, "urma e prea scurta ca sa dovedeasca ceva");
+    j.goleste();
+    j.deseneazaUrma(1);
+    let ceaMaiStinsa = 1, gasit = 0;
+    for (const f of j.desene) {
+      if (f.op !== "stroke") continue;
+      const m = String(f.stil || "").match(/rgba\([^)]*,\s*([0-9.]+)\s*\)/);
+      if (m) { gasit++; ceaMaiStinsa = Math.min(ceaMaiStinsa, parseFloat(m[1])); }
+    }
+    adevarat(gasit > 0, "urma nu s-a desenat deloc");
+    adevarat(ceaMaiStinsa > 0.15,
+      "inceputul liniei e aproape invizibil (transparenta " + ceaMaiStinsa + ")");
   });
 
   /* ---------------------------------------------------------------- */

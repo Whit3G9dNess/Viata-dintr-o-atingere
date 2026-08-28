@@ -124,18 +124,44 @@ function deseneazaFundalImpartit(progres) {
   ctx.fillRect(0, oriz, W, H - oriz);
 }
 
-// Linia lăsată de balon — devine tot mai vizibilă spre capătul dinspre balon
+/* Linia lasata de balon. Toata, de la inceput: ea e demonstratia paginii — un
+   punct care se misca face o linie. Inainte se stingea spre coada pana la zero,
+   asa ca din desen nu se vedea decat o codita in urma balonului si nimic din
+   drumul facut.
+
+   Doua treceri, nu una pe segment: intai tot drumul dintr-o singura linie, cu
+   aceeasi transparenta, apoi numai ultima bucata segment cu segment, tot mai
+   aprinsa spre balon. Asa se vede si unde a fost, si incotro merge, cu vreo
+   optzeci de trasaturi in loc de doua mii — desenata segment cu segment, linia
+   intreaga ar fi ingenuncheat cadrul. */
+const COADA_APRINSA = 80;
+
 function deseneazaUrma(transparenta = 1) {
   if (urma.length < 2) return;
-  for (let i = 1; i < urma.length; i++) {
-    const alfa = (i / urma.length) * 0.5 * transparenta;
-    ctx.strokeStyle = `rgba(255, 255, 255, ${alfa})`;
-    ctx.lineWidth = 2.5;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const pana = Math.max(1, urma.length - COADA_APRINSA);
+  if (pana > 1) {
+    ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * transparenta})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(urma[0].x, urma[0].y);
+    for (let i = 1; i <= pana; i++) ctx.lineTo(urma[i].x, urma[i].y);
+    ctx.stroke();
+  }
+
+  for (let i = Math.max(1, pana); i < urma.length; i++) {
+    const cat = (i - pana) / COADA_APRINSA;
+    ctx.strokeStyle = `rgba(255, 255, 255, ${(0.3 + cat * 0.45) * transparenta})`;
+    ctx.lineWidth = 2 + cat * 1.4;
     ctx.beginPath();
     ctx.moveTo(urma[i - 1].x, urma[i - 1].y);
     ctx.lineTo(urma[i].x, urma[i].y);
     ctx.stroke();
   }
+  ctx.restore();
 }
 
 // Punctul alb care crește din întuneric (faza de „geneză")
