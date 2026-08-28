@@ -289,9 +289,20 @@ function pictezaTablou(c, w, h) {
   for (let k = 0; k < 26; k++) {
     const a = samanta(700 + k * 3.7), b = samanta(700 + k * 6.1);
     c.fillStyle = ['#b3aca1', '#857f77', '#c2bcb2', '#6f6a63'][k % 4];
+    const px = K.x + a * K.lat, py = K.talpa - K.soclu * (0.2 + b * 0.6);
+    const prx = K.soclu * (0.18 + b * 0.2), pry = K.soclu * (0.13 + a * 0.12);
     c.beginPath();
-    c.ellipse(K.x + a * K.lat, K.talpa - K.soclu * (0.2 + b * 0.6),
-              K.soclu * (0.18 + b * 0.2), K.soclu * (0.13 + a * 0.12), a * 2, 0, Math.PI * 2);
+    c.ellipse(px, py, prx, pry, a * 2, 0, Math.PI * 2);
+    c.fill();
+    // rostul de mortar și lumina de pe creasta pietrei
+    c.strokeStyle = 'rgba(238, 234, 226, 0.55)';
+    c.lineWidth = Math.max(0.5, K.soclu * 0.05);
+    c.beginPath();
+    c.ellipse(px, py, prx, pry, a * 2, 0, Math.PI * 2);
+    c.stroke();
+    c.fillStyle = 'rgba(255, 253, 246, 0.4)';
+    c.beginPath();
+    c.ellipse(px - prx * 0.25, py - pry * 0.35, prx * 0.4, pry * 0.3, a * 2, 0, Math.PI * 2);
     c.fill();
   }
 
@@ -310,11 +321,34 @@ function pictezaTablou(c, w, h) {
   c.fillRect(fx - fw * 0.14, fy - fh * 0.12, fw * 1.28, fh * 1.2);
   c.fillStyle = ALBASTRU_CASA;
   c.fillRect(fx, fy, fw, fh);
-  c.fillStyle = '#cfe0ea';
+  /* Sticla nu e o placă bleu: oglindește cerul sus și se întunecă spre pervaz,
+     iar peste ea trece o dungă de lumină, ca la orice geam adevărat. */
+  const sticla = c.createLinearGradient(fx, fy, fx + fw * 0.5, fy + fh);
+  sticla.addColorStop(0, '#dbe9f2');
+  sticla.addColorStop(0.5, '#9fb8ca');
+  sticla.addColorStop(1, '#5d7385');
+  c.fillStyle = sticla;
   c.fillRect(fx + fw * 0.1, fy + fh * 0.09, fw * 0.8, fh * 0.82);
+  c.fillStyle = 'rgba(255, 255, 255, 0.4)';
+  c.beginPath();
+  c.moveTo(fx + fw * 0.12, fy + fh * 0.62);
+  c.lineTo(fx + fw * 0.52, fy + fh * 0.1);
+  c.lineTo(fx + fw * 0.68, fy + fh * 0.1);
+  c.lineTo(fx + fw * 0.28, fy + fh * 0.62);
+  c.closePath();
+  c.fill();
+  // cercevelele: patru ochiuri
   c.fillStyle = ALBASTRU_CASA;
   c.fillRect(fx + fw * 0.46, fy + fh * 0.09, fw * 0.08, fh * 0.82);
   c.fillRect(fx + fw * 0.1, fy + fh * 0.45, fw * 0.8, fh * 0.06);
+  c.fillStyle = ALBASTRU_LUMINA;
+  c.fillRect(fx + fw * 0.46, fy + fh * 0.09, fw * 0.03, fh * 0.82);
+  c.fillRect(fx + fw * 0.1, fy + fh * 0.45, fw * 0.8, fh * 0.02);
+  // pervazul, cu umbra lui pe perete
+  c.fillStyle = '#ffffff';
+  c.fillRect(fx - fw * 0.18, fy + fh * 1.02, fw * 1.36, fh * 0.07);
+  c.fillStyle = 'rgba(120, 106, 88, 0.28)';
+  c.fillRect(fx - fw * 0.18, fy + fh * 1.09, fw * 1.36, fh * 0.05);
 
   // ---- pridvorul: parapetul văruit cu coama albastră ----
   const px0 = K.x + K.lat * 0.04, px1 = K.usaX - K.lat * 0.03;
@@ -392,15 +426,36 @@ function pictezaTablou(c, w, h) {
   c.lineTo(K.x + K.lat * 0.78, coama + K.inalt * 0.02);
   c.closePath();
   c.fill();
-  // rândurile de olane, ca acoperișul să nu fie o pată roșie
-  c.strokeStyle = 'rgba(120, 48, 26, 0.45)';
-  c.lineWidth = Math.max(0.7, K.inalt * 0.008);
-  for (let k = 1; k < 6; k++) {
-    const q = k / 6;
-    c.beginPath();
-    c.moveTo(intre(K.x - K.lat * 0.055, K.x + K.lat * 0.26, q), intre(streasina, coama, q));
-    c.lineTo(intre(K.x + K.lat * 1.055, K.x + K.lat * 0.80, q), intre(streasina, coama, q));
-    c.stroke();
+  /* Olanele, una câte una. Casa e lucrul cel mai mare din tablou; pictată din
+     dungi late, în timp ce oamenii sunt lucrați cu chip și cu cusături, iese pe
+     dos: cu cât un lucru e mai mare, cu atât ochiul îi cere mai mult amănunt, nu
+     mai puțin. Fiecare rând e un șir de solzi, decalat față de cel de sub el. */
+  const randuri = 9;
+  for (let r = 0; r < randuri; r++) {
+    const q0 = r / randuri, q1 = (r + 1) / randuri;
+    const stX = intre(K.x - K.lat * 0.055, K.x + K.lat * 0.26, q0);
+    const drX = intre(K.x + K.lat * 1.055, K.x + K.lat * 0.80, q0);
+    const y0 = intre(streasina, coama, q0), y1 = intre(streasina, coama, q1);
+    const inaltRand = y0 - y1;
+    const cate = Math.max(6, Math.round((drX - stX) / (K.lat * 0.045)));
+    const latOlan = (drX - stX) / cate;
+    for (let k = 0; k < cate; k++) {
+      const ox = stX + (k + (r % 2 ? 0.5 : 0)) * latOlan;
+      c.fillStyle = ['#d9793f', '#c25f34', '#e08a4e', '#a94c2a'][(k + r) % 4];
+      c.beginPath();
+      c.moveTo(ox, y0);
+      c.lineTo(ox + latOlan, y0);
+      c.lineTo(ox + latOlan, y0 - inaltRand * 0.5);
+      c.quadraticCurveTo(ox + latOlan * 0.5, y0 - inaltRand * 1.1,
+                         ox, y0 - inaltRand * 0.5);
+      c.closePath();
+      c.fill();
+      c.strokeStyle = 'rgba(112, 44, 22, 0.35)';
+      c.lineWidth = Math.max(0.5, K.inalt * 0.004);
+      c.beginPath();
+      c.moveTo(ox, y0); c.lineTo(ox, y0 - inaltRand * 0.6);
+      c.stroke();
+    }
   }
   // creasta de var de pe coamă, ca la casele văruite
   c.strokeStyle = 'rgba(240, 232, 214, 0.75)';
@@ -443,10 +498,26 @@ function pictezaTablou(c, w, h) {
   }
 
   // ---- pensula peste toată casa, ca să intre în pictură ----
+  /* Pensula peste casă — dar fără niciun cenușiu. Un perete proaspăt văruit n-are
+     pete sure pe el: are lumină caldă pe partea dinspre soare și umbră albăstruie
+     pe cealaltă. Cenușiul neutru, oricât de puțin, se citește ca murdărie, nu ca
+     umbră, și strica tocmai lucrul de care se agață ochiul la o casă de la noi —
+     albul ei. */
+  // umbra streșinii, căzută pe var
+  const subStr = c.createLinearGradient(0, K.sus, 0, K.sus + K.inalt * 0.22);
+  subStr.addColorStop(0, 'rgba(126, 132, 150, 0.32)');
+  subStr.addColorStop(1, 'rgba(126, 132, 150, 0)');
+  c.fillStyle = subStr;
+  c.fillRect(K.x, K.sus, K.lat, K.inalt * 0.22);
+
+  /* Pensula trece și peste casă, dar abia-abia: destul cât să nu iasă din pictură,
+     nu atât cât să-i mănânce muchiile. Cu tușe late, casa — lucrul cel mai mare
+     din tablou — ieșea pictată mai grosolan decât oamenii de lângă ea, adică pe
+     dos față de cum lucrează ochiul. */
   campDeTuse(c, K.x - K.lat * 0.05, coama - K.inalt * 0.42, K.lat * 1.1,
-             K.talpa - coama + K.inalt * 0.42, 110, 1.4, 0.5, h * 0.026, h * 0.01,
-             ['rgba(255, 250, 236, 0.32)', 'rgba(196, 96, 54, 0.3)',
-              'rgba(28, 92, 168, 0.28)', 'rgba(150, 142, 130, 0.3)'], 307);
+             K.talpa - coama + K.inalt * 0.42, 46, 1.4, 0.5, h * 0.016, h * 0.006,
+             ['rgba(255, 252, 242, 0.2)', 'rgba(255, 240, 214, 0.18)',
+              'rgba(214, 122, 74, 0.14)', 'rgba(150, 186, 224, 0.14)'], 307);
 
   // cărarea care intră în tablou
   campDeTuse(c, w * 0.3, oriz + h * 0.06, w * 0.22, h * 0.5, 220, 1.15, 0.4,
@@ -457,11 +528,15 @@ function pictezaTablou(c, w, h) {
      vede fiindcă are o formă și un ton al ei: trup plin, cu vârful aprins de
      soare și poalele în umbră, iar peste el câteva fire răzlețe. Cea din față e
      mare și jos; cele din spate, mărunte și lângă orizont. */
+  /* Toate rămân în stânga casei. Două dintre ele cădeau peste pridvor și peste
+     colțul zidului — o căpiță de fân proptită în peretele casei nu se întâmplă
+     nicăieri, iar ochiul o citește ca pe o greșeală, nu ca pe o distanță. Casa
+     începe la 0.597 din lățime, cu tot cu streașină: niciuna nu trece de acolo. */
   const CAPITE = [
-    { fx: 0.155, fy: 0.735, r: 0.145 },
-    { fx: 0.605, fy: 0.615, r: 0.082 },
-    { fx: 0.40, fy: 0.555, r: 0.055 },
-    { fx: 0.565, fy: 0.755, r: 0.078 }   // lângă casă, nu în pragul ei
+    { fx: 0.135, fy: 0.745, r: 0.145 },
+    { fx: 0.355, fy: 0.565, r: 0.052 },
+    { fx: 0.505, fy: 0.620, r: 0.078 },
+    { fx: 0.295, fy: 0.700, r: 0.066 }
   ];
   for (let k = 0; k < CAPITE.length; k++) {
     const cap = CAPITE[k];
@@ -793,16 +868,23 @@ function chipTaran(c, s, femeie, acum) {
    așază peste figură nu se împrăștie la voia întâmplării: fiecare cade acolo
    unde e culoarea ei, altfel omul iese mânjit, nu pictat. `u` merge de la 0 în
    creștet la 1 la tălpi. */
-function culoareLaInaltime(u, femeie, zar) {
+function culoareLaInaltime(u, femeie, zar, dinAx) {
   /* `zar` e un număr între 0 și 1, luat din sămânța tușei — nu din `Math.random`.
      Cu zaruri aruncate la fiecare cadru, culorile tușelor săreau de la una la
      alta de șaizeci de ori pe secundă, și pictura clocotea. */
   if (u < 0.14) return femeie ? PORT_ROMANESC.panza : PORT_ROMANESC.negru;
   if (u < 0.24) return PORT_ROMANESC.piele;
-  if (u < 0.60) return femeie ? PORT_ROMANESC.panza
-                              : (zar < 0.5 ? PORT_ROMANESC.negru : PORT_ROMANESC.panza);
+  /* `dinAx` spune cât de departe de mijloc cade tușa, de la 0 la 1. Fără ea, o
+     tușă neagră de pieptar putea să cadă pe mâneca albă, iar una albă pe pieptar:
+     amândouă ies sure, și omul pare murdar, nu pictat. Pieptarul stă la mijloc,
+     mânecile pe laturi — fiecare culoare rămâne la ea acasă. */
+  if (u < 0.60) {
+    if (femeie) return PORT_ROMANESC.panza;
+    return dinAx < 0.5 ? (zar < 0.5 ? PORT_ROMANESC.negru : '#2b2521')
+                       : PORT_ROMANESC.panza;
+  }
   if (u < 0.68) return femeie ? PORT_ROMANESC.rosu : PORT_ROMANESC.opinca;
-  if (u < 0.96) return femeie ? (zar < 0.5 ? PORT_ROMANESC.rosu : PORT_ROMANESC.negru)
+  if (u < 0.96) return femeie ? (zar < 0.5 ? PORT_ROMANESC.rosu : PORT_ROMANESC.visin)
                               : PORT_ROMANESC.panza;
   return PORT_ROMANESC.opinca;
 }
@@ -816,7 +898,12 @@ function culoareLaInaltime(u, femeie, zar) {
    Sămânța e legată de om, nu de ceas: altfel tușele ar fierbe de la un cadru la
    altul, și pictura ar clocoti. */
 function tuseDeTaran(c, s, femeie, samantaOmului) {
-  const cate = 40;
+  /* Puține și subțiri. Patruzeci de tușe groase peste un om lăsau pe cămașa albă
+     niște pete sure — mânjeau tocmai lucrul pe care îl voiam limpede: oamenii
+     sunt singurii din tablou lucrați în amănunt, cu chip și cu cusături, și
+     pensula n-are voie să le ia amănuntul înapoi. Atât cât să nu pară decupați,
+     nu atât cât să pară murdari. */
+  const cate = 18;
   for (let k = 0; k < cate; k++) {
     const a = samanta(samantaOmului + k * 2.7);
     const b = samanta(samantaOmului + k * 5.3 + 11);
@@ -824,13 +911,15 @@ function tuseDeTaran(c, s, femeie, samantaOmului) {
     const u = b;                                  // înălțimea pe trup, de la creștet
     // peste obraz nu trece pensula: acolo detaliul e tot ce spune cine e omul
     if (u > 0.12 && u < 0.27) continue;
-    const lat = (a - 0.5) * s * (0.62 - 0.28 * Math.abs(u - 0.5) * 2);
+    const razna = 0.62 - 0.28 * Math.abs(u - 0.5) * 2;
+    const lat = (a - 0.5) * s * razna;
     const y = -s * 1.24 + u * s * 1.28;
+    const dinAx = Math.min(1, Math.abs(a - 0.5) * 2);
     tusa(c, lat, y,
-         s * (0.07 + q * 0.09), s * (0.022 + q * 0.026),
+         s * (0.06 + q * 0.07), s * (0.014 + q * 0.016),
          -1.45 + (q - 0.5) * 1.1,
-         culoareLaInaltime(u, femeie, samanta(samantaOmului + k * 13.7 + 41)),
-         0.16 + q * 0.24);
+         culoareLaInaltime(u, femeie, samanta(samantaOmului + k * 13.7 + 41), dinAx),
+         0.08 + q * 0.1);
   }
 }
 
