@@ -28,6 +28,15 @@ function cadru(t) {
   else if (stare === 'balon') {
     actualizeazaBalonul(acum);
     deseneazaFundal(1);
+    /* Cele două definiții, de-o parte și de alta: la stânga punctul, din care a
+       pornit totul; la dreapta linia, pe care balonul o desenează chiar acum cu
+       urma lui. Stau în spatele jocului, nu peste el. */
+    const marimeDef = Math.max(11, Math.min(W, H) * 0.019);
+    const latDef = Math.min(W * 0.26, 340);
+    definitiePeFundal(DEFINITIE_PUNCT, W * 0.175, H * 0.14, latDef,
+                      marimeDef, 'rgba(58, 54, 48, 0.5)', 'Punctul');
+    definitiePeFundal(DEFINITIE_LINIE, W * 0.825, H * 0.14, latDef,
+                      marimeDef, 'rgba(58, 54, 48, 0.5)', 'Linia');
     deseneazaUrma();
     deseneazaBalonul(t);
   }
@@ -85,6 +94,13 @@ function cadru(t) {
     actualizeazaGradina();
 
     deseneazaFundalImpartit(1);
+    /* Definiția petei de culoare, scrisă pe cer — sub baloane și sub nori, ca ei
+       să treacă peste ea. Aici se nasc petele: mingea le lasă la fiecare
+       săritură, iar elefantul le soarbe și le face nori și plante. */
+    definitiePeFundal(DEFINITIE_PATA, W * 0.5, H * 0.075,
+                      Math.min(W * 0.46, 520),
+                      Math.max(11, Math.min(W, H) * 0.019),
+                      'rgba(74, 70, 62, 0.42)', 'Pata de culoare');
     deseneazaBaloaneleDeCuloare();   // în spatele elefantului: par să iasă din el
     deseneazaGradina(1, 0, 0.82);    // grădina din depărtare
     deseneazaPetele();

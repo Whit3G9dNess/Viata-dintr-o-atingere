@@ -16,6 +16,63 @@ function deseneazaFundal(progres) {
 /* Cât stă fiecare pagină. A doua e cea mai lungă: are două fraze de citit, iar
    cine citește mai încet trebuie să apuce să le termine. Oricum, o atingere
    pornește jocul din orice pagină — nimeni nu e obligat să aștepte. */
+/* ---------- DEFINIȚIILE DE PE FUNDAL ----------
+   Jucăria e despre elementele limbajului plastic, iar fiecare scenă naște câte
+   unul: punctul, linia lăsată de el, pata de culoare de sub minge. Definițiile
+   stau scrise pe fundal, în spatele lucrului pe care îl numesc — nu într-o
+   fereastră care se deschide peste joc.
+
+   Se scriu cu o cerneală abia vizibilă: cine vrea le citește, cine nu se joacă
+   mai departe. Un text de manual pus tare peste o jucărie o face temă de casă. */
+const DEFINITIE_PUNCT =
+  'Punctul este cel mai simplu element de limbaj vizual, reprezentând urma ' +
+  'lăsată de un instrument pe o suprafață și centrul dinamic din care se ' +
+  'dezvoltă o compoziție.';
+
+const DEFINITIE_LINIE =
+  'Linia este elementul vizual unidimensional ce ia naștere prin mișcarea ' +
+  'continuă a unui punct pe o suprafață, având rolul de a contura forme, de a ' +
+  'exprima direcție și de a reda dinamism.';
+
+const DEFINITIE_PATA =
+  'Pata de culoare este o suprafață bine delimitată de pigment aplicată pe un ' +
+  'suport, care creează efecte decorative, spațiale sau expresive în cadrul ' +
+  'unei compoziții plastice.';
+
+/* Un bloc de text așezat pe fundal, rupt singur în rânduri. `aliniere` e -1
+   pentru stânga, 1 pentru dreapta, 0 pentru mijloc. */
+function definitiePeFundal(text, cx, sus, lat, marime, culoare, titlu) {
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  let y = sus;
+  if (titlu) {
+    ctx.font = `bold ${Math.round(marime * 1.15)}px Georgia`;
+    ctx.fillStyle = culoare;
+    let tx = cx - lat / 2;
+    for (const litera of String(titlu).toUpperCase()) {
+      ctx.fillText(litera, tx, y);
+      tx += ctx.measureText(litera).width + marime * 0.18;
+    }
+    y += marime * 1.9;
+  }
+  ctx.font = `${marime}px Georgia`;
+  ctx.fillStyle = culoare;
+  const cuvinte = String(text).split(' ');
+  let rand = '';
+  for (const cuv of cuvinte) {
+    const incercare = rand ? rand + ' ' + cuv : cuv;
+    if (ctx.measureText(incercare).width > lat && rand) {
+      ctx.fillText(rand, cx - lat / 2, y);
+      y += marime * 1.42;
+      rand = cuv;
+    } else rand = incercare;
+  }
+  if (rand) ctx.fillText(rand, cx - lat / 2, y);
+  ctx.restore();
+  return y + marime;
+}
+
 const PAGINI_INVITATIE = [
   { de: 800,   pana: 4400 },      // titlul, de tipar
   { de: 4400,  pana: 11200 },     // ce fel de jucărie e

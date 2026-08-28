@@ -368,9 +368,26 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   rocaille(c, mx + mw * 0.5, my + pw * 0.012, pw * 0.075, 'rgba(154, 118, 44, 0.8)');
   rocaille(c, mx + mw * 0.5, my + mh - pw * 0.012, pw * 0.055, 'rgba(154, 118, 44, 0.55)');
 
-  const marimeT = Math.max(8, pw * 0.088);
   const latScris = mw * 0.84;
   const stx = mx + mw * 0.08;
+
+  /* Titlul își caută și el mărimea. Scris cu majuscule rărite, un cuvânt lung —
+     IMPRESIONISM are douăsprezece litere — iese din chenar la orice lățime
+     mai strâmtă decât cea la care ne-am gândit noi. Măsurăm cât ocupă cu tot cu
+     răriturile dintre litere, și strângem până încape. */
+  const latTitlu = function (marime) {
+    c.font = `bold ${marime}px Georgia`;
+    let lat = 0;
+    for (const litera of String(titlu).toUpperCase()) {
+      lat += c.measureText(litera).width + marime * 0.16;
+    }
+    return lat - marime * 0.16;
+  };
+  let marimeT = pw * 0.088;
+  for (let k = 0; k < 14 && latTitlu(marimeT) > latScris && marimeT > pw * 0.04; k++) {
+    marimeT *= 0.93;
+  }
+  marimeT = Math.max(8, marimeT);
   const susText = my + pw * 0.05 + marimeT * 1.9;
 
   /* Litera își caută mărimea la care textul încape în câmp. */

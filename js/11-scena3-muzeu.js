@@ -1362,6 +1362,20 @@ function deseneazaPlic(x, y, s, alfa = 1) {
 function actualizeazaMuzeu(acum) {
   if (s3.faza === 'intro' && acum - s3.t0 > 3200) faza3('plic');
 
+  /* Sala galeriei se pictează din vreme, cât stai cu manualul în mână sau cât te
+     cerți cu cercelul. E o sală întreagă — pereți, patru panouri de damasc cu
+     sutele lor de motive, pilaștri, candelabru, parchet, inscripția murală — și
+     pictată în chiar cadrul în care intri, tot desenul ei cade într-o singură
+     clipă, exact în clipa în care ar trebui să se deschidă lin. Aici, în schimb,
+     nu se mișcă mai nimic pe ecran, iar sughițul nu se simte.
+
+     Se cheamă la fiecare cadru fără grijă: dacă e deja pictată la mărimea bună,
+     funcția se întoarce din prima linie. */
+  if (typeof pregatesteSala === 'function' &&
+      (s3.faza === 'manual' || s3.faza === 'nuMaApasa' || s3.faza === 'usaDeschisa')) {
+    pregatesteSala();
+  }
+
   // păsările: una la câteva secunde, la răstimpuri neregulate, ca să nu se simtă
   // ceasul din spatele lor
   if (naturaScena3 && acum > s3.urmatoareaPasare) {

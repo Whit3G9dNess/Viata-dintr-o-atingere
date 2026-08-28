@@ -362,6 +362,10 @@ return {
   catAPocnit: typeof catAPocnit !== "undefined" ? catAPocnit : null,
   fisaPePanou: typeof fisaPePanou !== "undefined" ? fisaPePanou : null,
   scrieIntins: typeof scrieIntins !== "undefined" ? scrieIntins : null,
+  salaGalerie: function () { return typeof salaGalerie !== "undefined" ? salaGalerie : null; },
+  DEFINITIE_PUNCT: typeof DEFINITIE_PUNCT !== "undefined" ? DEFINITIE_PUNCT : null,
+  DEFINITIE_LINIE: typeof DEFINITIE_LINIE !== "undefined" ? DEFINITIE_LINIE : null,
+  DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   DURATA_TRANSFORMARII: typeof DURATA_TRANSFORMARII !== "undefined" ? DURATA_TRANSFORMARII : null,
   numarEvadari: function () { return typeof numarEvadari !== "undefined" ? numarEvadari : null; },
   TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
@@ -1925,6 +1929,9 @@ function ruleaza() {
   });
 
   test("țăranul care stă pe loc nu calcă degeaba", function () {
+    /* Oprit, nu i se mișcă nici picioarele, nici trupul. Numai ochii clipesc —
+       un om care nu clipește deloc se uită ca o păpușă — de-aia nu cerem ca
+       desenul să fie identic, ci ca aproape tot din el să stea pe loc. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     const urma = function (t) {
       j.goleste();
@@ -1933,9 +1940,13 @@ function ruleaza() {
         return (d.puncte || []).map(function (p) {
           return Math.round(p.x) + "," + Math.round(p.y);
         }).join(" ");
-      }).join("|");
+      });
     };
-    egal(urma(0), urma(260), "țăranul oprit tot dă din picioare");
+    // amândouă clipele alese cu pleoapa deschisă: la 0 tocmai clipește
+    const a = urma(1000), b = urma(2400);
+    let miscate = 0;
+    for (let k = 0; k < Math.min(a.length, b.length); k++) if (a[k] !== b[k]) miscate++;
+    egal(miscate, 0, "țăranul oprit tot dă din picioare: " + miscate + " bucăți s-au mutat");
   });
 
   test("porunca nu stă peste pantofi", function () {
@@ -2030,7 +2041,7 @@ function ruleaza() {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inCampie(j);
     adevarat(j.TARANI !== null, "lipsește lista țăranilor");
-    const inaltimi = j.TARANI.map(function (t) { return t.marime * (t.statura || 1); });
+    const inaltimi = j.TARANI.map(function (t) { return j.marimeTaran(t, 0); });
     const mic = Math.min.apply(null, inaltimi), mare = Math.max.apply(null, inaltimi);
     adevarat(mare / mic > 1.25,
       "cel mai înalt e cu numai " + Math.round((mare / mic - 1) * 100) + "% peste cel mai scund");
@@ -2349,6 +2360,63 @@ function ruleaza() {
       return areCuloarea(el._panza.desene, j.VERDE_LIANA);
     });
     adevarat(verzi, "nicio ștampilă de plantă nu are verde pe ea");
+  });
+
+  test("sala galeriei e pictată din vreme, nu în cadrul în care intri", function () {
+    /* Sala rococo e cel mai scump desen din toată jucăria: pereți, patru panouri
+       de damasc cu sutele lor de motive, pilaștri, candelabru, parchet,
+       inscripția murală. Pictată în chiar cadrul în care intri prin buzunar, tot
+       desenul ei cade într-o singură clipă — și se simte ca un sughiț, exact
+       când sala ar trebui să se deschidă lin. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.faza3("usaDeschisa");
+    j.s3.usa = 1;
+    j.avanseaza(300);
+    const sala = j.salaGalerie();
+    adevarat(sala && sala.panza,
+      "sala nu e pictată încă, deși haina e desfăcută de mult");
+
+    // iar primul cadru din galerie stă acum în bugetul lui
+    j.intraInGalerie(j.ceas.t);
+    j.goleste();
+    j.avanseaza(16);
+    adevarat(j.desene.length < 400,
+      "primul cadru din galerie cere " + j.desene.length + " operații de desen");
+  });
+
+  test("pe fundalul balonului stau scrise punctul și linia", function () {
+    /* Fiecare scenă naște un element de limbaj plastic, iar definiția lui stă în
+       spatele lucrului pe care îl numește — nu într-o fereastră peste joc. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("balon");
+    j.avanseaza(300);
+    const d = j.cadruCurat();
+    const scris = textele(d).join(" ");
+    adevarat(/PUNCTUL/i.test(scris) || /P U N C T U L/i.test(scris.replace(/(.)/g, "$1 ")),
+      "nu scrie despre punct");
+    adevarat(/urma lăsată de un instrument/.test(scris), "definiția punctului lipsește");
+    adevarat(/mișcarea continuă a unui punct/.test(scris), "definiția liniei lipsește");
+    // punctul în stânga, linia în dreapta
+    const stangaPunct = d.filter(function (x) {
+      return x.op === "text" && /urma lăsată|instrument/.test(x.text) && x.limite;
+    });
+    const dreaptaLinie = d.filter(function (x) {
+      return x.op === "text" && /unidimensional|mișcarea continuă/.test(x.text) && x.limite;
+    });
+    adevarat(stangaPunct.length > 0 && dreaptaLinie.length > 0, "nu s-au găsit rândurile");
+    adevarat(stangaPunct[0].limite.x0 < j.W() / 2, "definiția punctului nu e în stânga");
+    adevarat(dreaptaLinie[0].limite.x0 > j.W() / 2, "definiția liniei nu e în dreapta");
+  });
+
+  test("pe cerul scenei a doua stă scrisă pata de culoare", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.avanseaza(200);
+    const scris = totTextul(j.cadruCurat());
+    adevarat(/suprafață bine delimitată de pigment/.test(scris),
+      "definiția petei de culoare lipsește de pe cer");
   });
 
   /* ---------------------------------------------------------------- */
