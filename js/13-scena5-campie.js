@@ -23,6 +23,11 @@ const PERETE_SALII = '#f4f3ef';
 const PODEA_SALII = '#d8d5cc';
 const PANTOFI_SALII = '#241d26';
 
+const TEXT_FISA_IMPRESIONISM =
+  'Impresionismul este un curent artistic apărut în Franța secolului al XIX-lea, ' +
+  'caracterizat prin captarea impresiilor vizuale de moment și a jocului de lumină ' +
+  'prin tușe rapide și libere de culoare.';
+
 /* Contrastul cald-rece, ținut discret: o notă de portocaliu pe unde bate lumina,
    una de albastru în umbra din partea cealaltă. Sala rămâne albă — nu se
    colorează, doar prinde viață. Un perete de un singur gri e o coală de hârtie,
@@ -911,9 +916,8 @@ function deseneazaScena5(t, acum) {
      stai cu nasul în pânză n-ai unde s-o citești, și n-ar avea niciun rost. */
   if (s5.ramaSeVede) {
     fisaDeSala(Math.max(W * 0.115, rx - W * 0.105), ry + inaltRama * 0.3,
-               Math.min(W * 0.18, latRama * 0.28),
-               'Impresionism',
-               'Pictură din pete de lumină: de aproape vezi tușe, de departe vezi câmpul.');
+               Math.min(W * 0.22, latRama * 0.34),
+               'Impresionism', TEXT_FISA_IMPRESIONISM);
   }
 
   if (s5.faza === 'sala' || s5.faza === 'viu') pantofiiDePeJos();

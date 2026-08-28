@@ -361,6 +361,9 @@ return {
   spargeBalonulManutei: typeof spargeBalonulManutei !== "undefined" ? spargeBalonulManutei : null,
   catAPocnit: typeof catAPocnit !== "undefined" ? catAPocnit : null,
   fisaDeSala: typeof fisaDeSala !== "undefined" ? fisaDeSala : null,
+  TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
+  TEXT_FISA_IMPRESIONISM: typeof TEXT_FISA_IMPRESIONISM !== "undefined" ? TEXT_FISA_IMPRESIONISM : null,
+  geomSala: typeof geomSala !== "undefined" ? geomSala : null,
   NEGRU_SCENA1: typeof NEGRU_SCENA1 !== "undefined" ? NEGRU_SCENA1 : null,
   s5: typeof s5 !== "undefined" ? s5 : null,
   intraInCampie: typeof intraInCampie !== "undefined" ? intraInCampie : null,
@@ -1560,6 +1563,46 @@ function ruleaza() {
     j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
     j.avanseaza(3000);
     egal(j.muzicaMuzeu(), null, "în clipa recunoașterii sunetul merge mai departe");
+  });
+
+  test("fișa de sală stă scrisă pe panoul din stânga, nu pe un carton", function () {
+    /* În muzeele adevărate explicația stă pe perete, în planul al doilea, și o
+       citești când vrei tu — nu ți se pune un carton în față. În stânga, fiindcă
+       în dreapta stau consola și lupa, iar fișa ar fi trebuit să se strângă până
+       sub ele. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(j.ceas.t);
+    j.avanseaza(2000);
+    adevarat(j.TEXT_FISA_MINIATURA !== null, "lipsește textul fișei");
+    adevarat(/dimensiuni foarte reduse/.test(j.TEXT_FISA_MINIATURA),
+      "textul fișei nu e cel cerut");
+    // scrisul intră în ștampila sălii, deci se caută în pânza ascunsă
+    const ascunsa = j.panzeAscunse.map(function (e) { return e._panza; })
+      .filter(function (p) { return p && textele(p.desene).join(" ").indexOf("reduse") >= 0; })[0];
+    adevarat(ascunsa, "fișa nu s-a scris nicăieri în sală");
+    const scris = textele(ascunsa.desene).join(" ");
+    adevarat(/finețea/.test(scris), "textul fișei e trunchiat");
+    // și stă în jumătatea din dreapta a sălii
+    const S = j.geomSala();
+    const bucati = ascunsa.desene.filter(function (x) {
+      return x.op === "text" && x.limite && /reduse|finețea/.test(x.text);
+    });
+    adevarat(bucati.length > 0, "nu s-a găsit niciun rând din fișă");
+    adevarat(bucati.every(function (b) { return b.limite.x1 < (S.x0 + S.x1) / 2; }),
+      "fișa nu e pe panoul din stânga");
+  });
+
+  test("fișa impresionismului spune ce e curentul, nu doar cum arată", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    adevarat(j.TEXT_FISA_IMPRESIONISM !== null, "lipsește textul fișei");
+    adevarat(/curent artistic/.test(j.TEXT_FISA_IMPRESIONISM) &&
+             /Franța/.test(j.TEXT_FISA_IMPRESIONISM),
+      "textul fișei nu e cel cerut");
+    for (let k = 0; k < 9; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    const scris = totTextul(j.cadruCurat());
+    adevarat(/tușe rapide/.test(scris), "fișa nu se vede lângă lucrare: " + scris.slice(0, 120));
   });
 
   test("eticheta de pe ramă se găsește tot cu lupa", function () {

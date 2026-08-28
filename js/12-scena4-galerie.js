@@ -265,6 +265,125 @@ function pilastru(c, x, y, w, h) {
   c.fillRect(x - w * 0.18, y + h * 0.985, w * 1.36, h * 0.03);
 }
 
+/* Textul fișei de sală, scris pe mătasea unui panou de perete. Nu pe un carton
+   agățat în fața sălii: în muzeele adevărate explicația stă pe perete, în planul
+   al doilea, și o citești când vrei tu — nu ți se pune în față.
+
+   Se scrie în partea de sus a panoului, fiindcă în josul lui, în planul întâi,
+   stau consola de marmură și lupa. Rândurile se rup singure la lățimea panoului.
+
+   Merge în ștampila sălii, nu în bucla de desen: e un text care nu se schimbă
+   niciodată, iar sala se pictează o dată. */
+const TEXT_FISA_MINIATURA =
+  'Miniatura este o lucrare de artă sau un obiect realizat la dimensiuni foarte ' +
+  'reduse, remarcabil prin finețea și detaliul execuției.';
+
+// Rupe un text în rânduri, la o lățime dată, cu fontul deja pus pe `c`.
+function randuriIncapute(c, text, latime) {
+  const cuvinte = String(text).split(' ');
+  const randuri = [];
+  let rand = '';
+  for (const cuv of cuvinte) {
+    const incercare = rand ? rand + ' ' + cuv : cuv;
+    if (c.measureText(incercare).width > latime && rand) { randuri.push(rand); rand = cuv; }
+    else rand = incercare;
+  }
+  if (rand) randuri.push(rand);
+  return randuri;
+}
+
+/* Fișa nu e un carton agățat pe perete: e **pictată pe perete**, ca o inscripție
+   murală. Are câmpul ei de tencuială, mai deschis decât mătasea din jur, un
+   chenar tras cu pensula în ocru și câte o voluță în creștet și în poale. Litera
+   e de pigment: se scrie de două ori, o dată cu un ton stins și lat, o dată
+   peste, curat — așa arată un scris zugrăvit, nu unul tipărit.
+
+   Mărimea literei se alege singură, cât să încapă în câmp: un text scris la
+   mărime fixă fie iese din chenar, fie rămâne cu jumătate de panou gol sub el. */
+function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax) {
+  // câmpul murăl, retras de la ancadramentul aurit al panoului
+  const mx = px + pw * 0.075, mw = pw * 0.85;
+  const my = py + ph * 0.09;
+  const mh = (yMax ? Math.min(py + ph * 0.9, yMax) : py + ph * 0.9) - my;
+  if (mh <= 0) return;
+
+  c.save();
+
+  // tencuiala: mai deschisă decât mătasea, cu pete de var, ca o frescă veche
+  const tencuiala = c.createLinearGradient(mx, my, mx + mw * 0.4, my + mh);
+  tencuiala.addColorStop(0, 'rgba(248, 244, 228, 0.94)');
+  tencuiala.addColorStop(0.55, 'rgba(238, 232, 210, 0.9)');
+  tencuiala.addColorStop(1, 'rgba(224, 218, 194, 0.9)');
+  c.fillStyle = tencuiala;
+  c.fillRect(mx, my, mw, mh);
+  for (let k = 0; k < 9; k++) {
+    const q = (k * 0.618) % 1, r = (k * 0.317) % 1;
+    c.fillStyle = `rgba(206, 196, 168, ${0.1 + r * 0.12})`;
+    c.beginPath();
+    c.ellipse(mx + mw * q, my + mh * r, mw * (0.06 + r * 0.1), mh * (0.03 + q * 0.05),
+              q * 3, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  // chenarul tras cu pensula: o linie groasă și una subțire, în ocru
+  c.strokeStyle = 'rgba(154, 118, 44, 0.75)';
+  c.lineWidth = Math.max(1.4, pw * 0.014);
+  c.strokeRect(mx, my, mw, mh);
+  c.strokeStyle = 'rgba(154, 118, 44, 0.45)';
+  c.lineWidth = Math.max(1, pw * 0.005);
+  c.strokeRect(mx + pw * 0.028, my + pw * 0.028, mw - pw * 0.056, mh - pw * 0.056);
+  // volutele din creștet și din poale, ca la orice inscripție zugrăvită
+  rocaille(c, mx + mw * 0.5, my + pw * 0.012, pw * 0.075, 'rgba(154, 118, 44, 0.8)');
+  rocaille(c, mx + mw * 0.5, my + mh - pw * 0.012, pw * 0.055, 'rgba(154, 118, 44, 0.55)');
+
+  const marimeT = Math.max(8, pw * 0.088);
+  const latScris = mw * 0.84;
+  const stx = mx + mw * 0.08;
+  const susText = my + pw * 0.05 + marimeT * 1.9;
+
+  /* Litera își caută mărimea la care textul încape în câmp. */
+  let marimeR = pw * 0.078;
+  for (let k = 0; k < 14; k++) {
+    c.font = `${marimeR}px Georgia`;
+    const cate = randuriIncapute(c, text, latScris).length;
+    if (susText + cate * marimeR * 1.34 <= my + mh - pw * 0.05 || marimeR <= pw * 0.04) break;
+    marimeR *= 0.93;
+  }
+  marimeR = Math.max(7, marimeR);
+
+  c.textAlign = 'left'; c.textBaseline = 'top';
+
+  // titlul, cu majuscule rărite, pictat în ocru ars
+  c.font = `bold ${marimeT}px Georgia`;
+  let tx = stx;
+  for (const litera of String(titlu).toUpperCase()) {
+    c.fillStyle = 'rgba(140, 104, 38, 0.35)';
+    c.fillText(litera, tx + marimeT * 0.05, my + pw * 0.05 + marimeT * 0.05);
+    c.fillStyle = 'rgba(112, 82, 26, 0.95)';
+    c.fillText(litera, tx, my + pw * 0.05);
+    tx += c.measureText(litera).width + marimeT * 0.16;
+  }
+  c.strokeStyle = 'rgba(154, 118, 44, 0.6)';
+  c.lineWidth = Math.max(1, pw * 0.005);
+  c.beginPath();
+  c.moveTo(stx, my + pw * 0.05 + marimeT * 1.4);
+  c.lineTo(mx + mw - mw * 0.08, my + pw * 0.05 + marimeT * 1.4);
+  c.stroke();
+
+  /* Textul, scris de două ori: umbra lată de pigment, apoi litera curată peste
+     ea. Un singur strat arată a text pus pe deasupra; două arată a zugrăvit. */
+  c.font = `${marimeR}px Georgia`;
+  let y = susText;
+  for (const rand of randuriIncapute(c, text, latScris)) {
+    c.fillStyle = 'rgba(90, 74, 40, 0.28)';
+    c.fillText(rand, stx + marimeR * 0.06, y + marimeR * 0.06);
+    c.fillStyle = 'rgba(58, 48, 30, 0.95)';
+    c.fillText(rand, stx, y);
+    y += marimeR * 1.34;
+  }
+  c.restore();
+}
+
 function pictezaSala(c) {
   const m = geomMiniatura();
   const S = geomSala();
@@ -356,6 +475,13 @@ function pictezaSala(c) {
     c.strokeRect(px + pw * 0.035, py + ph * 0.022, pw * 0.93, ph * 0.956);
     rocaille(c, px + pw * 0.5, py + ph * 0.035, pw * 0.11, AUR_FOITA);
     rocaille(c, px + pw * 0.5, py + ph * 0.96, pw * 0.08, AUR_UMBRA);
+    /* Fișa de sală, scrisă pe panoul din stânga, în planul al doilea. Întâi a
+       stat pe cel din dreapta, dar acolo, în planul întâi, sunt consola de
+       marmură și lupa: fișa trebuia să se strângă până sub ele ca să nu-i fie
+       acoperite rândurile. În stânga nu e nimic în față, așa că rămâne la
+       mărimea ei întreagă — o explicație scrisă ca s-o citești n-are voie să fie
+       cea mai mică literă din sală. */
+    if (k === 0) fisaPePanou(c, px, py, pw, ph, 'Miniatura', TEXT_FISA_MINIATURA);
     // pilastrul dintre panouri
     if (k < panouri - 1) {
       pilastru(c, S.x0 + (k + 1) * pas - pas * 0.055, S.yT + inaltP * 0.13,
@@ -444,8 +570,13 @@ function pictezaSala(c) {
   c.fillStyle = halouLampa;
   c.beginPath(); c.arc(lx, ly, W * 0.24, 0, Math.PI * 2); c.fill();
 
-  // ---- aplicele de o parte și de alta a lucrării ----
-  for (const lat of [-1, 1]) {
+  /* ---- aplica din dreapta lucrării ----
+     A fost o pereche, câte una de fiecare parte. Cea din stânga cădea fix peste
+     inscripția murală și-i tăia rândurile — iar o lampă înșurubată prin mijlocul
+     unui text scris pe perete nu se întâmplă în nicio sală adevărată. A rămas
+     una singură, și e bine așa: rococoul nu ține la simetrie, iar peretele din
+     stânga are acum altceva de spus. */
+  for (const lat of [1]) {
     const ax = m.ramaX + lat * m.ramaW * 0.86, ay = m.ramaY - m.ramaH * 0.06;
     c.fillStyle = AUR_UMBRA;
     c.beginPath();
@@ -1144,14 +1275,6 @@ function deseneazaPrinLupa(lx, ly, r, acum) {
     }
   }
   ctx.restore();
-
-  /* Fișa de sală, în dreapta ramei. Un muzeu adevărat nu te lasă în fața unui
-     lucru fără să-ți spună ce e lucrul acela. */
-  const mm = geomMiniatura();
-  fisaDeSala(mm.ramaX + mm.ramaW * 0.86, mm.ramaY - mm.ramaH * 0.1,
-             Math.min(W * 0.17, mm.ramaW * 0.62),
-             'Miniatura',
-             'Un tablou atât de mic încât cere lupă: pictat cu pensula de câteva fire, pe fildeș sau pe pergament.');
 
   luciulSticlei(lx, ly, r);
   deseneazaLupa(lx, ly, r, s4.lupaLuata);
