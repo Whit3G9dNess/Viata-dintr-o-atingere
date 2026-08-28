@@ -912,12 +912,14 @@ function deseneazaScena5(t, acum) {
   ctx.drawImage(R.panza, rx - R.marg * k, ry - R.marg * k,
                 R.panza.width * k, R.panza.height * k);
 
-  /* Fișa de sală, pe peretele din stânga lucrării. Apare odată cu rama: cât
-     stai cu nasul în pânză n-ai unde s-o citești, și n-ar avea niciun rost. */
+  /* Fișa de sală, pictată chiar pe peretele din stânga lucrării, ca o inscripție
+     murală — nu agățată în fața lui pe un carton. Apare odată cu rama: cât stai
+     cu nasul în pânză n-ai unde s-o citești, și n-ar avea niciun rost. */
   if (s5.ramaSeVede) {
-    fisaDeSala(Math.max(W * 0.115, rx - W * 0.105), ry + inaltRama * 0.3,
-               Math.min(W * 0.22, latRama * 0.34),
-               'Impresionism', TEXT_FISA_IMPRESIONISM);
+    const lat = Math.min(W * 0.2, Math.max(W * 0.12, rx - W * 0.055));
+    const inalt = Math.min(inaltRama * 0.78, podea * 0.52);
+    fisaPePanou(ctx, rx - lat - W * 0.028, ry + inaltRama * 0.5 - inalt / 2,
+                lat, inalt, 'Impresionism', TEXT_FISA_IMPRESIONISM, null, true);
   }
 
   if (s5.faza === 'sala' || s5.faza === 'viu') pantofiiDePeJos();

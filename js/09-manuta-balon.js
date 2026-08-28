@@ -203,6 +203,11 @@ function cioburileBalonului(x, y, s, p) {
 }
 
 function manutaAlba(x, y, s, t) {
+  /* Cât de stins e tot desenul, hotărât de cine ne cheamă — la pocnet, balonul
+     se stinge. Îl ținem minte și înmulțim cu el orice opacitate pusă înăuntru:
+     o sclipire care își scrie singur `globalAlpha` iese peste stingere și
+     rămâne pe ecran ca un oval alb, după ce tot restul a dispărut. */
+  const stinsul = ctx.globalAlpha;
   ctx.save();
   // încheietura descrie un opt alene, nu o simplă rotire dus-întors
   ctx.translate(x + Math.sin(t * 0.0009) * s * 0.05,
@@ -286,7 +291,7 @@ function manutaAlba(x, y, s, t) {
   ctx.fillStyle = aura;
   ctx.fillRect(-s * 0.5, -s * 1.0, s * 0.6, s * 0.7);
   ctx.fillStyle = ALB_MANUSA;
-  ctx.globalAlpha = 0.82;
+  ctx.globalAlpha = 0.82 * stinsul;
   ctx.beginPath();
   ctx.ellipse(-s * 0.21, -s * 0.66, s * 0.028, s * 0.2, 0.02, 0, Math.PI * 2);
   ctx.fill();

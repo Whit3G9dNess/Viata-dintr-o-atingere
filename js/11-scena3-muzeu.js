@@ -74,87 +74,6 @@ function faza3(nume) { s3.faza = nume; s3.t0 = performance.now(); }
 function actiune3(acum) { s3.ultimaActiune = acum; s3.nivelInactiv = 0; }
 
 // ---- text & bilete ----
-/* ---------- FIȘA DE SALĂ ----------
-   Plăcuța albă de lângă o lucrare, din orice muzeu: un titlu scurt cu majuscule
-   și un rând sau două de explicație. Nu e o etichetă de obiect — aceea spune ce
-   e lucrul; fișa spune ce trebuie să știi ca să-l privești.
-
-   Se așază unde i se spune, agățată de perete cu două piulițe, iar înălțimea ei
-   iese din text: rândurile se rup singure la lățimea dată, și abia pe urmă se
-   știe cât de înalt e cartonul. Altfel textul ar da pe dinafară la orice
-   propoziție mai lungă decât cea la care ne-am gândit noi. */
-const FISA_HARTIE = '#f7f3e8';
-const FISA_CERNEALA = '#332c1f';
-
-function fisaDeSala(cx, cy, lat, titlu, text) {
-  const marg = lat * 0.1;
-  const marimeT = Math.max(9, lat * 0.098);
-  const marimeR = Math.max(8, lat * 0.082);
-
-  // rupem textul în rânduri, ca să știm cât de înaltă iese fișa
-  ctx.font = `${marimeR}px Georgia`;
-  const cuvinte = String(text).split(' ');
-  const randuri = [];
-  let rand = '';
-  for (const c of cuvinte) {
-    const incercare = rand ? rand + ' ' + c : c;
-    if (ctx.measureText(incercare).width > lat - marg * 2 && rand) {
-      randuri.push(rand); rand = c;
-    } else rand = incercare;
-  }
-  if (rand) randuri.push(rand);
-
-  const inalt = marg * 2 + marimeT * 1.5 + randuri.length * marimeR * 1.32;
-  const x = cx - lat / 2, y = cy - inalt / 2;
-
-  ctx.save();
-  // umbra subțire de sub carton
-  ctx.fillStyle = 'rgba(60, 52, 38, 0.22)';
-  dreptunghi(x + lat * 0.012, y + inalt * 0.03, lat, inalt, lat * 0.02);
-  // cartonul
-  const hartie = ctx.createLinearGradient(x, y, x + lat, y + inalt);
-  hartie.addColorStop(0, '#fffdf6');
-  hartie.addColorStop(1, FISA_HARTIE);
-  ctx.fillStyle = hartie;
-  dreptunghi(x, y, lat, inalt, lat * 0.02);
-  ctx.strokeStyle = 'rgba(120, 106, 80, 0.45)';
-  ctx.lineWidth = Math.max(1, lat * 0.006);
-  ctx.strokeRect(x, y, lat, inalt);
-
-  // titlul, cu majuscule rărite, ca la muzeu
-  ctx.fillStyle = FISA_CERNEALA;
-  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  ctx.font = `bold ${marimeT}px Georgia`;
-  let tx = x + marg;
-  for (const litera of String(titlu).toUpperCase()) {
-    ctx.fillText(litera, tx, y + marg);
-    tx += ctx.measureText(litera).width + marimeT * 0.14;
-  }
-  // linia de sub titlu
-  ctx.strokeStyle = 'rgba(120, 106, 80, 0.5)';
-  ctx.lineWidth = Math.max(1, lat * 0.005);
-  ctx.beginPath();
-  ctx.moveTo(x + marg, y + marg + marimeT * 1.16);
-  ctx.lineTo(x + lat - marg, y + marg + marimeT * 1.16);
-  ctx.stroke();
-
-  ctx.font = `${marimeR}px Georgia`;
-  ctx.fillStyle = '#4a4234';
-  for (let k = 0; k < randuri.length; k++) {
-    ctx.fillText(randuri[k], x + marg, y + marg + marimeT * 1.5 + k * marimeR * 1.32);
-  }
-
-  // cele două piulițe cu care stă prinsă de perete
-  ctx.fillStyle = 'rgba(150, 138, 112, 0.75)';
-  for (const lats of [-1, 1]) {
-    ctx.beginPath();
-    ctx.arc(cx + lats * (lat / 2 - marg * 0.45), y + marg * 0.42, lat * 0.014, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-  return { x, y, w: lat, h: inalt };
-}
-
 function textIncadrat(text, x, y, latMax, hLinie, font, culoare, aliniere = 'center') {
   ctx.font = font; ctx.fillStyle = culoare; ctx.textAlign = aliniere; ctx.textBaseline = 'top';
   const cuv = text.split(' '); let linie = '', yy = y;
@@ -1614,7 +1533,10 @@ function deseneazaScena3(t, acum) {
   if (s3.faza === 'plic') {
     const puls = 1 + 0.05 * Math.sin(acum * 0.005);
     deseneazaPlic(s3.plicX, s3.plicY, puls);
-    textIncadrat('Ai primit un plic. Deschide-l.', W * 0.5, s3.plicY + 70, W * 0.5, 22, '18px Georgia', CREM_HARTIE);
+    /* Vorba stă deasupra custodelui, nu sub plic: acolo se uită ochiul când
+       intră în scenă, și de acolo n-are ce să acopere. */
+    textIncadrat('Ai primit un plic. Deschide-l.', W * 0.5, H * 0.1, W * 0.7, 26,
+                 'bold 20px Georgia', CREM_HARTIE);
   }
   else if (s3.faza === 'scrisoare') {
     // scrisoarea oficială
@@ -1699,7 +1621,12 @@ function click3(acum) {
   const x = cursor.x, y = cursor.y;
   if (s3.faza === 'intro') { faza3('plic'); actiune3(acum); return; }
   if (s3.faza === 'plic') {
-    if (Math.abs(x - s3.plicX) < W * 0.12 && Math.abs(y - s3.plicY) < 70) { faza3('scrisoare'); actiune3(acum); if (audio) sunetHartie(); }
+    /* Locul de apăsat se socotește din ecran, nu în pixeli ficși. Șaptezeci de
+       pixeli erau o fâșie subțire pe un ecran mare: apăsai plicul unde îl
+       vedeai, sub mijloc, și nu se întâmpla nimic. */
+    if (Math.abs(x - s3.plicX) < W * 0.16 && Math.abs(y - s3.plicY) < H * 0.16) {
+      faza3('scrisoare'); actiune3(acum); if (audio) sunetHartie();
+    }
     return;
   }
   if (s3.faza === 'scrisoare') { faza3('sonerie'); actiune3(acum); if (audio) sunetHartie(); return; }

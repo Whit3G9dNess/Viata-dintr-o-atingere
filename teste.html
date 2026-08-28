@@ -360,7 +360,10 @@ return {
   deseneazaPrinLupa: typeof deseneazaPrinLupa !== "undefined" ? deseneazaPrinLupa : null,
   spargeBalonulManutei: typeof spargeBalonulManutei !== "undefined" ? spargeBalonulManutei : null,
   catAPocnit: typeof catAPocnit !== "undefined" ? catAPocnit : null,
-  fisaDeSala: typeof fisaDeSala !== "undefined" ? fisaDeSala : null,
+  fisaPePanou: typeof fisaPePanou !== "undefined" ? fisaPePanou : null,
+  scrieIntins: typeof scrieIntins !== "undefined" ? scrieIntins : null,
+  DURATA_TRANSFORMARII: typeof DURATA_TRANSFORMARII !== "undefined" ? DURATA_TRANSFORMARII : null,
+  numarEvadari: function () { return typeof numarEvadari !== "undefined" ? numarEvadari : null; },
   TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
   TEXT_FISA_IMPRESIONISM: typeof TEXT_FISA_IMPRESIONISM !== "undefined" ? TEXT_FISA_IMPRESIONISM : null,
   geomSala: typeof geomSala !== "undefined" ? geomSala : null,
@@ -2349,6 +2352,116 @@ function ruleaza() {
   });
 
   /* ---------------------------------------------------------------- */
+  sectiune("Drumul întreg, numai din atingeri");
+
+  test("se poate ajunge din întuneric până în sala cu pânza uriașă", function () {
+    /* Testul cel mai scump și cel mai folositor: nimeni nu rămâne blocat pe
+       drum. Dacă se strică o singură verigă — o atingere care nu mai prinde, o
+       fază care nu se mai termină — cade aici, nu în ochii jucătorului. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const atinge = function (cx, cy) { j.atinge(cx / j.scalaPanzei(), cy / j.scalaPanzei()); };
+    const drum = [];
+    const noteaza = function () { drum.push(j.stare()); };
+
+    // cele trei foi ale deschiderii, apoi pocnetul balonului
+    for (let k = 0; k < 3; k++) { atinge(j.W() / 2, j.H() / 2); j.avanseaza(200); }
+    egal(j.stare(), "intuneric", "jocul a pornit înainte de pocnet");
+    j.avanseaza(900);                         // se risipesc cioburile
+    noteaza();
+    adevarat(j.stare() === "crestere" || j.stare() === "balon",
+      "după pocnet nu s-a născut punctul: " + j.stare());
+
+    // punctul crește și se face balon
+    j.avanseaza(9000);
+    egal(j.stare(), "balon", "punctul nu s-a făcut balon");
+
+    /* Balonul fuge de deget de câteva ori, apoi se lasă prins. Îl urmărim: dacă
+       vreodată n-ar mai putea fi prins, aici s-ar vedea. */
+    for (let k = 0; k < 20 && j.stare() === "balon"; k++) {
+      atinge(j.balon.x, j.balon.y);
+      j.avanseaza(120);
+    }
+    egal(j.stare(), "transformare",
+      "balonul nu s-a lăsat prins nici după douăzeci de atingeri");
+    j.avanseaza(j.DURATA_TRANSFORMARII + 200);
+    egal(j.stare(), "minge", "transformarea nu s-a terminat");
+
+    // mingea sare până se strâng pete destule, apoi vine elefantul
+    for (let k = 0; k < 120 && j.pete.length < 15; k++) {
+      atinge(j.minge.x, j.minge.y);
+      j.avanseaza(200);
+    }
+    adevarat(j.pete.length >= 15, "n-am reușit să fac pete: " + j.pete.length);
+    for (let k = 0; k < 400 && !j.minge.inBuzunar; k++) j.avanseaza(100);
+    adevarat(j.minge.inBuzunar, "elefantul n-a strâns mingea");
+    for (let k = 0; k < 400 && j.elefant.stare !== "plimbare"; k++) j.avanseaza(100);
+
+    // o atingere pe elefant deschide muzeul
+    atinge(j.elefant.x, j.picioareElefant() - 60);
+    egal(j.stare(), "muzeu", "atingerea elefantului nu deschide muzeul");
+
+    // plic, scrisoare, sonerie, manual, „nu mă apăsa", haina deschisă
+    atinge(j.W() / 2, j.H() / 2);                    // intro -> plic
+    egal(j.s3.faza, "plic", "nu s-a ajuns la plic");
+    atinge(j.s3.plicX, j.s3.plicY);
+    egal(j.s3.faza, "scrisoare", "plicul nu se deschide");
+    atinge(j.W() / 2, j.H() / 2);
+    egal(j.s3.faza, "sonerie", "scrisoarea nu duce la sonerie");
+    atinge(j.s3.butonX, j.s3.butonY);
+    egal(j.s3.faza, "manual", "cercelul nu deschide manualul");
+    for (let k = 0; k < 40 && j.s3.faza === "manual"; k++) {
+      if (j.s3.manualPagina >= 369) atinge(j.s3.butonX, j.s3.butonY);
+      else atinge(j.W() / 2, j.H() / 2);
+      j.avanseaza(60);
+    }
+    egal(j.s3.faza, "nuMaApasa", "manualul nu se termină");
+    /* Aici e o cursă în care se poate cădea. Cercelul își armează refuzul abia
+       după șase secunde și jumătate în care nu-l atinge nimeni; fiecare apăsare
+       repornește socoteala. Cine apasă întruna nu ajunge niciodată la fugă — dar
+       ajunge la a cincizecea apăsare, unde scoate aburi și reia scena de la
+       capăt. Drumul înainte cere o pauză: apeși de câteva ori, îl lași în pace,
+       și abia pe urmă îl prinzi din fugă. */
+    for (let k = 0; k < 4; k++) { atinge(j.s3.butonX, j.s3.butonY); j.avanseaza(400); }
+    j.avanseaza(7000);                       // răgazul în care se supără
+    adevarat(j.s3.refuzArmat, "cercelul nu s-a supărat nici după șapte secunde de pace");
+    atinge(j.s3.butonX, j.s3.butonY);        // acum o ia la fugă
+    adevarat(j.s3.butonFuge, "cercelul nu fuge");
+    for (let k = 0; k < 30 && j.s3.faza === "nuMaApasa"; k++) {
+      atinge(j.s3.butonX, j.s3.butonY);      // îl prinzi din fugă
+      j.avanseaza(200);
+    }
+    egal(j.s3.faza, "usaDeschisa",
+      "cercelul nu s-a predat, e la faza „" + j.s3.faza + "”");
+    j.s3.usa = 1;
+
+    // buzunarul GALERIE duce în sala a patra
+    const bz = j.geomBuzunar(j.geomMuzeu());
+    atinge(bz.cx, bz.cy);
+    egal(j.stare(), "galerie", "buzunarul nu duce în galerie");
+
+    // lupa, taina, eticheta, portalul
+    j.avanseaza(2000);
+    atinge(j.s4.lupaX, j.s4.lupaY);
+    adevarat(j.s4.lupaLuata, "lupa nu se ia în mână");
+    const m = j.geomMiniatura();
+    j.cursor.x = m.picturaX; j.cursor.y = m.picturaY;
+    j.avanseaza(2500);
+    egal(j.s4.faza, "descoperit", "taina nu se descoperă");
+    j.cursor.x = m.etichetaX; j.cursor.y = m.etichetaY;
+    j.avanseaza(2500);
+    egal(j.s4.faza, "eticheta", "eticheta nu se găsește");
+    atinge(m.ramaX, m.ramaY);
+    j.avanseaza(9000);
+    egal(j.stare(), "campie", "rama nu se face poartă");
+
+    // cei zece pași
+    j.avanseaza(4000);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(1000);
+    egal(j.s5.faza, "viu", "țăranii nu prind viață după cei zece pași");
+  });
+
+  /* ---------------------------------------------------------------- */
   sectiune("Ce era deja bun (regresie)");
 
   // Ce scrie pe ecranul negru la o anumită clipă de la pornire.
@@ -2455,6 +2568,25 @@ function ruleaza() {
     j.avanseaza(800);                        // se risipesc cioburile
     adevarat(j.stare() !== "intuneric",
       "după ce s-au risipit cioburile, jocul tot n-a pornit");
+  });
+
+  test("din balonul spart nu rămâne nimic pe ecran", function () {
+    /* Sclipirea de pe degetul mijlociu își punea singură opacitatea, peste
+       stingerea din jur: foița se ducea, iar pe ecran rămânea un oval alb. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.avanseaza(2200);
+    j.atinge(700, 400); j.atinge(700, 400);
+    j.avanseaza(1400);
+    j.atinge(700, 400);
+    j.avanseaza(520);                       // foița e stinsă de mult
+    const d = j.cadruCurat();
+    // nimic din mănușă nu mai are voie să fie desenat plin
+    const pline = d.filter(function (x) {
+      return x.alfa !== undefined && x.alfa > 0.6 &&
+             typeof x.stil === "string" && /ffffff|fff\b/i.test(x.stil);
+    });
+    egal(pline.length, 0,
+      "au rămas " + pline.length + " forme albe pline din mănușa spartă");
   });
 
   test("balonul spart lasă cioburi, nu dispare pur și simplu", function () {

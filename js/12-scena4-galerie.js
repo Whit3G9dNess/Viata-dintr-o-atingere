@@ -278,6 +278,29 @@ const TEXT_FISA_MINIATURA =
   'Miniatura este o lucrare de artă sau un obiect realizat la dimensiuni foarte ' +
   'reduse, remarcabil prin finețea și detaliul execuției.';
 
+/* Scrie un rând întins de la o margine la alta, cum stă scrisul într-o carte:
+   spațiile dintre cuvinte se lărgesc toate deopotrivă, cât să iasă rândul fix
+   pe lățimea dată. Ultimul rând al unui paragraf rămâne cum e — întins, ar avea
+   trei cuvinte răsfirate pe toată lățimea, și s-ar vedea că e forțat.
+
+   Nici rândurile care ar trebui prea tare întinse nu se justifică: dacă golul
+   dintre cuvinte iese de trei ori cât unul obișnuit, scrisul se rărește în
+   dâre albe — „râuri", cum le zic tipografii — și se citește mai greu decât
+   dacă l-ai fi lăsat în pace. */
+function scrieIntins(c, rand, x, y, latime, ultimul) {
+  const cuvinte = rand.split(' ');
+  if (ultimul || cuvinte.length < 2) { c.fillText(rand, x, y); return; }
+  let latCuvinte = 0;
+  for (const cuv of cuvinte) latCuvinte += c.measureText(cuv).width;
+  const gol = (latime - latCuvinte) / (cuvinte.length - 1);
+  if (gol > c.measureText(' ').width * 3.2) { c.fillText(rand, x, y); return; }
+  let cx = x;
+  for (const cuv of cuvinte) {
+    c.fillText(cuv, cx, y);
+    cx += c.measureText(cuv).width + gol;
+  }
+}
+
 // Rupe un text în rânduri, la o lățime dată, cu fontul deja pus pe `c`.
 function randuriIncapute(c, text, latime) {
   const cuvinte = String(text).split(' ');
@@ -300,7 +323,7 @@ function randuriIncapute(c, text, latime) {
 
    Mărimea literei se alege singură, cât să încapă în câmp: un text scris la
    mărime fixă fie iese din chenar, fie rămâne cu jumătate de panou gol sub el. */
-function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax) {
+function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   // câmpul murăl, retras de la ancadramentul aurit al panoului
   const mx = px + pw * 0.075, mw = pw * 0.85;
   const my = py + ph * 0.09;
@@ -310,10 +333,19 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax) {
   c.save();
 
   // tencuiala: mai deschisă decât mătasea, cu pete de var, ca o frescă veche
+  /* Pe mătasea verde a panoului, tencuiala trebuie să fie mai deschisă decât
+     fondul; pe peretele alb al sălii a cincea, mai închisă — altfel se topește
+     în el. Aceeași frescă, două fonduri, două socoteli. */
   const tencuiala = c.createLinearGradient(mx, my, mx + mw * 0.4, my + mh);
-  tencuiala.addColorStop(0, 'rgba(248, 244, 228, 0.94)');
-  tencuiala.addColorStop(0.55, 'rgba(238, 232, 210, 0.9)');
-  tencuiala.addColorStop(1, 'rgba(224, 218, 194, 0.9)');
+  if (pePeretDeschis) {
+    tencuiala.addColorStop(0, 'rgba(232, 224, 200, 0.96)');
+    tencuiala.addColorStop(0.55, 'rgba(219, 209, 182, 0.96)');
+    tencuiala.addColorStop(1, 'rgba(203, 192, 164, 0.96)');
+  } else {
+    tencuiala.addColorStop(0, 'rgba(248, 244, 228, 0.94)');
+    tencuiala.addColorStop(0.55, 'rgba(238, 232, 210, 0.9)');
+    tencuiala.addColorStop(1, 'rgba(224, 218, 194, 0.9)');
+  }
   c.fillStyle = tencuiala;
   c.fillRect(mx, my, mw, mh);
   for (let k = 0; k < 9; k++) {
@@ -373,12 +405,14 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax) {
   /* Textul, scris de două ori: umbra lată de pigment, apoi litera curată peste
      ea. Un singur strat arată a text pus pe deasupra; două arată a zugrăvit. */
   c.font = `${marimeR}px Georgia`;
+  const randuri = randuriIncapute(c, text, latScris);
   let y = susText;
-  for (const rand of randuriIncapute(c, text, latScris)) {
+  for (let k = 0; k < randuri.length; k++) {
+    const ultimul = k === randuri.length - 1;
     c.fillStyle = 'rgba(90, 74, 40, 0.28)';
-    c.fillText(rand, stx + marimeR * 0.06, y + marimeR * 0.06);
+    scrieIntins(c, randuri[k], stx + marimeR * 0.06, y + marimeR * 0.06, latScris, ultimul);
     c.fillStyle = 'rgba(58, 48, 30, 0.95)';
-    c.fillText(rand, stx, y);
+    scrieIntins(c, randuri[k], stx, y, latScris, ultimul);
     y += marimeR * 1.34;
   }
   c.restore();
@@ -1261,18 +1295,21 @@ function deseneazaPrinLupa(lx, ly, r, acum) {
   ctx.beginPath(); ctx.arc(lx, ly, r, 0, Math.PI * 2); ctx.clip();
   if (peMin) deseneazaTaina(lx, ly, r, acum);
   else if (peEti) deseneazaEtichetaRamei(lx, ly, r);
-  else {
-    // peretele văzut de aproape: firele pânzei de sub vopsea
-    ctx.fillStyle = '#3f2a17';
-    ctx.fillRect(lx - r, ly - r, r * 2, r * 2);
-    ctx.strokeStyle = 'rgba(255, 226, 170, 0.07)';
-    ctx.lineWidth = Math.max(1, r * 0.02);
-    for (let k = -7; k <= 7; k++) {
-      ctx.beginPath();
-      ctx.moveTo(lx - r, ly + k * r * 0.15); ctx.lineTo(lx + r, ly + k * r * 0.15); ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(lx + k * r * 0.15, ly - r); ctx.lineTo(lx + k * r * 0.15, ly + r); ctx.stroke();
-    }
+  else if (salaGalerie.panza) {
+    /* O lupă mărește. Oriunde ai duce-o, prin ea se vede sala de aproape:
+       damascul de pe mătase, scrisul de pe perete, ornamentele ramei. Înainte
+       arăta o pânză brună cu fire, aceeași peste tot — adică nu era o lupă, ci
+       un capac. Miniatura și eticheta rămân altceva: acolo nu mărim, acolo se
+       descoperă. */
+    const marire = 2.4;
+    ctx.translate(lx, ly);
+    ctx.scale(marire, marire);
+    ctx.translate(-lx, -ly);
+    ctx.drawImage(salaGalerie.panza, 0, 0);
+    const st = pregatesteRama(m);
+    ctx.drawImage(st.panza, m.ramaX - st.latime / 2, m.ramaY - st.inaltime / 2,
+                  st.latime, st.inaltime);
+    // transformarea se desface singură la ctx.restore() de mai jos
   }
   ctx.restore();
 
