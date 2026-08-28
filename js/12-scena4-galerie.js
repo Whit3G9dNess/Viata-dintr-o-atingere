@@ -278,51 +278,6 @@ const TEXT_FISA_MINIATURA =
   'Miniatura este o lucrare de artă sau un obiect realizat la dimensiuni foarte ' +
   'reduse, remarcabil prin finețea și detaliul execuției.';
 
-/* Scrie un rând întins de la o margine la alta, cum stă scrisul într-o carte:
-   spațiile dintre cuvinte se lărgesc toate deopotrivă, cât să iasă rândul fix
-   pe lățimea dată. Ultimul rând al unui paragraf rămâne cum e — întins, ar avea
-   trei cuvinte răsfirate pe toată lățimea, și s-ar vedea că e forțat.
-
-   Nici rândurile care ar trebui prea tare întinse nu se justifică: dacă golul
-   dintre cuvinte iese de trei ori cât unul obișnuit, scrisul se rărește în
-   dâre albe — „râuri", cum le zic tipografii — și se citește mai greu decât
-   dacă l-ai fi lăsat în pace. */
-function scrieIntins(c, rand, x, y, latime, ultimul) {
-  const cuvinte = rand.split(' ');
-  if (ultimul || cuvinte.length < 2) { c.fillText(rand, x, y); return; }
-  let latCuvinte = 0;
-  for (const cuv of cuvinte) latCuvinte += c.measureText(cuv).width;
-  const gol = (latime - latCuvinte) / (cuvinte.length - 1);
-  if (gol > c.measureText(' ').width * 3.2) { c.fillText(rand, x, y); return; }
-  let cx = x;
-  for (const cuv of cuvinte) {
-    c.fillText(cuv, cx, y);
-    cx += c.measureText(cuv).width + gol;
-  }
-}
-
-// Rupe un text în rânduri, la o lățime dată, cu fontul deja pus pe `c`.
-function randuriIncapute(c, text, latime) {
-  const cuvinte = String(text).split(' ');
-  const randuri = [];
-  let rand = '';
-  for (const cuv of cuvinte) {
-    const incercare = rand ? rand + ' ' + cuv : cuv;
-    if (c.measureText(incercare).width > latime && rand) { randuri.push(rand); rand = cuv; }
-    else rand = incercare;
-  }
-  if (rand) randuri.push(rand);
-  return randuri;
-}
-
-/* Fișa nu e un carton agățat pe perete: e **pictată pe perete**, ca o inscripție
-   murală. Are câmpul ei de tencuială, mai deschis decât mătasea din jur, un
-   chenar tras cu pensula în ocru și câte o voluță în creștet și în poale. Litera
-   e de pigment: se scrie de două ori, o dată cu un ton stins și lat, o dată
-   peste, curat — așa arată un scris zugrăvit, nu unul tipărit.
-
-   Mărimea literei se alege singură, cât să încapă în câmp: un text scris la
-   mărime fixă fie iese din chenar, fie rămâne cu jumătate de panou gol sub el. */
 function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   // câmpul murăl, retras de la ancadramentul aurit al panoului
   const mx = px + pw * 0.075, mw = pw * 0.85;
