@@ -39,38 +39,55 @@ const DEFINITIE_PATA =
   'suport, care creează efecte decorative, spațiale sau expresive în cadrul ' +
   'unei compoziții plastice.';
 
-/* Un bloc de text așezat pe fundal, rupt singur în rânduri. `aliniere` e -1
-   pentru stânga, 1 pentru dreapta, 0 pentru mijloc. */
-function definitiePeFundal(text, cx, sus, lat, marime, culoare, titlu) {
+/* Un bloc de text așezat pe fundal, rupt singur în rânduri.
+
+   `ancora` spune ce înseamnă `y`: „sus" e capătul de sus al blocului, „mijloc" e
+   mijlocul lui, „jos" e capătul de jos. Fără ea, ca să așezi un text pe linia
+   orizontului trebuia să-i ghicești dinainte câte rânduri iese — și ghiceala se
+   strica la fiecare cuvânt schimbat. Așa, textul se rupe întâi și se așază pe
+   urmă. */
+function definitiePeFundal(text, cx, y, lat, marime, culoare, titlu, ancora) {
   ctx.save();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  let y = sus;
-  if (titlu) {
-    ctx.font = `bold ${Math.round(marime * 1.15)}px Georgia`;
-    ctx.fillStyle = culoare;
-    let tx = cx - lat / 2;
-    for (const litera of String(titlu).toUpperCase()) {
-      ctx.fillText(litera, tx, y);
-      tx += ctx.measureText(litera).width + marime * 0.18;
-    }
-    y += marime * 1.9;
-  }
   ctx.font = `${marime}px Georgia`;
-  ctx.fillStyle = culoare;
+
   const cuvinte = String(text).split(' ');
+  const randuri = [];
   let rand = '';
   for (const cuv of cuvinte) {
     const incercare = rand ? rand + ' ' + cuv : cuv;
-    if (ctx.measureText(incercare).width > lat && rand) {
-      ctx.fillText(rand, cx - lat / 2, y);
-      y += marime * 1.42;
-      rand = cuv;
-    } else rand = incercare;
+    if (ctx.measureText(incercare).width > lat && rand) { randuri.push(rand); rand = cuv; }
+    else rand = incercare;
   }
-  if (rand) ctx.fillText(rand, cx - lat / 2, y);
+  if (rand) randuri.push(rand);
+
+  const inaltTitlu = titlu ? marime * 1.9 : 0;
+  const inaltTot = inaltTitlu + randuri.length * marime * 1.42;
+  let sus = y;
+  if (ancora === 'mijloc') sus = y - inaltTot / 2;
+  else if (ancora === 'jos') sus = y - inaltTot;
+
+  const stx = cx - lat / 2;
+  let cy = sus;
+  if (titlu) {
+    ctx.font = `bold ${Math.round(marime * 1.15)}px Georgia`;
+    ctx.fillStyle = culoare;
+    let tx = stx;
+    for (const litera of String(titlu).toUpperCase()) {
+      ctx.fillText(litera, tx, cy);
+      tx += ctx.measureText(litera).width + marime * 0.18;
+    }
+    cy += inaltTitlu;
+  }
+  ctx.font = `${marime}px Georgia`;
+  ctx.fillStyle = culoare;
+  for (const r of randuri) {
+    ctx.fillText(r, stx, cy);
+    cy += marime * 1.42;
+  }
   ctx.restore();
-  return y + marime;
+  return cy;
 }
 
 const PAGINI_INVITATIE = [

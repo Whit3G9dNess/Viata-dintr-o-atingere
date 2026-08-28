@@ -34,14 +34,22 @@ const ALBASTRU_LUMINA = '#4d90d8';
    în golul lăsat pentru ele; socotite în două locuri, s-ar despărți — și s-ar
    vedea, fiindcă tocmai pe ușa aceea intri la capătul drumului. */
 function geomCasa(w, h) {
-  /* Lățimea o dă streașina, nu peretele: acoperișul iese în afară cu o douăzecime
-     de fiecare parte, iar dacă socotim numai zidul, colțul de sus-dreapta cade
-     în afara pânzei. */
-  const lat = w * 0.325;
-  const x = w * 0.615;
-  const talpa = h * 0.79;              // unde stă casa pe pământ
-  const soclu = h * 0.045;             // piatra de râu de sub perete
-  const inalt = h * 0.20;              // înălțimea peretelui văruit
+  /* Casa stă în dreapta, în planul al doilea. Era în față, jos, aproape de
+     marginea pânzei — și de acolo strivea oamenii: un zid cât toată înălțimea
+     lor, la doi pași în spate.
+
+     Mărimea nu se mai scrie de mână, ci iese din depărtare, ca la țărani. Măsura
+     e omul: la locul unde stă casa, un om ar avea `omAcolo`; peretele ei e cam de
+     două ori atât, iar casa e de vreo două ori și jumătate mai lată decât înaltă.
+     Așa casa și oamenii se măsoară cu aceeași unitate, și nu se mai poate
+     întâmpla ca unii să pară de altă lume decât cealaltă. */
+  const oriz = h * ORIZONT_TABLOU;
+  const talpa = h * 0.55;              // unde calcă pe pământ, mult mai sus decât oamenii
+  const omAcolo = h * INALT_TARAN_LA_MARGINE * (talpa - oriz) / (h - oriz);
+  const inalt = omAcolo * 1.9;         // peretele văruit
+  const lat = inalt * 2.5;
+  const soclu = inalt * 0.225;         // piatra de râu de sub perete
+  const x = w * 0.70;
   const sus = talpa - soclu - inalt;
   const usaW = lat * 0.15, usaH = inalt * 0.78;
   const usaX = x + lat * 0.375;
@@ -258,12 +266,77 @@ function pictezaTablou(c, w, h) {
      lui. Pe o pânză, cine acoperă pe cine spune unde stă fiecare; greșit,
      adâncimea se rupe, oricât de bine ar fi pictat fiecare lucru în parte. */
 
-  // câțiva plopi în stânga
-  for (let k = 0; k < 3; k++) {
-    const px = w * (0.06 + k * 0.07);
-    campDeTuse(c, px, oriz - h * 0.22 + k * h * 0.02, w * 0.035, h * 0.26, 90, 0.1, 0.5,
-               h * 0.03, h * 0.014, ['#6f8a52', '#587244', '#87a066', '#465e39'], 500 + k * 37);
+  /* Copacul din stânga. Erau trei plopișori mărunți, unul lângă altul, care de
+     departe se citeau ca un tufiș — nimic nu spunea cât e de înalt, fiindcă nu
+     avea trunchi, iar coroana nu se ridica mai sus decât un om.
+
+     Unul singur, mare, rezolvă tot: trunchiul îi dă înălțimea, coroana îi dă
+     greutatea, iar oamenii care trec pe lângă el spun cât e de mare. Stă în
+     spatele lor, cu rădăcina mai sus pe câmp — de-aia se și desenează aici, cu
+     mult înaintea oamenilor. */
+  const cpX = w * 0.145, cpTalpa = h * 0.70, cpSus = h * 0.085;
+  const cpInalt = cpTalpa - cpSus;
+
+  // trunchiul: se subțiază de jos în sus, cu o îndoitură, ca orice copac crescut
+  const scoarta = c.createLinearGradient(cpX - w * 0.02, 0, cpX + w * 0.02, 0);
+  scoarta.addColorStop(0, '#6b5237');
+  scoarta.addColorStop(0.45, '#4e3b26');
+  scoarta.addColorStop(1, '#2f2418');
+  c.fillStyle = scoarta;
+  c.beginPath();
+  c.moveTo(cpX - w * 0.021, cpTalpa);
+  c.bezierCurveTo(cpX - w * 0.016, cpTalpa - cpInalt * 0.35,
+                  cpX - w * 0.011, cpTalpa - cpInalt * 0.6,
+                  cpX - w * 0.006, cpTalpa - cpInalt * 0.86);
+  c.lineTo(cpX + w * 0.006, cpTalpa - cpInalt * 0.86);
+  c.bezierCurveTo(cpX + w * 0.013, cpTalpa - cpInalt * 0.6,
+                  cpX + w * 0.018, cpTalpa - cpInalt * 0.35,
+                  cpX + w * 0.023, cpTalpa);
+  c.closePath();
+  c.fill();
+  // trei crengi care ies din trunchi spre coroană
+  c.strokeStyle = '#3f3122';
+  c.lineCap = 'round';
+  for (const [q, lat, lung] of [[0.5, -1, 0.9], [0.62, 1, 0.85], [0.74, -1, 0.7]]) {
+    c.lineWidth = Math.max(1.4, w * 0.007 * lung);
+    c.beginPath();
+    c.moveTo(cpX, cpTalpa - cpInalt * q);
+    c.quadraticCurveTo(cpX + lat * w * 0.035, cpTalpa - cpInalt * (q + 0.10),
+                       cpX + lat * w * 0.062 * lung, cpTalpa - cpInalt * (q + 0.16));
+    c.stroke();
   }
+
+  /* Coroana: pâlcuri de tușe, nu o bilă verde. Fiecare pâlc e o rămurea prinsă de
+     lumină pe o parte și lăsată în umbră pe cealaltă, iar între ele rămân goluri
+     prin care se vede cerul — un copac fără goluri arată a burete. */
+  const PALCURI = [
+    { fx: 0.00, fy: 0.34, r: 0.115, l: 1.0 },
+    { fx: -0.09, fy: 0.46, r: 0.095, l: 0.7 },
+    { fx: 0.10, fy: 0.44, r: 0.100, l: 0.85 },
+    { fx: -0.05, fy: 0.60, r: 0.088, l: 0.6 },
+    { fx: 0.07, fy: 0.62, r: 0.082, l: 0.75 },
+    { fx: 0.00, fy: 0.20, r: 0.078, l: 1.0 },
+    { fx: -0.11, fy: 0.29, r: 0.070, l: 0.8 },
+    { fx: 0.11, fy: 0.28, r: 0.074, l: 0.9 }
+  ];
+  for (let k = 0; k < PALCURI.length; k++) {
+    const p = PALCURI[k];
+    const px = cpX + w * p.fx, py = cpSus + cpInalt * p.fy, pr = h * p.r;
+    const paleta = p.l > 0.8
+      ? ['#8fae5c', '#a6c06e', '#7a9a4c', '#c2d489']
+      : (p.l > 0.65 ? ['#6f9048', '#88a85a', '#5c7c3c'] : ['#4e6b34', '#5f7f40', '#3d5628']);
+    campDeTuse(c, px - pr, py - pr * 0.8, pr * 2, pr * 1.6, 46, -0.5, 1.6,
+               h * 0.028, h * 0.017, paleta, 1300 + k * 61);
+  }
+  // câteva frunze răzlețe pe cer, ca marginea coroanei să nu fie tăiată cu foarfeca
+  campDeTuse(c, cpX - w * 0.10, cpSus - h * 0.02, w * 0.20, cpInalt * 0.62, 26, -0.5, 2.2,
+             h * 0.02, h * 0.012, ['#8fae5c', '#6f9048', '#a6c06e'], 1450);
+
+  // umbra copacului pe grâu
+  c.fillStyle = 'rgba(104, 88, 130, 0.28)';
+  c.beginPath();
+  c.ellipse(cpX + w * 0.03, cpTalpa + h * 0.006, w * 0.075, h * 0.016, 0.04, 0, Math.PI * 2);
+  c.fill();
 
   /* Casa cu pridvor. Înainte aici sta un hambar, iar la capătul drumului
      jucătorul era poftit într-o dugheană — o șură cu ușa neagră. O casă e altceva:
@@ -522,64 +595,6 @@ function pictezaTablou(c, w, h) {
   // cărarea care intră în tablou
   campDeTuse(c, w * 0.3, oriz + h * 0.06, w * 0.22, h * 0.5, 220, 1.15, 0.4,
              h * 0.05, h * 0.014, ['#e8cfa0', '#d6b681', '#c3a273', '#efe0bb'], 211);
-
-  /* Căpițele de fân. Prima încercare le-a făcut tot din tușe, ca restul
-     câmpului, cu aceeași paletă — și s-au topit în grâu fără urmă. O căpiță se
-     vede fiindcă are o formă și un ton al ei: trup plin, cu vârful aprins de
-     soare și poalele în umbră, iar peste el câteva fire răzlețe. Cea din față e
-     mare și jos; cele din spate, mărunte și lângă orizont. */
-  /* Toate rămân în stânga casei. Două dintre ele cădeau peste pridvor și peste
-     colțul zidului — o căpiță de fân proptită în peretele casei nu se întâmplă
-     nicăieri, iar ochiul o citește ca pe o greșeală, nu ca pe o distanță. Casa
-     începe la 0.597 din lățime, cu tot cu streașină: niciuna nu trece de acolo. */
-  const CAPITE = [
-    { fx: 0.135, fy: 0.745, r: 0.145 },
-    { fx: 0.355, fy: 0.565, r: 0.052 },
-    { fx: 0.505, fy: 0.620, r: 0.078 },
-    { fx: 0.295, fy: 0.700, r: 0.066 }
-  ];
-  for (let k = 0; k < CAPITE.length; k++) {
-    const cap = CAPITE[k];
-    const cx = w * cap.fx, cy = h * cap.fy, r = h * cap.r;
-
-    // umbra lungă spre dreapta: soarele stă jos, în stânga
-    c.fillStyle = 'rgba(104, 82, 118, 0.42)';
-    c.beginPath();
-    c.ellipse(cx + r * 0.55, cy + r * 0.07, r * 1.35, r * 0.22, 0.03, 0, Math.PI * 2);
-    c.fill();
-
-    // trupul căpiței: o cupolă cu vârf, nu un con ascuțit
-    const fan = c.createLinearGradient(cx - r * 0.8, cy - r * 1.6, cx + r * 0.9, cy);
-    /* Mai deschisă decât grâul din jur, altfel se topește în el. Prima încercare
-       avea poalele mai închise decât câmpul, și căpița din față dispărea cu
-       totul: o formă se vede prin ce o desparte de fond, nu prin conturul ei. */
-    fan.addColorStop(0, '#fdf3d2');
-    fan.addColorStop(0.42, '#f0d183');
-    fan.addColorStop(1, '#c39a48');
-    c.fillStyle = fan;
-    c.beginPath();
-    c.moveTo(cx - r, cy);
-    c.bezierCurveTo(cx - r * 0.94, cy - r * 0.8, cx - r * 0.42, cy - r * 1.52, cx, cy - r * 1.62);
-    c.bezierCurveTo(cx + r * 0.42, cy - r * 1.52, cx + r * 0.94, cy - r * 0.8, cx + r, cy);
-    c.quadraticCurveTo(0.5 * (cx - r) + 0.5 * (cx + r), cy + r * 0.16, cx - r, cy);
-    c.closePath();
-    c.fill();
-
-    // firele răzlețe, care rup silueta ca s-o facă de fân, nu de lut
-    campDeTuse(c, cx - r * 0.86, cy - r * 1.45, r * 1.72, r * 1.3, 22, -1.2, 0.9,
-               r * 0.44, r * 0.09,
-               ['#fdf3d2', '#f2d78f', '#dcb45e'], 940 + k * 71);
-    // creasta aprinsă din vârf
-    campDeTuse(c, cx - r * 0.3, cy - r * 1.66, r * 0.6, r * 0.4, 14, -0.95, 0.6,
-               r * 0.34, r * 0.09, ['#fdf1c8', '#f6e2a4'], 980 + k * 37);
-    // țăpușa din creștet
-    c.strokeStyle = '#8a6a2e';
-    c.lineWidth = Math.max(1, r * 0.045);
-    c.beginPath();
-    c.moveTo(cx + r * 0.02, cy - r * 1.6);
-    c.lineTo(cx - r * 0.04, cy - r * 1.84);
-    c.stroke();
-  }
 
   // lumina care trece peste tot, la sfârșit: unifică tușele
   const suflu = c.createLinearGradient(w * 0.2, 0, w, h);
@@ -1172,7 +1187,10 @@ function marimeTaran(t, pleaca) {
   const departare = Math.max(0.02, t.y - ORIZONT_TABLOU);
   const laMargine = 1 - ORIZONT_TABLOU;
   const dinPerspectiva = INALT_TARAN_LA_MARGINE * (departare / laMargine);
-  return dinPerspectiva * (t.statura || 1) * intre(1, 0.56, Math.min(1, pleaca || 0));
+  /* La capătul drumului stau în pragul casei, adică mult mai departe decât la
+     început — deci mult mai mici. Cât de mici, o spune tot regula depărtării:
+     acolo unde e casa, un om măsoară cam un sfert din cât măsoară aici, în față. */
+  return dinPerspectiva * (t.statura || 1) * intre(1, 0.23, Math.min(1, pleaca || 0));
 }
 
 function taraniiIn(c, w, h, acum) {
@@ -1188,8 +1206,8 @@ function taraniiIn(c, w, h, acum) {
     /* Se duc spre ușa casei, care e mai sus și mai departe decât locul lor
        de acum. Înainte coborau spre y = 0.78, adică veneau spre privitor în timp
        ce se micșorau — două lucruri care se bat cap în cap. */
-    const x = intre(t.x, 0.655 + k * 0.03, pleaca);
-    const y = intre(t.y, 0.70 + k * 0.012, pleaca);
+    const x = intre(t.x, 0.775 + k * 0.018, pleaca);
+    const y = intre(t.y, 0.565 + k * 0.006, pleaca);
     taranIn(c, w, h, x, y, marimeTaran(t, pleaca), t.tip,
             salut * (1 - pleaca), acum + k * 260, mers, k + 1);
   }

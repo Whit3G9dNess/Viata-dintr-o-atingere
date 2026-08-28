@@ -2394,8 +2394,9 @@ function ruleaza() {
     j.avanseaza(300);
     const d = j.cadruCurat();
     const scris = textele(d).join(" ");
-    adevarat(/PUNCTUL/i.test(scris) || /P U N C T U L/i.test(scris.replace(/(.)/g, "$1 ")),
-      "nu scrie despre punct");
+    /* Fără titluri: se înțelege din primul cuvânt despre ce e vorba, iar o
+       etichetă deasupra unei singure fraze e pusă degeaba. */
+    adevarat(!/PUNCTUL/.test(scris), "a rămas un titlu deasupra definiției");
     adevarat(/urma lăsată de un instrument/.test(scris), "definiția punctului lipsește");
     adevarat(/mișcarea continuă a unui punct/.test(scris), "definiția liniei lipsește");
     // punctul în stânga, linia în dreapta
