@@ -402,6 +402,117 @@ function sunetPortal() {
 }
 
 // Atingerea de fiecare zi: un ciocănit abia auzit, cât să simți că ai atins ceva.
+/* ---------- FOCUL DIN SALA A SASEA ----------
+
+   Un foc de tabara nu e un singur sunet, sunt doua puse unul peste altul: un
+   suflu continuu, ca de vant printr-o teava — asta e aerul care arde — si,
+   deasupra lui, pocnete rare si scurte, cand plesneste o fibra de lemn. Numai
+   suflul suna a aragaz; numai pocnetele suna a cineva care rupe crengi. Impreuna
+   se aude foc.
+
+   Pocnetele nu se pot programa dinainte, la un interval fix: un foc care
+   pocneste din doua in doua secunde e o masinarie. Se pun pe rand, fiecare la
+   distanta trasa la sorti, pe ceasul audio — acelasi mecanism ca la muzica din
+   muzeu, si din acelasi motiv: ceasul cadrelor sare, cel al sunetului nu. */
+let foculScena6 = null;
+
+function pornesteFocul() {
+  if (!audio || foculScena6) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  /* Suflul: zgomot alb trecut printr-un filtru jos, ca sa ramana doar duduitul
+     grav. Peste 900 Hz incepe sa sune a scurgere de robinet. */
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'lowpass';
+  filtru.frequency.setValueAtTime(620, t);
+  filtru.Q.setValueAtTime(0.7, t);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
+
+  // focul respira: se infoaie si se lasa, foarte incet
+  const respiratie = audio.createOscillator();
+  respiratie.type = 'sine';
+  respiratie.frequency.setValueAtTime(0.19, t);
+  const adancime = audio.createGain();
+  adancime.gain.setValueAtTime(0.018, t);
+  respiratie.connect(adancime).connect(vol.gain);
+  respiratie.start(t);
+
+  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  foculScena6 = { sursa, respiratie, vol, panaLa: t + 0.2 };
+}
+
+/* Pocnetele, puse din vreme pe ceasul audio. Se cheama in fiecare cadru si pune
+   in fata cat sa ajunga vreo doua secunde: daca ar pune tot ce urmeaza dintr-o
+   data, n-ar mai putea sa se opreasca la timp cand pleci din sala. */
+function tinePocnetele() {
+  if (!audio || !foculScena6) return;
+  const acum = audio.currentTime;
+  while (foculScena6.panaLa < acum + 2) {
+    const cand = foculScena6.panaLa;
+    const tarie = 0.05 + Math.random() * 0.16;
+    // plesnetul fibrei: un zgomot scurt, foarte inalt, care cade repede
+    zgomot(cand, 0.035 + Math.random() * 0.05, tarie, 2600 + Math.random() * 2400, 700);
+    // si bufnetul lemnului de sub el, care ii da greutate
+    if (Math.random() < 0.55) {
+      nota(90 + Math.random() * 70, cand, 0.1, tarie * 0.5, 'triangle', 48);
+    }
+    foculScena6.panaLa = cand + 0.18 + Math.random() * 1.15;
+  }
+}
+
+function opresteFocul() {
+  if (!foculScena6) return;
+  const f = foculScena6;
+  foculScena6 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    f.vol.gain.cancelScheduledValues(t);
+    f.vol.gain.setValueAtTime(Math.max(0.0001, f.vol.gain.value), t);
+    f.vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    f.sursa.stop(t + 1);
+    f.respiratie.stop(t + 1);
+  } catch (e) { /* daca s-a oprit deja, nu-i nimic de facut */ }
+}
+
+/* Scanteia care sare din panza: un scapart scurt, urcator. */
+function sunetScanteie() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.09, 0.2, 900, 5200);
+  nota(880, t, 0.16, 0.1, 'triangle', 2400);
+}
+
+/* Hartia care ia foc: un suflu lung, care creste si apoi se stinge. */
+function sunetHartieArsa() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 2.6, 0.14, 400, 3000);
+  zgomot(t + 0.2, 2.2, 0.1, 2200, 600);
+  for (let k = 0; k < 7; k++) {
+    zgomot(t + 0.25 + k * 0.3 + Math.random() * 0.16, 0.05, 0.13,
+           2400 + Math.random() * 2600, 800);
+  }
+}
+
+/* „Frige!" — cand atingi panza cu mana goala. Un sfarait scurt, care te trage
+   inapoi. */
+function sunetFrige() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.22, 0.16, 3400, 900);
+  nota(196, t, 0.18, 0.09, 'sawtooth', 130);
+}
+
 function sunetAtingere() {
   if (!audio) return;
   nota(1600, audio.currentTime, 0.045, 0.022, 'sine', 900);

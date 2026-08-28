@@ -460,6 +460,50 @@ apoi `http://localhost:8765/teste.html`, pornit din folderul acesta.
 intenția care a rămas valabilă, niciodată slăbit în tăcere. Așa s-a întâmplat cu
 mărimea ramei, cu destinația portalului și cu ordinea foilor din deschidere.
 
+## Etapa a nouăsprezecea — sala rotundă a focului
+
+Scena a șasea, în `js/15-scena6-foc.js`. Se intră pe ușa casei din tabloul scenei
+a cincea, care de-acum **așteaptă** în loc să te ia de mână: înainte, după nouă
+secunde de uși deschise, scena se încheia singură și te ducea înapoi la custode.
+
+Ce s-a făcut, în ordinea în care s-a lucrat:
+
+1. **Sala rotundă.** Nu conturul o face rotundă, ci trei lucruri care se ajută:
+   temelia peretelui, sus la mijloc și coborâtă la margini; cornișa, care o repetă
+   răsturnată; și lesele de tapet, îndesite spre margini după un cosinus, unde
+   peretele se vede din ce în ce mai din profil. Cu lesele la pas egal, cum erau
+   întâi, sala rămânea o cutie tapetată oricâtă lumină turnai în mijloc.
+2. **Pardoseala în tablă de șah.** La început se pictau numai pătratele închise,
+   iar prin celelalte se vedea peretele — de-aia jumătate din tablă ieșea
+   portocalie. Un alb care e de fapt tapetul de dedesubt nu e un alb.
+3. **Tabloul pe șevalet**, vertical, în ramă prețioasă. Mutat de pe perete în
+   mijlocul sălii: un tablou pe perete e un exponat terminat, unul pe șevalet e o
+   lucrare la care se lucrează. Rama e aceeași sculptură ca în galeria a patra, în
+   picioare, ștampilată o dată — și pregătită încă din scena a cincea, fiindcă
+   sculptată la primul cadru se simțea poticnirea. A treia oară învățată lecția.
+4. **Măsuța cu mănuși**, în dreapta șevaletului. Mănușile sunt de lucru, nu de
+   piele veche: galben fluorescent, dungi roșii, platoșă peste articulații. O
+   mănușă maro pe o masă maro, într-o sală galbenă, nu se vede — iar ea e singurul
+   lucru pe care trebuie să-l găsești ca să poți merge mai departe.
+5. **Focul din pânză**, care pulsează. Culoarea unei limbi ține de locul ei, nu de
+   sămânța ei: legată de sămânță, ieșeau limbi albe pe margine și roșii în mijloc,
+   adică un foc care nu știe unde îi e inima.
+6. **Arsura.** Marginea se trage cu curbe prin mijlocul dintre puncte, peste trei
+   sinusuri cu perioade care nu se împart una la alta. Cu raze trase la sorți și
+   legate cu linii drepte ieșea o roată dințată — un semn desenat, nu o gaură
+   mâncată de foc.
+7. **Sunetul focului:** un suflu grav, continuu, și peste el pocnete puse la sorți
+   pe ceasul audio. Numai suflul sună a aragaz; numai pocnetele, a cineva care
+   rupe crengi.
+
+Ce s-a scos pe drum: **caseta cu pictorii expresioniști**. Erau referințele după
+care s-a pictat sala, nu ceva de citit în ea — unsprezece nume pe un perete cer să
+fie citite, și atunci sala nu mai e despre căldura culorii, ci despre memorat.
+
+Ce s-a mai reparat pe drum: `dt` nu mai poate ieși negativ. Un `dt` negativ nu
+încetinește o scenă, o dă **înapoi** — aburii se îngroașă în loc să se limpezească,
+iar faza nu se mai schimbă niciodată.
+
 ## Rămas de făcut
 
 - **Pridvorul casei** din scena a cincea e văzut din față, plat: stâlpii și
@@ -469,6 +513,12 @@ mărimea ramei, cu destinația portalului și cu ordinea foilor din deschidere.
 - **Documentele proiectului** (`.docx`, `.pdf`) stau în folderul de deasupra,
   netrimise pe GitHub: repo-ul e public, iar ele poartă numele întreg al unui
   copil.
+- **Ce urmează după arsură.** Gaura arsă duce deocamdată înapoi la custode,
+  fiindcă sala a șaptea încă nu e făcută. Drumul e croit; când va fi, aici se
+  schimbă un singur rând, în `iesiDinFoc`.
+- **Șevaletul** e văzut drept din față. Piciorul din spate îl sprijină, dar sala
+  e rotundă și lucrarea stă în mijlocul ei: la un moment dat ar merita văzut
+  puțin din trei sferturi, cum îl vezi când intri pe ușă.
 - **Împărțirea în `js/`** e verificată numai prin faptul că testele trec: ele
   citesc lista din `index.html` și rulează exact fișierele pe care le încarcă
   pagina, în ordinea lor. Deci codul e bun. Ce n-a cântărit nimeni e **unde s-a

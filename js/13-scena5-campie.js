@@ -1582,6 +1582,14 @@ function intraInCampie(acum) {
 }
 
 function click5(acum) {
+  /* Cand usile s-au deschis, orice atingere pe tablou te duce inauntru. Pe tot
+     tabloul, nu numai pe usa: usa e mica in panza, iar cine nu nimereste de doua
+     ori crede ca nu se poate intra. */
+  if (s5.faza === 'casa' && s5.usi > 0.75) {
+    const T = pregatesteTablou();
+    if (typeof intraInFoc === 'function') intraInFoc(acum);
+    return;
+  }
   if (s5.faza !== 'sala' || s5.pasi >= PASI_INAPOI) return;
   s5.pasi++;
   if (audio) sunetClopotel(520 + s5.pasi * 40);
@@ -1601,7 +1609,16 @@ function actualizeazaCampia(acum) {
   if (s5.faza === 'casa') {
     s5.plecare = Math.min(1, s5.plecare + dt / 2600);
     if (s5.plecare >= 1) s5.usi = Math.min(1, s5.usi + dt / 2200);
-    if (s5.usi >= 1 && acum - s5.t0 > 9000) intoarceInMuzeuDinCampie(acum);
+    /* Usa ramane deschisa si asteapta. Inainte, dupa noua secunde te lua de mana
+       si te ducea inapoi la custode — dar la capatul drumului sta o usa deschisa
+       intr-o casa in care tocmai au intrat doi oameni, si singurul lucru firesc
+       e sa intri dupa ei. De-aia scena nu se mai incheie singura: se incheie
+       cand atingi usa.
+
+       Sala a sasea se picteaza din vreme, cat timp inca se deschid usile: altfel
+       primul cadru de acolo ar picta toata rotonda si intrarea s-ar simti ca o
+       poticnire. Aceeasi lectie ca la galerie. */
+    if (s5.usi > 0.3 && typeof pregatesteSalaFocului === 'function') pregatesteSalaFocului();
   }
 }
 

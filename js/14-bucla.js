@@ -137,6 +137,10 @@ function cadru(t) {
   else if (stare === 'campie') {
     deseneazaScena5(t, acum);
   }
+  else if (stare === 'foc') {
+    actualizeazaFocul(acum);
+    deseneazaScena6(t, acum);
+  }
 
   deseneazaCursorul();
   requestAnimationFrame(cadru);

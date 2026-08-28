@@ -61,7 +61,8 @@ stateDiagram-v2
   minge --> muzeu : atingi elefantul
   muzeu --> galerie : atingi buzunarul GALERIE
   galerie --> campie : atingi rama
-  campie --> muzeu : după cei zece pași
+  campie --> foc : după cei zece pași,<br/>atingi ușa deschisă din tablou
+  foc --> muzeu : intri prin arsură
   galerie --> muzeu : ieși din galerie
 ```
 
@@ -116,22 +117,23 @@ flowchart TB
   subgraph T["Temelia"]
     A1["01-panza.js · 75<br/>pânza, măsurile, uneltele de desen"]
     A2["02-cursor.js · 44<br/>cursorul și viteza degetului"]
-    A3["03-sunete.js · 408<br/>toate sunetele + muzica"]
+    A3["03-sunete.js · 519<br/>toate sunetele + muzica"]
     A4["04-stari.js · 25<br/>variabila stare"]
   end
   subgraph S["Scenele"]
-    B5["05-scena1-balon.js · 121"]
-    B6["06-scena2-minge.js · 751<br/>mingea, petele, elefantul, grădina"]
-    B11["11-scena3-muzeu.js · 1746<br/>custodele, haina, buzunarul, manualul"]
-    B12["12-scena4-galerie.js · 1278<br/>sala rococo, rama, lupa"]
-    B13["13-scena5-campie.js · 963<br/>pânza uriașă, țăranii, pantofii"]
+    B5["05-scena1-balon.js · 157"]
+    B6["06-scena2-minge.js · 793<br/>mingea, petele, elefantul, grădina"]
+    B11["11-scena3-muzeu.js · 1694<br/>custodele, haina, buzunarul, manualul"]
+    B12["12-scena4-galerie.js · 1410<br/>sala rococo, rama, lupa"]
+    B13["13-scena5-campie.js · 1813<br/>pânza uriașă, țăranii, pantofii"]
+    B15["15-scena6-foc.js · 1102<br/>sala rotundă, șevaletul, arsura"]
   end
   subgraph D["Desenul și legăturile"]
-    C7["07-atingeri.js · 150<br/>ce face fiecare atingere"]
-    C8["08-desen-fundal.js · 105<br/>fundalurile, foile deschiderii"]
-    C9["09-manuta-balon.js · 312<br/>mănușa-balon și cioburile"]
-    C10["10-desen-scene-1-2.js · 578"]
-    C14["14-bucla.js · 126<br/>un cadru, la nesfârșit"]
+    C7["07-atingeri.js · 153<br/>ce face fiecare atingere"]
+    C8["08-desen-fundal.js · 227<br/>fundalurile, foile deschiderii"]
+    C9["09-manuta-balon.js · 317<br/>mănușa-balon și cioburile"]
+    C10["10-desen-scene-1-2.js · 624"]
+    C14["14-bucla.js · 148<br/>un cadru, la nesfârșit"]
   end
   T --> S
   T --> D

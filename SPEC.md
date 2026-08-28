@@ -154,28 +154,92 @@ ecranul, ei sunt singurul lucru care spune unde stai.
 pânza se micșorează pe ecran și se limpezește. Asta e toată scena: **nu te apropii
 ca să vezi mai bine, te depărtezi.**
 
-La al zecelea pas, cei trei **țărani** din tablou prind viață, îți fac cu mâna și
-te strigă: *De acolo, de departe, ne vezi mai bine?* Pe urmă se duc la casa de
-alături și-i deschid ușile, poftindu-te înăuntru.
+La al zecelea pas, cei **doi țărani** din tablou — o femeie și un bărbat — prind
+viață, îți fac cu mâna și te strigă: *De acolo, de departe, ne vezi mai bine? Hai
+cu noi!* Pe urmă se **răsucesc cu spatele** — nimeni nu merge cu spatele înainte —
+și se duc la casa de alături, micșorându-se cu depărtarea. Îi deschid ușile și te
+poftesc înăuntru: **ușa rămâne deschisă și așteaptă.** Prin ea se intră în sala a
+șasea, când vrei tu.
 
 ### 7.1 Pictura
 
 Impresionistă: tușe scurte, așezate pe direcții, cald lângă rece, auriu lângă
 violet. Cer cu contrast simultan, soare jos în stânga, dealuri violete în zare,
-grâu pe diagonală, o cărare, plopi, căpițe de fân și o **casă țărănească cu
-pridvor**: pereți văruiți albi, soclu de piatră de râu, acoperiș de olane roșii în
-patru ape cu turn peste intrare, și tot lemnul dat cu albastrul caselor de pe
-Valea Bistriței — stâlpi, arcade traforate, cercevele, ușă.
+grâu pe diagonală, un **copac mare** în stânga, în spatele oamenilor, și o **casă
+țărănească cu pridvor** în dreapta, în planul secundar: pereți văruiți albi, soclu
+de piatră de râu, acoperiș de olane roșii în patru ape cu turn peste intrare, și
+tot lemnul dat cu albastrul caselor de pe Valea Bistriței — stâlpi, arcade
+traforate, cercevele, ușă. Ușa se **îngustează** când se deschide, ca o ușă văzută
+din față, nu se răstoarnă lateral.
+
+Între zare și oameni, în planul secundar, un **sat sugerat**: acoperișuri de olane
+și pâlcuri de pomi, cu atât mai spălăcite cu cât sunt mai departe. Fără el, câmpul
+putea fi oriunde; cu el, oamenii au de unde veni și unde se întoarce.
+
+**Pensula trece peste tot**, casa inclusă. Cât timp casa era singurul lucru desenat
+cu contur curat într-un peisaj făcut din pete, se citea ca un decupaj lipit peste
+pictură.
 
 Țăranii poartă **port românesc**, nu haine oarecare: ie de pânză de casă cu altiță
 cusută de-a curmezișul umărului și râuri pe mânecă, catrință vărgată cu dungi
 negre și aurii pe roșu, brâu, năframă care încadrează fața, pălărie neagră cu
 boruri mici, pieptar cu găitan, chimir de piele, iţari, opinci. Stau la depărtări
-diferite, ca să nu pară lipiți pe un plan.
+diferite, ca să nu pară lipiți pe un plan, iar câteva fire de grâu le cresc peste
+tălpi: stau **în** lan, nu pe el.
 
-Fazele: `pixeli`, `sala`, `viu`, `casa`. La capăt, te întorci în muzeu.
+Mărimea lor ține de perspectivă, nu de gust: un om se vede cu atât mai mare cu cât
+calcă mai departe de linia orizontului.
 
-## 8. Reguli de implementare
+Fazele: `pixeli`, `sala`, `viu`, `casa`.
+
+## 8. Scena 6 — sala rotundă a focului
+
+**Tema:** valoarea petei picturale sub semn termic. **Experiența:** energia
+termică a culorii, dinamism. **Atmosfera:** expresionistă, intensă.
+
+Se intră pe ușa casei din tabloul de dinainte. Sala e **rotundă**: pardoseală în
+tablă de șah **alb-negru**, pereți în galben-portocaliu aprins, o cornișă și o
+temelie care se încovoaie amândouă — într-o sală dreptunghiulară privirea fuge
+spre colțuri, într-o rotondă se întoarce mereu în mijloc, la foc.
+
+Tabla de șah e singurul lucru neutru din sală, și e neutră dinadins: e măsura după
+care ochiul judecă cât de aprins e restul.
+
+**Toate culorile sunt calde**, fără nicio excepție. Singura culoare rece din scenă
+e cenușa albăstruie din gaura arsă, la sfârșit — și tocmai de-aia se vede. Asta e
+demonstrația scenei: cât de tare arde caldul se simte abia când, într-un colț, dai
+peste rece.
+
+În mijlocul sălii, pe un **șevalet de atelier**, o pânză **verticală** în **ramă
+prețioasă** — aceeași sculptură de brâuri ca în galeria a patra, în picioare. Pe ea,
+un **foc de tabără care pulsează ca lava**: două bătăi cu perioade care nu se împart
+una la alta, ca să nu clipească precum un bec stricat. Un tablou pe perete e un
+exponat terminat; unul pe șevalet e o lucrare la care se lucrează, și din care poate
+să sară o scânteie.
+
+În dreapta șevaletului, o măsuță cu **mănuși de protecție** — galben fluorescent,
+dungi roșii, platoșă peste articulații — și avertismentul: *Atenție, frige! Pune-ți
+mănușile de protecție de pe masă.*
+
+Cu mâna goală, pânza frige și te trage înapoi. După cinci încercări, mănușile vin
+singure — cine a înțeles ce vrea și nu găsește cum n-are voie să rămână blocat.
+
+Cu mănușile, o atingere pe pânză și: ecranul se face vaporos, se aud lemne
+pocnind, o **scânteie sare din pânză** și aprinde colțul ecranului. De acolo focul
+mănâncă hârtia peretelui din fund și lasă o **deschizătură arsă plină de cenușă
+albastră** — marginea ei încă vie, arzând. Gaura e mai lată decât pânza, așa că
+șevaletul rămâne în picioare în fața ei: cald pe rece, în aceeași imagine. Prin ea
+se merge mai departe.
+
+Pe peretele din stânga, fișa de sală cu definiția expresionismului, pictură murală,
+ca în celelalte săli.
+
+Sunetul: **pârâitul unui foc de tabără** — un suflu grav, continuu, și peste el
+pocnete rare, puse la sorți pe ceasul audio, ca să nu sune a mașinărie.
+
+Fazele: `intrare`, `sala`, `scanteie`, `arde`, `gaura`.
+
+## 9. Reguli de implementare
 
 - **Niciun fișier extern.** Tot desenul și tot sunetul se nasc în cod. Fără
   imagini, fără fișiere audio, fără fonturi descărcate, fără biblioteci.
@@ -198,7 +262,7 @@ Fazele: `pixeli`, `sala`, `viu`, `casa`. La capăt, te întorci în muzeu.
   semn care cheamă, iar semnul se întărește cu cât treci mai mult fără să
   reușești.
 
-## 9. Etape
+## 10. Etape
 
 1. Punctul, balonul de săpun, transformarea în minge.
 2. Mingea, petele, elefantul care face curat.
@@ -207,15 +271,20 @@ Fazele: `pixeli`, `sala`, `viu`, `casa`. La capăt, te întorci în muzeu.
 5. Galeria rococo cu rama aurită, miniatura și lupa.
 6. Pânza uriașă și cei zece pași înapoi.
 7. Deschiderea cu trei foi și mânuța-balon.
+8. Sala rotundă a focului, cu mănuși și arsură.
 
 Ordinea de lucru efectivă e cea din [PLAN.md](PLAN.md).
 
-## 10. În afara scopului
+## 11. În afara scopului
 
 - **Scor, niveluri, victorie.** Nu se câștigă nimic. E o jucărie, nu un joc.
 - **Meniuri, setări, salvare.** Nimic nu trece dintr-o deschidere a paginii în
   alta.
 - **Taste.** Se joacă numai cu atingerea.
-- **Text pe ecran**, în afară de: cele trei foi ale deschiderii, articolele
-  manualului, bilețelele cercelului, îndemnurile din galerie și porunca celor zece
-  pași. În rest, nicio literă — ce se poate arăta nu se scrie.
+- **Text pe ecran**, în afară de: cele trei foi ale deschiderii, definițiile de pe
+  fundal (punctul, linia, pata de culoare), articolele manualului, bilețelele
+  cercelului, îndemnurile din galerie, porunca celor zece pași, fișele de sală și
+  avertismentul cu mănușile. În rest, nicio literă — ce se poate arăta nu se scrie.
+- **Liste de nume, biografii, date.** Referințele după care s-au pictat sălile
+  rămân în afara lor: unsprezece nume de pictori pe un perete cer să fie citite, și
+  atunci sala nu mai e despre ce vezi, ci despre ce ții minte.

@@ -396,6 +396,24 @@ return {
   RECE_SALII: typeof RECE_SALII !== "undefined" ? RECE_SALII : null,
   PORT_ROMANESC: typeof PORT_ROMANESC !== "undefined" ? PORT_ROMANESC : null,
   taranIn: typeof taranIn !== "undefined" ? taranIn : null,
+  s6: typeof s6 !== "undefined" ? s6 : null,
+  intraInFoc: typeof intraInFoc !== "undefined" ? intraInFoc : null,
+  iesiDinFoc: typeof iesiDinFoc !== "undefined" ? iesiDinFoc : null,
+  click6: typeof click6 !== "undefined" ? click6 : null,
+  geomSala6: typeof geomSala6 !== "undefined" ? geomSala6 : null,
+  geomManusi: typeof geomManusi !== "undefined" ? geomManusi : null,
+  temeliaPeretelui: typeof temeliaPeretelui !== "undefined" ? temeliaPeretelui : null,
+  cornisaPeretelui: typeof cornisaPeretelui !== "undefined" ? cornisaPeretelui : null,
+  pregatesteSalaFocului: typeof pregatesteSalaFocului !== "undefined" ? pregatesteSalaFocului : null,
+  salaFocului: typeof salaFocului !== "undefined" ? salaFocului : null,
+  PRAG_MANUSI_IN_MANA: typeof PRAG_MANUSI_IN_MANA !== "undefined" ? PRAG_MANUSI_IN_MANA : null,
+  TEXT_FISA_EXPRESIONISM: typeof TEXT_FISA_EXPRESIONISM !== "undefined" ? TEXT_FISA_EXPRESIONISM : null,
+  CENUSA_ALBASTRA: typeof CENUSA_ALBASTRA !== "undefined" ? CENUSA_ALBASTRA : null,
+  culorileSalii6: (function () {
+    if (typeof GALBEN_SALA === "undefined") return null;
+    return { GALBEN_SALA, GALBEN_LUMINA, PORTOCALIU, ROSU_ADANC, BRUN_UMBRA,
+             BRUN_ADANC, AUR_RAMA6 };
+  })(),
   PRAG_LUPA_IN_MANA: typeof PRAG_LUPA_IN_MANA !== "undefined" ? PRAG_LUPA_IN_MANA : null,
   click5: typeof click5 !== "undefined" ? click5 : null,
   click4: typeof click4 !== "undefined" ? click4 : null,
@@ -2096,14 +2114,24 @@ function ruleaza() {
     adevarat(j.s5.usi > 0.5, "ușile casei stau închise: " + j.s5.usi);
   });
 
-  test("casa deschisă te întoarce în muzeu, cu galeria însemnată", function () {
+  test("casa deschisă așteaptă, nu te ia de mână", function () {
+    /* Înainte, după nouă secunde de uși deschise, scena se încheia singură și te
+       ducea înapoi la custode. Dar la capătul drumului stă o ușă deschisă într-o
+       casă în care tocmai au intrat doi oameni: singurul lucru firesc e să intri
+       după ei, când vrei tu. Prin ea se ajunge în sala focului. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     j.mergiLaStarea("campie");
     j.intraInCampie(j.ceas.t);
     j.avanseaza(6000);
     for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     j.avanseaza(24000);
-    egal(j.stare(), "muzeu", "nu ne întoarcem în muzeu");
+    egal(j.stare(), "campie", "scena s-a încheiat singură, fără să fi atins nimeni ușa");
+    adevarat(j.s5.usi > 0.9, "ușile nu s-au deschis de tot");
+    j.click5(j.ceas.t);
+    j.avanseaza(60);
+    egal(j.stare(), "foc", "ușa deschisă nu duce nicăieri");
+    // iar galeria rămâne însemnată când ieșim prin arsură
+    j.iesiDinFoc(j.ceas.t);
     adevarat(j.s3.vizitat, "galeria prin care am trecut n-a rămas însemnată");
   });
 
@@ -2783,6 +2811,166 @@ function ruleaza() {
     adevarat(gasit > 0, "urma nu s-a desenat deloc");
     adevarat(ceaMaiStinsa > 0.15,
       "inceputul liniei e aproape invizibil (transparenta " + ceaMaiStinsa + ")");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a sasea: rotunda, si numai calda");
+
+  function inFoc(j) {
+    j.mergiLaStarea("campie");
+    j.intraInFoc(j.ceas.t);
+    j.avanseaza(2000);        // trece „intrarea", se limpezesc aburii
+    return j.geomSala6();
+  }
+
+  function atingeIn(j, x, y) {
+    const p = j.scalaPanzei();
+    j.atinge(x / p, y / p);
+  }
+
+  test("sala e rotunda, nu o cutie tapetata", function () {
+    /* Stand in mijlocul unei rotonde, peretele din fata e cel mai departe si cel
+       din laturi mai aproape — deci temelia lui e sus la mijloc si coboara spre
+       margini. Dreapta, sala e o cutie oricat ai vopsi-o. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(typeof j.temeliaPeretelui === "function", "lipseste temelia peretelui");
+    const mijloc = j.temeliaPeretelui(0.5, 500);
+    const stanga = j.temeliaPeretelui(0, 500);
+    const dreapta = j.temeliaPeretelui(1, 500);
+    adevarat(stanga > mijloc + 10 && dreapta > mijloc + 10,
+      "temelia e dreapta: mijloc " + Math.round(mijloc) +
+      ", margini " + Math.round(stanga) + "/" + Math.round(dreapta));
+    // si cornisa o repeta, rasturnata
+    adevarat(j.cornisaPeretelui(0.5) > j.cornisaPeretelui(0) + 5,
+      "cornisa nu urmeaza curbura, deci bolta nu se citeste");
+  });
+
+  test("in sala nu intra nicio culoare rece, in afara de cenusa", function () {
+    /* Toata scena e despre caldura culorii. O singura pata rece pusa din
+       neatentie in perete ar strica exact lucrul pe care sala il are de aratat.
+       Pardoseala face exceptie dinadins: tabla de sah e alb-negru, singurul lucru
+       neutru din sala, masura dupa care ochiul judeca cat de aprins e restul. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.culorileSalii6 !== null, "lipsesc culorile salii");
+    for (const nume of Object.keys(j.culorileSalii6)) {
+      const h = j.culorileSalii6[nume];
+      const n = parseInt(String(h).slice(1), 16);
+      const r = (n >> 16) & 255, b = n & 255;
+      adevarat(r > b, "culoarea " + nume + " (" + h + ") e rece: rosu " + r + ", albastru " + b);
+    }
+    // iar cenusa e rece, si asta e tot rostul ei
+    const c = parseInt(String(j.CENUSA_ALBASTRA).slice(1), 16);
+    adevarat((c & 255) > ((c >> 16) & 255),
+      "cenusa nu e rece, deci nu mai contrasteaza cu nimic");
+  });
+
+  test("cu mana goala, panza nu se lasa atinsa", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    egal(j.s6.faza, "sala", "n-am ajuns in sala");
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(100);
+    egal(j.s6.faza, "sala", "focul a pornit fara manusi");
+    adevarat(j.s6.refuzuri > 0, "nu s-a intamplat nimic: nici foc, nici avertisment");
+    adevarat(j.s6.frige > 0, "n-a pulsat avertismentul");
+  });
+
+  test("cine incearca de prea multe ori primeste manusile in mana", function () {
+    /* Aceeasi socoteala ca la lupa din galerie: cine a inteles ce vrea si nu
+       gaseste cum nu trebuie lasat sa se invarta prin sala la nesfarsit. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    for (let k = 0; k < j.PRAG_MANUSI_IN_MANA; k++) {
+      atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+      j.avanseaza(60);
+    }
+    adevarat(j.s6.manusiPuse, "dupa " + j.PRAG_MANUSI_IN_MANA + " incercari tot n-are manusi");
+  });
+
+  test("manusile se iau de pe masa", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    adevarat(j.s6.manusiPuse, "manusile n-au fost luate de pe masa");
+  });
+
+  test("cu manusile, focul iese din panza si arde peretele", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(60);
+    egal(j.s6.faza, "scanteie", "n-a sarit nicio scanteie");
+    // scanteia zboara spre coltul de jos-dreapta
+    const laInceput = j.s6.scanteie.x;
+    j.avanseaza(800);
+    adevarat(j.s6.scanteie === null || j.s6.scanteie.x > laInceput,
+      "scanteia nu pleaca spre colt");
+    j.avanseaza(1200);
+    egal(j.s6.faza, "arde", "coltul n-a luat foc");
+    adevarat(j.s6.colt > 0, "coltul nu arde");
+    j.avanseaza(5000);
+    egal(j.s6.faza, "gaura", "peretele n-a ars pana la capat");
+    aproape(j.s6.arsura, 1, 0.01, "arsura n-a ajuns la capat");
+  });
+
+  test("gaura arsa duce mai departe", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(9000);
+    egal(j.s6.faza, "gaura", "n-am ajuns la gaura");
+    atingeIn(j, j.W() * 0.5, g.orizontul - j.H() * 0.16);
+    j.avanseaza(60);
+    adevarat(j.stare() !== "foc", "gaura nu duce nicaieri: am ramas in sala");
+  });
+
+  test("pe perete scrie ce e expresionismul", function () {
+    /* Numai definitia. Numele pictorilor — Munch, Kirchner, Kandinsky — au fost o
+       vreme scrise pe un al doilea panou, in dreapta. Erau referinte dupa care s-a
+       pictat sala, nu ceva de citit in ea: o lista de unsprezece nume pe perete
+       cere sa fie citita, si atunci sala nu mai e despre caldura culorii, ci
+       despre memorat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    const panze = j.panzeAscunse.map(function (p) { return p._panza; })
+      .filter(function (p) { return p && p.desene && p.desene.length; });
+    let scris = "";
+    for (const p of panze) scris += " " + totTextul(p.desene);
+    adevarat(/deformarea realit/i.test(scris), "lipseste definitia expresionismului");
+    adevarat(!/Kandinsky|Kirchner|Pechstein/.test(scris),
+      "lista de pictori e tot pe perete: " + scris.slice(0, 200));
+  });
+
+  test("sala se picteaza inainte sa intri in ea", function () {
+    /* Aceeasi lectie ca la galerie: pictata in primul cadru de acolo, intrarea
+       se simte ca o poticnire. Sala focului se picteaza inca de cand se deschid
+       usile casei din tablou. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(14000);          // prind viata, pleaca spre casa, se deschid usile
+    adevarat(j.s5.usi > 0.5, "usile nu s-au deschis: " + j.s5.usi);
+    adevarat(j.salaFocului && j.salaFocului.panza,
+      "sala focului nu era pictata cand usile erau deja deschise");
+  });
+
+  test("usa deschisa din tablou te duce in sala focului", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCampie(j);
+    for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
+    j.avanseaza(16000);
+    egal(j.s5.faza, "casa", "n-au ajuns la casa");
+    j.click5(j.ceas.t);
+    j.avanseaza(60);
+    egal(j.stare(), "foc", "usa deschisa nu duce nicaieri");
   });
 
   /* ---------------------------------------------------------------- */
