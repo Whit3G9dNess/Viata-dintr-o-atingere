@@ -98,7 +98,48 @@ const DEFINITIE_PATA =
    orizontului trebuia să-i ghicești dinainte câte rânduri iese — și ghiceala se
    strica la fiecare cuvânt schimbat. Așa, textul se rupe întâi și se așază pe
    urmă. */
+/* ---------- ȘTAMPILELE SCRISULUI ----------
+
+   Un bloc de text întins de la o margine la alta se măsoară cuvânt cu cuvânt: ca
+   să știi cât spațiu pui între ele, trebuie să întrebi pânza cât ține fiecare.
+   Pentru definițiile de pe fundal ies aproape șaptezeci de măsurători și douăzeci
+   de rânduri scrise **la fiecare cadru** — pentru un text care nu se schimbă
+   niciodată. Măsurătoarea de text e una dintre cele mai scumpe întrebări pe care
+   le poți pune unei pânze.
+
+   Așa că fiecare bloc se scrie o dată pe o pânză ascunsă și pe urmă se copiază.
+   Cheia ține tot ce i-ar schimba înfățișarea; dacă vreunul se schimbă, se scrie
+   din nou. */
+const stampileScris = new Map();
+
+function definitieStampilata(text, cx, y, lat, marime, culoare, titlu, ancora) {
+  const cheie = [text, lat, marime, culoare, titlu, ancora].join('|');
+  let st = stampileScris.get(cheie);
+  if (!st) {
+    /* Pânza ștampilei e cât textul, plus o margine: nu cât ecranul. O sută de
+       ștampile cât ecranul ar mânca mai multă memorie decât desenează. */
+    const marja = Math.ceil(marime * 2);
+    const p = document.createElement('canvas');
+    p.width = Math.ceil(lat) + marja * 2;
+    p.height = Math.ceil(marime * 1.42 * 12) + marja * 2;
+    const c = p.getContext('2d');
+    const jos = scrieDefinitia(c, text, p.width / 2, marja, lat, marime, culoare, titlu, 'sus');
+    st = { panza: p, marja, inalt: jos - marja };
+    stampileScris.set(cheie, st);
+  }
+  let sus = y;
+  if (ancora === 'mijloc') sus = y - st.inalt / 2;
+  else if (ancora === 'jos') sus = y - st.inalt;
+  ctx.drawImage(st.panza, cx - st.panza.width / 2, sus - st.marja);
+  return sus + st.inalt;
+}
+
 function definitiePeFundal(text, cx, y, lat, marime, culoare, titlu, ancora) {
+  return definitieStampilata(text, cx, y, lat, marime, culoare, titlu, ancora);
+}
+
+/* Scrisul propriu-zis, pe orice pânză. */
+function scrieDefinitia(ctx, text, cx, y, lat, marime, culoare, titlu, ancora) {
   ctx.save();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';

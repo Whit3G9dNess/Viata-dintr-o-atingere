@@ -70,17 +70,33 @@ const nori = [];
 // Fundalul Scenei 2: cerul alb sus, pământul negru jos — dar cu viață în ele:
 // cerul respiră printr-un gradient fin, norii plutesc, orizontul are o geană
 // de lumină. „progres" face trecerea lină de la griul Scenei 1 (0) la peisaj (1).
+/* Cerul și pământul sunt două zugrăveli care se schimbă numai când se schimbă
+   `progres` sau mărimea ferestrei — adică aproape niciodată. Făcute din nou la
+   fiecare cadru, sunt două obiecte aruncate de șaizeci de ori pe secundă,
+   degeaba. Ținem ultima pereche și o dăm înapoi cât timp e bună. */
+const zugraveala = { cheie: '', cer: null, pamant: null };
+
 function deseneazaFundalImpartit(progres) {
   const oriz = orizont();
   const marime = Math.min(W, H);
 
-  // cerul: alb luminos sus, ușor umbrit spre orizont (senzație de aer, adâncime)
-  const c1 = Math.round(intre(122, 251, progres));
-  const c2 = Math.round(intre(122, 233, progres));
-  const cer = ctx.createLinearGradient(0, 0, 0, oriz);
-  cer.addColorStop(0, `rgb(${c1}, ${c1}, ${c1})`);
-  cer.addColorStop(1, `rgb(${c2}, ${c2}, ${c2})`);
-  ctx.fillStyle = cer;
+  const cheie = `${Math.round(progres * 200)}|${W}x${H}`;
+  if (zugraveala.cheie !== cheie) {
+    // cerul: alb luminos sus, ușor umbrit spre orizont (aer, adâncime)
+    const c1 = Math.round(intre(122, 251, progres));
+    const c2 = Math.round(intre(122, 233, progres));
+    const cer = ctx.createLinearGradient(0, 0, 0, oriz);
+    cer.addColorStop(0, `rgb(${c1}, ${c1}, ${c1})`);
+    cer.addColorStop(1, `rgb(${c2}, ${c2}, ${c2})`);
+    // pământul: negru catifelat, cu o geană de lumină la orizont
+    const g1 = Math.round(intre(122, 52, progres));
+    const g2 = Math.round(intre(122, 10, progres));
+    const pamant = ctx.createLinearGradient(0, oriz, 0, H);
+    pamant.addColorStop(0, `rgb(${g1}, ${g1}, ${g1})`);
+    pamant.addColorStop(1, `rgb(${g2}, ${g2}, ${g2})`);
+    zugraveala.cheie = cheie; zugraveala.cer = cer; zugraveala.pamant = pamant;
+  }
+  ctx.fillStyle = zugraveala.cer;
   ctx.fillRect(0, 0, W, oriz);
 
   // norii: pătrățoși ca elefantul, plutesc alene și reintră pe partea cealaltă
@@ -114,13 +130,7 @@ function deseneazaFundalImpartit(progres) {
     }
   }
 
-  // pământul: negru catifelat, cu o geană de lumină la orizont
-  const g1 = Math.round(intre(122, 52, progres));
-  const g2 = Math.round(intre(122, 10, progres));
-  const pamant = ctx.createLinearGradient(0, oriz, 0, H);
-  pamant.addColorStop(0, `rgb(${g1}, ${g1}, ${g1})`);
-  pamant.addColorStop(1, `rgb(${g2}, ${g2}, ${g2})`);
-  ctx.fillStyle = pamant;
+  ctx.fillStyle = zugraveala.pamant;
   ctx.fillRect(0, oriz, W, H - oriz);
 }
 
@@ -588,20 +598,58 @@ function deseneazaTrompa(t, transparenta = 1) {
 }
 
 // Petele de vopsea: blob-uri neregulate, vesele
+/* O pată, pusă pe pânza `c`: un miez și câțiva stropi în jurul lui. */
+function punePata(c, pata) {
+  const ramas = 1 - pata.progres;
+  const marime = pata.marime * ramas;
+  if (marime <= 0.5) return;
+  c.fillStyle = pata.culoare;
+  c.beginPath();
+  c.arc(pata.x, pata.y, marime, 0, Math.PI * 2);
+  c.fill();
+  for (const strop of pata.stropi) {
+    c.beginPath();
+    c.arc(pata.x + strop.dx * ramas, pata.y + strop.dy * ramas, strop.r * ramas, 0, Math.PI * 2);
+    c.fill();
+  }
+}
+
+/* ---------- ȘTAMPILA PETELOR ----------
+
+   Șaizeci de pete, fiecare cu patru-cinci stropi, fac vreo cinci sute de cercuri
+   umplute la fiecare cadru — pentru niște pete care, odată căzute, nu se mai
+   clintesc. Se mișcă numai cele pe care le soarbe elefantul, și acelea sunt una,
+   două, niciodată toate.
+
+   Deci: cele așezate se pictează o dată pe o pânză ascunsă și pe urmă se copiază
+   dintr-o mișcare; cele în curs de aspirare se desenează în continuare de mână.
+   Ștampila se face din nou numai când se schimbă cine e așezat și cine nu. */
+const stampaPetelor = { panza: null, cheie: '' };
+
 function deseneazaPetele() {
+  const asezate = [];
+  let cheie = `${W}x${H}`;
   for (const pata of pete) {
-    const marime = pata.marime * (1 - pata.progres);
-    if (marime <= 0.5) continue;
-    ctx.fillStyle = pata.culoare;
-    ctx.beginPath();
-    ctx.arc(pata.x, pata.y, marime, 0, Math.PI * 2);
-    ctx.fill();
-    for (const strop of pata.stropi) {
-      ctx.beginPath();
-      ctx.arc(pata.x + strop.dx * (1 - pata.progres), pata.y + strop.dy * (1 - pata.progres),
-              strop.r * (1 - pata.progres), 0, Math.PI * 2);
-      ctx.fill();
-    }
+    if (pata.aspirata || pata.progres > 0) continue;
+    asezate.push(pata);
+    cheie += `|${Math.round(pata.x)},${Math.round(pata.y)}`;
+  }
+
+  if (stampaPetelor.cheie !== cheie) {
+    if (!stampaPetelor.panza) stampaPetelor.panza = document.createElement('canvas');
+    const p = stampaPetelor.panza;
+    if (p.width !== W || p.height !== H) { p.width = W; p.height = H; }
+    const c = p.getContext('2d');
+    c.clearRect(0, 0, W, H);
+    for (const pata of asezate) punePata(c, pata);
+    stampaPetelor.cheie = cheie;
+  }
+  if (asezate.length) ctx.drawImage(stampaPetelor.panza, 0, 0);
+
+  // cele care zboară spre trompă se desenează de mână, fiindcă se schimbă
+  for (const pata of pete) {
+    if (!pata.aspirata && pata.progres <= 0) continue;
+    punePata(ctx, pata);
   }
 }
 

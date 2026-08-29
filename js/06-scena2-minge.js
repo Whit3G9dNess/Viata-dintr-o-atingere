@@ -184,6 +184,10 @@ const gradina = [];
 const SOIURI = ['copac', 'floare', 'feriga'];
 const MAX_PLANTE = 120;
 
+/* Grădina s-a schimbat de la ultima ștampilă încoace? Cât timp o plantă mai
+   crește, da; după ce toate s-au făcut mari, nu. */
+let gradinaSchimbata = true;
+
 // De unde începe pământul în scena în care ne aflăm acum.
 function nivelulSolului() {
   return stare === 'muzeu' ? geomMuzeu().vpy : orizont();
@@ -202,6 +206,7 @@ function semeneazaPlanta(fx, adancime, culoare) {
   // ținem grădina sortată după adâncime chiar de la semănat: la desen n-o mai
   // sortăm de două ori pe cadru, degeaba
   gradina.sort((a, b) => a.adancime - b.adancime);
+  gradinaSchimbata = true;
   return p;
 }
 
@@ -223,7 +228,9 @@ function semeneazaTufa(fx, adancime, culoare) {
 }
 
 function actualizeazaGradina() {
-  for (const p of gradina) if (p.crestere < 1) p.crestere = Math.min(1, p.crestere + 0.008);
+  for (const p of gradina) {
+    if (p.crestere < 1) { p.crestere = Math.min(1, p.crestere + 0.008); gradinaSchimbata = true; }
+  }
 }
 
 /* Fiecare plantă e făcută din vreo douăzeci de linii și pete. Înmulțit cu
@@ -259,10 +266,34 @@ function stampilaPlantei(soi, culoare) {
 /* Grădina se desenează în două reprize: întâi ce e departe, în spatele
    custodelui, apoi ce e aproape, în fața lui. Așa se vede că el chiar stă
    înăuntrul grădinii, nu în fața unui afiș. */
-function deseneazaGradina(alfa = 1, minAdancime = 0, maxAdancime = 1.01) {
-  const sol = nivelulSolului();
-  const acum = performance.now();
-  const g = stare === 'muzeu' ? geomMuzeu() : null;
+/* O singură plantă, apăsată pe pânza `c`. `leganare` e unghiul cu care se
+   înclină; ștampilele o pun pe zero, fiindcă o pânză pictată o dată nu se poate
+   legăna după aceea. */
+function punePlanta(c, p, sol, g, alfa, leganare) {
+  const departare = 0.4 + 0.6 * p.adancime;   // ce e mai jos e mai aproape, deci mai mare
+  const h = H * p.inaltime * departare * p.crestere;
+  const x = p.fx * W, y = intre(sol, H, p.adancime);
+  if (x < -h || x > W + h) return;            // ce a rămas afară din ecran
+  const st = stampilaPlantei(p.soi, p.culoare);
+  const scara = h / st.inalt;
+
+  c.save();
+  // umbra la rădăcină: pe pământul negru nu se vede, dar pe iarbă desprinde
+  // planta de fundal, care altfel e tot verde
+  c.globalAlpha = alfa * 0.22;
+  c.fillStyle = '#12240e';
+  c.beginPath(); c.ellipse(x, y, h * 0.3, h * 0.07, 0, 0, Math.PI * 2); c.fill();
+
+  c.globalAlpha = alfa;
+  c.translate(x, y);
+  if (leganare) c.rotate(leganare);
+  c.scale(scara, scara);
+  c.drawImage(st.panza, -st.radacinaX, -st.radacinaY);
+  c.restore();
+}
+
+/* Trece prin plantele dintr-o bandă de adâncime și le pune pe `c`. */
+function bandaDeGradina(c, sol, g, alfa, minAdancime, maxAdancime, acum) {
   for (const p of gradina) {                 // deja sortată după adâncime
     if (p.adancime < minAdancime || p.adancime >= maxAdancime) continue;
     if (p.crestere <= 0.001) continue;
@@ -270,28 +301,63 @@ function deseneazaGradina(alfa = 1, minAdancime = 0, maxAdancime = 1.01) {
        desenează. O grădină lăsată de capul ei ar înghiți exact haina pe care
        trebuie s-o vezi desfăcându-se. */
     if (g && p.adancime >= 0.82 && Math.abs(p.fx * W - g.cx) < g.fw * 0.45) continue;
-
-    const departare = 0.4 + 0.6 * p.adancime;   // ce e mai jos e mai aproape, deci mai mare
-    const h = H * p.inaltime * departare * p.crestere;
-    const x = p.fx * W, y = intre(sol, H, p.adancime);
-    if (x < -h || x > W + h) continue;          // ce a rămas afară din ecran
-    const st = stampilaPlantei(p.soi, p.culoare);
-    const scara = h / st.inalt;
-
-    ctx.save();
-    // umbra la rădăcină: pe pământul negru nu se vede, dar pe iarbă desprinde
-    // planta de fundal, care altfel e tot verde
-    ctx.globalAlpha = alfa * 0.22;
-    ctx.fillStyle = '#12240e';
-    ctx.beginPath(); ctx.ellipse(x, y, h * 0.3, h * 0.07, 0, 0, Math.PI * 2); ctx.fill();
-
-    ctx.globalAlpha = alfa;
-    ctx.translate(x, y);
-    ctx.rotate(Math.sin(acum * 0.0016 + p.faza) * 0.05);
-    ctx.scale(scara, scara);
-    ctx.drawImage(st.panza, -st.radacinaX, -st.radacinaY);
-    ctx.restore();
+    punePlanta(c, p, sol, g, alfa,
+                acum === null ? 0 : Math.sin(acum * 0.0016 + p.faza) * 0.05);
   }
+}
+
+/* ---------- ȘTAMPILA GRĂDINII DIN FUND ----------
+
+   O sută douăzeci de plante, fiecare o imagine întinsă pe pânză, de două ori pe
+   cadru — asta a fost, până aici, cel mai scump lucru din toată jucăria. Nu de la
+   numărul de forme, ci de la numărul de pixeli: fiecare plantă acoperă câteva zeci
+   de mii, iar înmulțit cu o sută douăzeci și cu șaizeci de cadre pe secundă iese
+   o socoteală pe care o pânză n-o duce. Pe un calculator mai domol nu se mai putea
+   mișca nici mausul.
+
+   Așa că **banda din fund se pictează o dată** pe o pânză ascunsă, și pe urmă se
+   copiază dintr-o singură mișcare. Plantele din fund pierd legănarea — dar ele
+   sunt tocmai cele la care nu te uiți, și oricum un lucru depărtat se clatină mai
+   puțin decât unul de lângă tine. Banda din față, cea pe care chiar o vezi, se
+   desenează în continuare plantă cu plantă și se leagănă mai departe.
+
+   Ștampila se repictează numai când grădina chiar s-a schimbat: cât timp o plantă
+   crește, la fiecare zecime de secundă; după ce toate s-au făcut mari, niciodată. */
+const stampaGradinii = { panza: null, cheie: '', pana: 0 };
+const PAUZA_INTRE_STAMPE = 110;    // ms, cât se lasă între două repictări
+
+function deseneazaGradinaStampilata(alfa, minAdancime, maxAdancime) {
+  const acum = performance.now();
+  const cheie = `${W}x${H}|${stare}|${minAdancime}|${maxAdancime}|${gradina.length}`;
+  const trebuie = stampaGradinii.cheie !== cheie ||
+                  (gradinaSchimbata && acum >= stampaGradinii.pana);
+  if (trebuie) {
+    if (!stampaGradinii.panza) stampaGradinii.panza = document.createElement('canvas');
+    const p = stampaGradinii.panza;
+    if (p.width !== W || p.height !== H) { p.width = W; p.height = H; }
+    const c = p.getContext('2d');
+    c.clearRect(0, 0, W, H);
+    bandaDeGradina(c, nivelulSolului(), stare === 'muzeu' ? geomMuzeu() : null,
+                   1, minAdancime, maxAdancime, null);
+    stampaGradinii.cheie = cheie;
+    stampaGradinii.pana = acum + PAUZA_INTRE_STAMPE;
+    /* Steagul se lasă jos numai când toate plantele s-au făcut mari. Lăsat jos
+       aici, o plantă care abia răsare ar rămâne pe veci pe jumătate crescută. */
+    let mai = false;
+    for (const q of gradina) if (q.crestere < 1) { mai = true; break; }
+    if (!mai) gradinaSchimbata = false;
+  }
+  if (!stampaGradinii.panza) return;
+  ctx.save();
+  ctx.globalAlpha = alfa;
+  ctx.drawImage(stampaGradinii.panza, 0, 0);
+  ctx.restore();
+}
+
+function deseneazaGradina(alfa = 1, minAdancime = 0, maxAdancime = 1.01) {
+  if (maxAdancime <= 0.82) { deseneazaGradinaStampilata(alfa, minAdancime, maxAdancime); return; }
+  bandaDeGradina(ctx, nivelulSolului(), stare === 'muzeu' ? geomMuzeu() : null,
+                 alfa, minAdancime, maxAdancime, performance.now());
 }
 
 function deseneazaCopac(c, h, legan, p) {

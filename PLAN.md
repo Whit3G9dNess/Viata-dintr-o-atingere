@@ -504,6 +504,48 @@ Ce s-a mai reparat pe drum: `dt` nu mai poate ieși negativ. Un `dt` negativ nu
 încetinește o scenă, o dă **înapoi** — aburii se îngroașă în loc să se limpezească,
 iar faza nu se mai schimbă niciodată.
 
+## Etapa a douăzecea — grădina care îneca jocul
+
+„Odată ce ajungi la zona unde elefantul stă pe iarbă e extrem de mult lag, de nici
+nu poți să-ți miști mausul."
+
+Nu era de la numărul de forme, ci de la **numărul de pixeli**. În scena a doua, cu
+grădina plină, fiecare cadru cerea peste o mie trei sute de operații de desen, iar
+cele mai multe erau tocmai cele scumpe: imagini întinse pe suprafețe mari și
+măsurători de text.
+
+Trei lucruri se făceau din nou la fiecare cadru, deși nu se schimbau:
+
+1. **Grădina din fund** — vreo optzeci și cinci de plante, fiecare o imagine
+   întinsă pe pânză, plus o umbră. Înmulțit cu șaizeci de cadre pe secundă, iese o
+   socoteală pe care o pânză n-o duce. Acum banda din fund se pictează o dată pe o
+   pânză ascunsă și se copiază dintr-o singură mișcare: **510 operații → 3**.
+   Plantele din fund pierd legănarea, și n-are importanță — sunt tocmai cele la
+   care nu te uiți, iar un lucru depărtat se clatină oricum mai puțin. Banda din
+   față, cea pe care chiar o vezi, se desenează în continuare plantă cu plantă.
+2. **Definițiile de pe fundal** — un text întins de la o margine la alta se
+   măsoară cuvânt cu cuvânt, ca să știi cât spațiu pui între ele. Ieșeau aproape
+   șaptezeci de măsurători și douăzeci de rânduri scrise pe cadru, pentru un text
+   care nu se schimbă niciodată. Măsurătoarea de text e una dintre cele mai scumpe
+   întrebări pe care le poți pune unei pânze: **91 operații → 1**.
+3. **Petele de pe pământ** — șaizeci de pete cu câte patru-cinci stropi fac vreo
+   cinci sute de cercuri umplute pe cadru, pentru niște pete care, odată căzute, nu
+   se mai clintesc. Se mișcă numai cele pe care le soarbe elefantul, și acelea sunt
+   una-două: **~500 operații → 1**, plus cele câteva care chiar zboară.
+
+Pe deasupra, cele două zugrăveli ale fundalului (cerul și pământul) se făceau din
+nou la fiecare cadru; acum se țin minte până se schimbă fereastra.
+
+**Un cadru cu grădina plină: 1308 operații → 484.** Câștigul în pixeli e mai mare
+decât în operații, fiindcă tocmai lucrurile scoase erau cele care acopereau
+suprafețe mari.
+
+Și regulatorul de calitate reacționează altfel când jocul chiar se îneacă: dacă un
+cadru ține peste patruzeci de milisecunde, coboară după șase zecimi de secundă și
+dintr-odată cu două trepte, în loc să aștepte două secunde și jumătate pentru
+fiecare. Cele șapte secunde de smucituri de dinainte erau exact timpul în care omul
+crede că jucăria e stricată.
+
 ## Rămas de făcut
 
 - **Pridvorul casei** din scena a cincea e văzut din față, plat: stâlpii și
@@ -513,6 +555,9 @@ iar faza nu se mai schimbă niciodată.
 - **Documentele proiectului** (`.docx`, `.pdf`) stau în folderul de deasupra,
   netrimise pe GitHub: repo-ul e public, iar ele poartă numele întreg al unui
   copil.
+- **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
+  dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
+  sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
 - **Ce urmează după arsură.** Gaura arsă duce deocamdată înapoi la custode,
   fiindcă sala a șaptea încă nu e făcută. Drumul e croit; când va fi, aici se
   schimbă un singur rând, în `iesiDinFoc`.

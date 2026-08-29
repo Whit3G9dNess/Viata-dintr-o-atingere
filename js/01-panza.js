@@ -56,9 +56,21 @@ function reglezaCalitatea(t) {
     mediaCadru += (dt - mediaCadru) * 0.06;
   }
   ultimulCadruLa = t;
-  if (t - ultimaSchimbare < 2500) return;      // lăsăm o treaptă să se așeze
+
+  /* Cât așteptăm între două trepte. Când jocul merge cât de cât, lăsăm două
+     secunde și jumătate, ca o treaptă să se așeze înainte s-o judecăm. Dar când
+     un cadru ține peste patruzeci de milisecunde — adică sub douăzeci și cinci de
+     cadre pe secundă, atât cât să se simtă în deget — nu mai e nimic de așteptat:
+     coborâm imediat, și dintr-odată cu două trepte.
+
+     Înainte era un singur prag pentru amândouă situațiile, și pe un calculator
+     care chiar se îneca trebuiau vreo șapte secunde și jumătate de smucituri ca
+     să ajungă la treapta de jos. Cele șapte secunde alea sunt tocmai timpul în
+     care omul crede că jucăria e stricată. */
+  const seIneaca = mediaCadru > 40;
+  if (t - ultimaSchimbare < (seIneaca ? 600 : 2500)) return;
   if (mediaCadru > 22 && calitate > 0.55) {
-    calitate = Math.max(0.55, calitate - 0.15);
+    calitate = Math.max(0.55, calitate - (seIneaca ? 0.3 : 0.15));
   } else if (mediaCadru < 13 && calitate < 1) {
     calitate = Math.min(1, calitate + 0.15);
   } else {

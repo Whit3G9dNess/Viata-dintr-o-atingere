@@ -142,6 +142,8 @@ function creeazaPanza() {
     return { x0: x0, y0: y0, x1: x1, y1: y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
   }
 
+  let masuratori = 0;
+
   function inchide(op, culoare) {
     desene.push({
       op: op, stil: stil(culoare), alfa: ctx.globalAlpha,
@@ -159,9 +161,25 @@ function creeazaPanza() {
     globalAlpha: 1, shadowColor: "", shadowBlur: 0, shadowOffsetY: 0,
     get filter() { return ctx._filter || "none"; },
     set filter(v) { ctx._filter = v; if (v && v !== "none") filtre.push(v); },
-    drawImage: function (sursa) {
+    /* Retine si dreptunghiul in care a cazut imaginea, nu numai ce imagine a
+       fost. Fara el, orice desen mutat pe o stampila devine invizibil pentru
+       teste: stii ca s-a copiat ceva, dar nu si unde — si atunci n-ai cum sa mai
+       verifici ca scrisul a ramas in stanga, iar ilustratia in dreapta. */
+    drawImage: function (sursa, a, b, c, d) {
+      let x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+      if (arguments.length >= 9) {
+        x0 = arguments[5]; y0 = arguments[6];
+        x1 = x0 + arguments[7]; y1 = y0 + arguments[8];
+      } else if (arguments.length >= 5) {
+        x0 = a; y0 = b; x1 = a + c; y1 = b + d;
+      } else if (arguments.length >= 3) {
+        x0 = a; y0 = b;
+        x1 = a + (sursa && sursa.width || 0);
+        y1 = b + (sursa && sursa.height || 0);
+      }
       desene.push({ op: "imagine", stil: null, sursa: sursa,
-                    puncte: [], cercuri: [], limite: null });
+                    puncte: [], cercuri: [],
+                    limite: { x0, y0, x1, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 } });
     },
 
     save: function () {
@@ -233,7 +251,7 @@ function creeazaPanza() {
                     puncte: [p], cercuri: [], limite: limite([p]) });
     },
     strokeText: function () {},
-    measureText: function (s) { return { width: String(s).length * 7 }; },
+    measureText: function (s) { masuratori++; return { width: String(s).length * 7 }; },
     clip: function () {},
     createLinearGradient: gradient,
     createRadialGradient: gradient,
@@ -242,6 +260,7 @@ function creeazaPanza() {
 
   return {
     ctx: ctx, desene: desene, filtre: filtre,
+    get masuratori() { return masuratori; },
     goleste: function () { desene.length = 0; filtre.length = 0; }
   };
 }
@@ -396,6 +415,15 @@ return {
   RECE_SALII: typeof RECE_SALII !== "undefined" ? RECE_SALII : null,
   PORT_ROMANESC: typeof PORT_ROMANESC !== "undefined" ? PORT_ROMANESC : null,
   taranIn: typeof taranIn !== "undefined" ? taranIn : null,
+  gradina: typeof gradina !== "undefined" ? gradina : null,
+  semeneazaPlanta: typeof semeneazaPlanta !== "undefined" ? semeneazaPlanta : null,
+  adaugaPata: typeof adaugaPata !== "undefined" ? adaugaPata : null,
+  deseneazaGradina: typeof deseneazaGradina !== "undefined" ? deseneazaGradina : null,
+  deseneazaPetele: typeof deseneazaPetele !== "undefined" ? deseneazaPetele : null,
+  definitiePeFundal: typeof definitiePeFundal !== "undefined" ? definitiePeFundal : null,
+  DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
+  reglezaCalitatea: typeof reglezaCalitatea !== "undefined" ? reglezaCalitatea : null,
+  calitate: function () { return typeof calitate !== "undefined" ? calitate : null; },
   s6: typeof s6 !== "undefined" ? s6 : null,
   intraInFoc: typeof intraInFoc !== "undefined" ? intraInFoc : null,
   iesiDinFoc: typeof iesiDinFoc !== "undefined" ? iesiDinFoc : null,
@@ -594,6 +622,30 @@ function textele(desene) {
 }
 
 function totTextul(desene) { return textele(desene).join(" "); }
+
+/* Scrisul de pe un cadru, **cu tot cu cel adus de pe stampile**. Textele care
+   nu se schimba niciodata se scriu o data pe o panza ascunsa si pe urma se
+   copiaza, ca sa nu se masoare fiecare cuvant de saizeci de ori pe secunda. Pe
+   ecran arata la fel; pentru un test care se uita numai la operatiile de scris,
+   dispar cu totul. */
+function totScrisul(desene) {
+  let tot = totTextul(desene);
+  for (const d of desene) {
+    if (d.op !== "imagine" || !d.sursa || !d.sursa._panza) continue;
+    tot += " " + totTextul(d.sursa._panza.desene);
+  }
+  return tot;
+}
+
+/* Unde a cazut pe ecran stampila care poarta textul cautat. */
+function undeEScrisul(desene, tipar) {
+  for (const d of desene) {
+    if (d.op === "text" && tipar.test(d.text) && d.limite) return d.limite;
+    if (d.op !== "imagine" || !d.sursa || !d.sursa._panza) continue;
+    if (tipar.test(totTextul(d.sursa._panza.desene))) return d.limite;
+  }
+  return null;
+}
 
 // Cea mai lungă cale desenată — folosit ca „are curbe, nu e un dreptunghi sec".
 function celMaiLungTraseu(desene) {
@@ -2433,31 +2485,46 @@ function ruleaza() {
     j.mergiLaStarea("balon");
     j.avanseaza(300);
     const d = j.cadruCurat();
-    const scris = textele(d).join(" ");
+    const scris = totScrisul(d);
     /* Fără titluri: se înțelege din primul cuvânt despre ce e vorba, iar o
        etichetă deasupra unei singure fraze e pusă degeaba. */
     adevarat(!/PUNCTUL/.test(scris), "a rămas un titlu deasupra definiției");
     adevarat(/urma lăsată de un instrument/.test(scris), "definiția punctului lipsește");
     adevarat(/mișcarea continuă a unui punct/.test(scris), "definiția liniei lipsește");
     // punctul în stânga, linia în dreapta
-    const stangaPunct = d.filter(function (x) {
-      return x.op === "text" && /urma lăsată|instrument/.test(x.text) && x.limite;
-    });
-    const dreaptaLinie = d.filter(function (x) {
-      return x.op === "text" && /unidimensional|mișcarea continuă/.test(x.text) && x.limite;
-    });
-    adevarat(stangaPunct.length > 0 && dreaptaLinie.length > 0, "nu s-au găsit rândurile");
-    adevarat(stangaPunct[0].limite.x0 < j.W() / 2, "definiția punctului nu e în stânga");
-    adevarat(dreaptaLinie[0].limite.x0 > j.W() / 2, "definiția liniei nu e în dreapta");
+    const stangaPunct = undeEScrisul(d, /urma lăsată|instrument/);
+    const dreaptaLinie = undeEScrisul(d, /unidimensional|mișcarea continuă/);
+    adevarat(stangaPunct && dreaptaLinie, "nu s-au găsit rândurile");
+    adevarat(stangaPunct.cx < j.W() / 2, "definiția punctului nu e în stânga");
+    adevarat(dreaptaLinie.cx > j.W() / 2, "definiția liniei nu e în dreapta");
   });
 
   test("pe cerul scenei a doua stă scrisă pata de culoare", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     pregatesteScena2(j);
     j.avanseaza(200);
-    const scris = totTextul(j.cadruCurat());
-    adevarat(/suprafață bine delimitată de pigment/.test(scris),
+    const d = j.cadruCurat();
+    adevarat(/suprafață bine delimitată de pigment/.test(totScrisul(d)),
       "definiția petei de culoare lipsește de pe cer");
+    // în stânga jos, cu ultimul rând pe linia orizontului
+    const unde = undeEScrisul(d, /suprafață bine delimitată/);
+    adevarat(unde && unde.cx < j.W() * 0.5, "definiția petei nu stă în stânga");
+  });
+
+  test("scrisul de pe fundal nu se măsoară la fiecare cadru", function () {
+    /* Un bloc întins de la o margine la alta se măsoară cuvânt cu cuvânt: ca să
+       știi cât spațiu pui între ele, întrebi pânza cât ține fiecare. Pentru
+       definițiile de pe fundal ies aproape șaptezeci de măsurători pe cadru —
+       pentru un text care nu se schimbă niciodată. Măsurătoarea de text e una
+       dintre cele mai scumpe întrebări pe care le poți pune unei pânze. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.avanseaza(400);                       // prima dată se scrie, deci se măsoară
+    const inainte = j.panza.masuratori || 0;
+    j.avanseaza(16);
+    const acum = (j.panza.masuratori || 0) - inainte;
+    adevarat(acum < 8,
+      "un singur cadru cere " + acum + " măsurători de text pe pânza mare");
   });
 
   /* ---------------------------------------------------------------- */
@@ -2971,6 +3038,114 @@ function ruleaza() {
     j.click5(j.ceas.t);
     j.avanseaza(60);
     egal(j.stare(), "foc", "usa deschisa nu duce nicaieri");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Cadrul din grădină trebuie să încapă în buget");
+
+  /* Aduce scena a doua la starea în care se îneca: grădina plină, cerul cu
+     baloane, pământul plin de pete. */
+  function gradinaPlina(j) {
+    pregatesteScena2(j);
+    const culori = ["#f57c00", "#43a047", "#8e24aa", "#e53935", "#fdd835", "#1e88e5"];
+    for (let k = 0; k < 120; k++) {
+      j.semeneazaPlanta((k * 37 % 100) / 100, 0.2 + (k * 53 % 80) / 100, culori[k % 6]);
+    }
+    for (const p of j.gradina) p.crestere = 1;
+    for (let k = 0; k < 50; k++) {
+      j.adaugaPata((k * 91 % 100) / 100 * j.W(),
+                   j.orizont() + (k * 47 % 100) / 100 * (j.H() - j.orizont()), 12);
+    }
+    j.avanseaza(200);
+  }
+
+  test("grădina din fund se copiază dintr-o mișcare, nu plantă cu plantă", function () {
+    /* O sută douăzeci de plante, fiecare o imagine întinsă pe pânză, de două ori
+       pe cadru — asta a fost cel mai scump lucru din toată jucăria. Nu de la
+       numărul de forme, ci de la numărul de pixeli. Pe un calculator mai domol nu
+       se mai putea mișca nici mausul. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    gradinaPlina(j);
+    j.goleste();
+    j.deseneazaGradina(1, 0, 0.82);
+    const imagini = j.desene.filter(function (d) { return d.op === "imagine"; });
+    egal(imagini.length, 1,
+      "banda din fund se pune din " + imagini.length + " bucăți, nu dintr-una");
+  });
+
+  test("banda din față se leagănă mai departe", function () {
+    /* Plantele din fund pierd legănarea, și n-are importanță: sunt tocmai cele la
+       care nu te uiți. Cele de lângă tine trebuie să rămână vii. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    gradinaPlina(j);
+    j.goleste();
+    j.deseneazaGradina(1, 0.82, 1.01);
+    const imagini = j.desene.filter(function (d) { return d.op === "imagine"; });
+    adevarat(imagini.length > 3,
+      "și banda din față s-a ștampilat: " + imagini.length + " imagini");
+  });
+
+  test("petele așezate nu se redesenează cerc cu cerc", function () {
+    /* Șaizeci de pete, fiecare cu patru-cinci stropi, fac vreo cinci sute de
+       cercuri umplute la fiecare cadru — pentru niște pete care, odată căzute, nu
+       se mai clintesc. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    gradinaPlina(j);
+    adevarat(j.pete.length > 20, "n-am făcut destule pete: " + j.pete.length);
+    j.goleste();
+    j.deseneazaPetele();
+    const cercuri = j.desene.filter(function (d) { return d.op === "fill"; });
+    adevarat(cercuri.length < 6,
+      "petele așezate se desenează din " + cercuri.length + " umpleri, nu dintr-o copie");
+  });
+
+  test("pata pe care o soarbe elefantul se mișcă în continuare", function () {
+    /* Ștampila e pentru ce stă pe loc. Ce zboară spre trompă trebuie să se vadă
+       zburând, altfel aspiratul se face pe nevăzute. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    gradinaPlina(j);
+    j.pete[0].aspirata = true;
+    j.pete[0].progres = 0.4;
+    j.goleste();
+    j.deseneazaPetele();
+    const umpleri = j.desene.filter(function (d) { return d.op === "fill"; });
+    adevarat(umpleri.length >= 3,
+      "pata aspirată nu se mai desenează: numai " + umpleri.length + " umpleri");
+  });
+
+  test("un cadru din grădina plină stă în bugetul lui", function () {
+    /* Pragul e ales din ce s-a măsurat: înainte de ștampile, un cadru cu grădina
+       plină cerea peste o mie trei sute de operații; după, sub cinci sute. Dacă
+       se urcă iar peste opt sute, ceva s-a întors la desenat lucru cu lucru. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    gradinaPlina(j);
+    j.goleste();
+    j.avanseaza(16);
+    adevarat(j.desene.length < 800,
+      "un cadru cere " + j.desene.length + " operații — grădina s-a întors la desenat plantă cu plantă");
+  });
+
+  test("scrisul de pe fundal se pune dintr-o copie, nu literă cu literă", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    j.avanseaza(200);
+    j.goleste();
+    j.definitiePeFundal(j.DEFINITIE_PATA, j.W() * 0.235, j.orizont(),
+                        Math.min(j.W() * 0.34, 420), 14, "#1c1a16", null, "jos");
+    const scrise = j.desene.filter(function (d) { return d.op === "text"; });
+    egal(scrise.length, 0, "textul se scrie tot rând cu rând pe pânza mare");
+  });
+
+  test("când jocul se îneacă, calitatea coboară repede, nu în șapte secunde", function () {
+    /* Pe un calculator care chiar se îneacă, șapte secunde de smucituri sunt exact
+       timpul în care omul crede că jucăria e stricată. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const laInceput = j.calitate();
+    // cadre de câte 60 ms: sub șaptesprezece pe secundă
+    let t = j.ceas.t;
+    for (let k = 0; k < 40; k++) { t += 60; j.reglezaCalitatea(t); }
+    adevarat(j.calitate() < laInceput,
+      "după două secunde de cadre de 60 ms, calitatea n-a coborât deloc");
   });
 
   /* ---------------------------------------------------------------- */
