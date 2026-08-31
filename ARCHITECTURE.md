@@ -2,7 +2,7 @@
 
 Document de referință pentru structura tehnică a jucăriei.
 
-> **Stare curentă:** șase scene întregi și jucabile, 196 de teste care trec.
+> **Stare curentă:** șase scene întregi și jucabile, 202 de teste care trec.
 > Rulează fără server, cu dublu-clic pe `index.html`. Nu are build, nu are
 > dependențe, nu are backend.
 
@@ -169,17 +169,52 @@ vindece:
 ### Pasta
 
 Scena a șasea e despre valoarea petei picturale, așa că nu poate fi zugrăvită
-neted: tema scrisă pe perete și dezmințită de perete. Peretele sălii și fondul
-lucrării de pe șevalet se pun amândouă din tușe, cu `pataDePasta`.
+neted: tema scrisă pe perete și dezmințită de perete. **Tot** ce se vede în ea e
+pus din tușe, cu `pataDePasta` — peretele, pardoseala, rama, fondul lucrării,
+focul din ea, flacăra care arde tapetul și funinginea de deasupra.
 
-O pată de pastă are trei treceri, nu una: corpul, o creastă mai deschisă pe
-muchia dinspre lumină și o umbră pe cealaltă. Cu una singură iese o confetti; cu
-trei, ochiul citește relief — vopsea groasă, pusă cu pensula. Lumina din sală
-vine de la focul din tablou, deci creasta stă mereu spre el.
+O pată de pastă e o urmă de cuțit, nu un bob de culoare. Are muchii drepte și
+colțuri, un capăt gros (unde s-a lăsat lama) și unul rupt (unde s-a ridicat), o
+creastă care prinde lumina pe o muchie lungă și o umbră pe cealaltă, plus
+râcâiturile lăsate de lamă pe dinăuntru. Creasta și umbra se fac dintr-un singur
+truc: același contur, mutat puțin, trasat cu linie groasă și tăiat la forma
+petei — din tot conturul mutat rămâne numai dunga de pe muchia dinspre lumină.
 
-Și una, și alta stau pe ștampile: peretele pe cea a sălii, fondul lucrării pe a
-lui (`fundalTablou`). Numai flăcările se repictează la fiecare cadru — ele chiar
-se mișcă.
+Două lucruri decid dacă o suprafață se citește pictată:
+
+| | Greșit | Bine |
+|---|---|---|
+| **Așezarea** | împrăștiate la sorți — se adună în ciorchini și lasă goluri, iar golurile sunt vopseaua de dedesubt | pe o **rețea cu zvâcnet**: o tușă pe ochi, mutată cu ceva mai puțin de un ochi, lungă cât doi. Se ating, deci acoperă |
+| **Proporția** | groase cât late — ies pietre de caldarâm | de patru-cinci ori mai lungi decât late, ca urma unei lame |
+
+Culoarea urmează regula expresionistă: **valoarea** urmează lumina — aprins în
+mijloc, stins spre margini, altfel clarobscurul se pierde — dar **tonul sare** de
+la o tușă la alta, în lăuntrul aceleiași trepte (`TONURI_APRINSE`,
+`TONURI_CALDE`, `TONURI_ARSE`, `TONURI_ADANCI`).
+
+Tot ce nu se mișcă stă pe ștampile: peretele, pardoseala și blana pe cea a sălii;
+rama pe a ei; fondul lucrării pe `fundalTablou`. La fiecare cadru se repictează
+numai focul, flacăra de pe perete și fumul.
+
+### Cum arde peretele
+
+Lanțul cauzal al scenei trebuie să se vadă, nu doar să se întâmple:
+
+```mermaid
+flowchart LR
+  P["atingi pânza<br/>cu mănușile"] --> S["scânteia zboară<br/>spre peretele din dreapta"]
+  S --> F["peretele ia foc<br/>la temelie"]
+  F --> A["arsura urcă<br/>pragul rămâne pe loc"]
+  F --> N["funinginea se strânge<br/>deasupra flăcării"]
+  F --> M["fum în sală"]
+  A --> U["ușa: cenușă rece<br/>margine de material ars"]
+  N -.-> U
+```
+
+Scânteia zbura înainte, spre colțul de jos-dreapta al ecranului — adică spre
+tine, în planul întâi — și pe urmă apărea o gaură în peretele din fund. Nimic din
+ce sare în față n-are cum să ardă ceva din spate: ochiul vede traiectoria și
+așteaptă focul acolo unde a căzut scânteia.
 
 ## Ce ține fiecare fișier
 
@@ -200,7 +235,7 @@ flowchart TB
     B11["11-scena3-muzeu.js · 1734<br/>custodele, haina, buzunarul, manualul"]
     B12["12-scena4-galerie.js · 1426<br/>sala rococo, rama, lupa"]
     B13["13-scena5-campie.js · 1813<br/>pânza uriașă, țăranii, pantofii"]
-    B15["15-scena6-foc.js · 1486<br/>sala rotundă, șevaletul, pasta, arsura"]
+    B15["15-scena6-foc.js · 1994<br/>sala rotundă, șevaletul, pasta, arsura"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 153<br/>ce face fiecare atingere"]

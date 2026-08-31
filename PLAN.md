@@ -40,6 +40,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 20 | Grădina care îneca jocul | ✅ gata |
 | 21 | Măsurile pânzei: cercelul, manualul, lagul | ✅ gata |
 | 22 | Sala focului: lucrare culcată, pastă, blană, ușa arsă | ✅ gata |
+| 23 | Pata picturală adevărată, și focul care are unde să ardă | ✅ gata |
 
 ---
 
@@ -668,6 +669,100 @@ leagănă la infinit.
 pereții au creste de pastă, fondul lucrării la fel, fondul nu se repictează la
 fiecare cadru, blana ajunge și sub măsuță și sub șevalet, iar arsura e o ușă pe
 peretele din dreapta, sprijinită pe podea și fără să încalece lucrarea.
+
+## Etapa a douăzeci și treia — pata picturală, și focul care are unde să ardă
+
+Trei lucruri, cerute cu fotografii pe masă: pata de pastă să fie pastă adevărată,
+scânteia să sară pe perete și să ardă în sus, iar spațiul din spatele șevaletului
+să nu mai fie atât de adânc.
+
+### Pata
+
+Prima variantă a tușei era o elipsă cu două pene deschise pe margini. De aproape
+se vedea limpede ce e: un ou de culoare, moale pe toate laturile. Vopseaua groasă
+se pune cu cuțitul, și cuțitul lasă cu totul altceva — muchii drepte cu colțuri,
+un capăt gros unde s-a lăsat lama și unul rupt unde s-a ridicat, o creastă care
+prinde lumina pe o muchie și o umbră pe cealaltă, râcâituri pe dinăuntru.
+
+Creasta a trebuit refăcută de două ori. Umplută cu o pană, acoperea o treime din
+lățimea petei: ieșea o lamă crem cu un pic de culoare pe la mijloc, adică se
+vedea creasta, nu vopseaua. O creastă e o **dungă**. Acum se face din același
+contur, mutat puțin și trasat cu linie groasă, tăiat la forma petei.
+
+Mărimea și așezarea au cerut trei încercări:
+
+1. **Șase sute de fleculețe mărunte, la sorți** — o tencuială stropită. Zgomot,
+   nu pensulă.
+2. **Două sute de pete cât palma** — frunze împrăștiate pe perete. O tușă care se
+   vede de la doi metri nu mai e o tușă, e un obiect.
+3. **Rețea cu zvâcnet**, câte o tușă pe ochi, mutată din locul ei cu ceva mai
+   puțin de un ochi și lungă cât doi. Abia atunci tușele se ating și acoperă. La
+   sorți curat, oricâte ar fi, se adună în ciorchini și lasă goluri — iar golurile
+   sunt tocmai vopseaua de dedesubt, care se vede și strică tot.
+
+Și un raport care nu se vede până nu-l greșești: o tușă groasă cât e de lată se
+citește piatră de caldarâm. Lama e lungă; urma ei e de patru-cinci ori mai lungă
+decât lată.
+
+Pasta a intrat peste tot: pereții, **pardoseala** (tabla de șah rămâne reperul
+neutru al sălii, dar acum se vede pictată, nu turnată), rama, fondul lucrării și
+focul din ea. Culoarea urmează regula expresionistă — valoarea urmează lumina,
+tonul sare de la o tușă la alta.
+
+### Rama
+
+Rama prețioasă din galeria a patra a plecat. Aceea e o ramă de muzeu: sculptată,
+aurită, a unui tablou terminat, clasat, atârnat. Aici suntem în atelierul cuiva
+care lucrează, iar pe pereții lui lucrările stau în rame late și simple, de lemn
+vopsit. O ramă bogată în jurul unei lucrări de pe șevalet spune că lucrul s-a
+terminat — și atunci scânteia care sare din ea n-ar mai avea de unde să sară.
+
+### Focul care are unde să arde
+
+Scânteia sare acum din pânză **spre peretele din dreapta**, la temelia lui, exact
+în locul din care va crește ușa. Peretele ia foc acolo și arde în sus; arsura
+urcă odată cu flacăra, cu pragul rămas pe podea. `s6.colt` s-a făcut
+`s6.flacara`: nu mai arde un colț de ecran, arde un perete.
+
+Peste asta, trei lucruri pe care le cere orice tapet care arde:
+
+- **funinginea** — deasupra flăcării peretele se înnegrește pe o suprafață de
+  câteva ori mai mare decât ea, într-un evantai care se lățește în sus. E singurul
+  lucru din scenă care rămâne: flacăra trece, funinginea nu.
+- **fumul din sală** — puțin, strâns sub cornișă, cum face fumul într-o încăpere
+  închisă. Se risipește după aceea, dar nu de tot.
+- **marginea de material ars** — patru brâuri, unul în altul: pârleala cafenie
+  care se pierde în tapet, brâul rumenit, cărbunele de pe buză și franjurii de
+  fibre rupte care ies din contur. Franjurii nu stau la pas egal de jur împrejur —
+  așa ies gene, nu hârtie arsă; se rup în pâlcuri, iar pe unele bucăți de margine
+  focul a mâncat curat.
+
+Aici a ieșit la iveală o greșeală de canvas care se vedea din prima, dar nu se
+explica: gaura era maro, nu albastră. Pârleala din jur se face din două contururi
+puse în același traseu, umplute cu regula par-impar, ca să lase gol mijlocul —
+numai că `conturArsurii` începea de fiecare dată un traseu nou, deci al doilea
+contur îl ștergea pe primul. Inelul devenea disc, iar maro-ul se turna peste toată
+gaura, adică peste singura culoare rece din toată scena, care e tot rostul ei.
+
+### Sala
+
+Orizontul a coborât de la 60% la 54% din înălțime și fundul sălii s-a lărgit: cu
+tot ce se petrece în ea, sala arăta ca un hol lung, iar între șevalet și peretele
+din fund rămânea un pustiu prin care nu trece nimeni. Lucrarea a crescut și a
+urcat până aproape de cornișă — un perete gol deasupra ei o face să pară o poză
+agățată, nu lucrul pentru care s-a deschis sala — iar șevaletul calcă acum la 88%
+din înălțime, ca în față să rămână pardoseala pe care stai tu.
+
+Ușa s-a mutat mai spre margine, la 85% din lățime: la 80% intra cu marginea peste
+rama lucrării și se ascundea pe jumătate în spatele ei, adică redevenea ce era la
+început — o gaură, nu o trecere. Iar îndemnul „Intră prin arsură" stă acum chiar
+sub prag: un îndemn scris în altă parte decât lucrul despre care vorbește îl
+trimite pe om să caute.
+
+Șase teste noi: scânteia sare pe peretele din care crește ușa, peretele arde de
+jos în sus cu pragul pe loc, funinginea se strânge deasupra flăcării și rămâne,
+fumul se face și se risipește, marginea are franjuri și pârleală, iar cenușa rece
+se vede în continuare prin ușă.
 
 ## Rămas de făcut
 

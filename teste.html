@@ -434,6 +434,12 @@ return {
   geomSala6: typeof geomSala6 !== "undefined" ? geomSala6 : null,
   geomManusi: typeof geomManusi !== "undefined" ? geomManusi : null,
   geomArsura: typeof geomArsura !== "undefined" ? geomArsura : null,
+  deseneazaArsura: typeof deseneazaArsura !== "undefined" ? deseneazaArsura : null,
+  deseneazaFuninginea: typeof deseneazaFuninginea !== "undefined" ? deseneazaFuninginea : null,
+  deseneazaFumulSalii: typeof deseneazaFumulSalii !== "undefined" ? deseneazaFumulSalii : null,
+  deseneazaFlacaraPeretelui: typeof deseneazaFlacaraPeretelui !== "undefined" ? deseneazaFlacaraPeretelui : null,
+  pataDePasta: typeof pataDePasta !== "undefined" ? pataDePasta : null,
+  PASTA_CREASTA: typeof PASTA_CREASTA !== "undefined" ? PASTA_CREASTA : null,
   geomBlana: typeof geomBlana !== "undefined" ? geomBlana : null,
   pictezaFundalTablou: typeof pictezaFundalTablou !== "undefined" ? pictezaFundalTablou : null,
   deseneazaTabloulFocului: typeof deseneazaTabloulFocului !== "undefined" ? deseneazaTabloulFocului : null,
@@ -3068,8 +3074,8 @@ function ruleaza() {
     adevarat(j.s6.scanteie === null || j.s6.scanteie.x > laInceput,
       "scanteia nu pleaca spre colt");
     j.avanseaza(1200);
-    egal(j.s6.faza, "arde", "coltul n-a luat foc");
-    adevarat(j.s6.colt > 0, "coltul nu arde");
+    egal(j.s6.faza, "arde", "peretele n-a luat foc");
+    adevarat(j.s6.flacara > 0, "peretele nu arde");
     j.avanseaza(5000);
     egal(j.s6.faza, "gaura", "peretele n-a ars pana la capat");
     aproape(j.s6.arsura, 1, 0.01, "arsura n-a ajuns la capat");
@@ -3100,15 +3106,23 @@ function ruleaza() {
       "panza e tot inalta: " + Math.round(g.tablouLat) + "x" + Math.round(g.tablouInalt));
   });
 
-  test("lucrarea si sevaletul stau in planul intai, nu in fundul salii", function () {
-    /* Impinse in fund, pe o panza mica, sala ramanea un hol gol cu un afis la
-       capat — rotunda degeaba, fiindca privirea n-avea ce sa ocoleasca. */
+  test("lucrarea umple sala: in fata, inalta, fara perete gol deasupra", function () {
+    /* Trei lucruri deodata, si toate trei se bat cap in cap daca le imping prea
+       tare: lucrarea sa fie in planul intai (nu un afis in fundul unui hol), sa
+       ramana pardoseala in fata ei (sa ai unde sa stai) si sa nu ramana o
+       jumatate de perete gol deasupra (un perete gol o face sa para o poza
+       agatata, nu lucrul pentru care s-a deschis sala). */
     const j = porneste({ latime: 1400, inaltime: 800 });
     const g = inFoc(j);
-    adevarat(g.tablouY + g.tablouInalt > g.orizontul + j.H() * 0.08,
+    adevarat(g.tablouY + g.tablouInalt > g.orizontul,
       "panza se termina deasupra orizontului, adica in fundul salii");
-    adevarat(g.sevaletTalpa > j.H() * 0.93,
-      "sevaletul calca sus, la " + Math.round(g.sevaletTalpa / j.H() * 100) + "% din inaltime");
+    adevarat(g.sevaletTalpa > j.H() * 0.84 && g.sevaletTalpa < j.H() * 0.94,
+      "sevaletul calca la " + Math.round(g.sevaletTalpa / j.H() * 100) +
+      "% din inaltime: sau n-are pardoseala in fata, sau iese din ecran");
+    adevarat(g.tablouInalt > j.H() * 0.42,
+      "lucrarea e scunda: " + Math.round(g.tablouInalt / j.H() * 100) + "% din inaltime");
+    adevarat(g.tablouY < j.H() * 0.3,
+      "deasupra lucrarii ramane " + Math.round(g.tablouY / j.H() * 100) + "% perete gol");
   });
 
   test("peretii sunt pusi din pete de pasta, nu intinsi neted", function () {
@@ -3120,12 +3134,13 @@ function ruleaza() {
     /* O tusa de pasta se pune in trei treceri: corpul, creasta dinspre lumina si
        umbra de pe cealalta muchie. Crestele se numara usor — au o culoare pe care
        n-o mai foloseste nimic altceva in sala. */
+    adevarat(j.PASTA_CREASTA !== null, "lipseste culoarea crestei de pasta");
     let creste = 0;
     for (const el of j.panzeAscunse) {
       const p = el._panza;
       if (!p || !p.desene) continue;
       for (const d of p.desene) {
-        if (typeof d.stil === "string" && d.stil.indexOf("rgba(255, 226, 164") === 0) creste++;
+        if (typeof d.stil === "string" && d.stil.indexOf(j.PASTA_CREASTA) === 0) creste++;
       }
     }
     adevarat(creste > 200,
@@ -3141,7 +3156,7 @@ function ruleaza() {
     adevarat(j.pictezaFundalTablou !== null, "lipseste fondul pictat al lucrarii");
     const d = j.doar(function () { j.pictezaFundalTablou(j.panza.ctx, 400, 272); });
     const creste = d.filter(function (x) {
-      return typeof x.stil === "string" && /^rgba\(255, 226, 164/.test(x.stil);
+      return typeof x.stil === "string" && x.stil.indexOf(j.PASTA_CREASTA) === 0;
     });
     adevarat(creste.length > 150,
       "fondul lucrarii are numai " + creste.length + " creste: e un gradient, nu pictura");
@@ -3184,6 +3199,116 @@ function ruleaza() {
     // si nu se incaleca peste sevalet
     adevarat(a.cx - a.latime > j.W() * 0.5 + g.tablouLat * 0.5,
       "usa intra peste lucrarea de pe sevalet");
+  });
+
+  test("scanteia sare pe peretele din care va creste usa", function () {
+    /* Zbura inainte spre coltul de jos-dreapta al ecranului, adica spre tine, in
+       planul intai — si pe urma aparea o gaura in peretele din fund. Nimic din ce
+       sare in fata n-are cum sa arda ceva din spate. Ochiul vede traiectoria si
+       asteapta focul acolo unde a cazut scanteia. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(60);
+    egal(j.s6.faza, "scanteie", "n-a sarit nicio scanteie");
+    j.avanseaza(1600);
+    const a = j.geomArsura(1);
+    // unde a ajuns scanteia la capatul zborului
+    egal(j.s6.faza, "arde", "scanteia n-a ajuns nicaieri");
+    adevarat(j.s6.scanteie === null || Math.abs(j.s6.scanteie.x - a.cx) < a.latime,
+      "scanteia s-a oprit la " + Math.round(j.s6.scanteie.x) +
+      ", iar usa creste la " + Math.round(a.cx));
+    adevarat(j.s6.scanteie === null || j.s6.scanteie.y < j.H() * 0.9,
+      "scanteia a cazut in coltul de jos al ecranului, nu pe perete");
+  });
+
+  test("peretele arde de jos in sus, cu pragul pe loc", function () {
+    /* Focul mananca tapetul in sus, dinspre podea. Daca gaura s-ar umfla dintr-un
+       punct din perete, ar arata a gaura de molie, nu a arsura. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    const mic = j.geomArsura(0.3), mare = j.geomArsura(1);
+    aproape(mic.prag, mare.prag, 1, "pragul se misca in timp ce arde");
+    adevarat(mic.cy > mare.cy, "gaura nu creste in sus: mic " +
+      Math.round(mic.cy) + ", mare " + Math.round(mare.cy));
+  });
+
+  test("deasupra flacarii peretele se innegreste, si asa ramane", function () {
+    /* Cand arde un tapet, flacara e mica si scurta, dar deasupra ei peretele se
+       innegreste pe o suprafata de cateva ori mai mare. Flacara trece,
+       funinginea ramane. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(9000);
+    egal(j.s6.faza, "gaura", "n-am ajuns la gaura");
+    adevarat(j.s6.funingine > 0.9,
+      "peretele nu s-a innegrit: funingine " + j.s6.funingine);
+    adevarat(j.s6.flacara < 0.2, "flacara nu s-a stins dupa ce a ars tot");
+    // si e desenata deasupra pragului, nu sub el
+    const a = j.geomArsura(1);
+    const d = j.doar(function () { j.deseneazaFuninginea(j.ceas.t); });
+    let sus = Infinity;
+    for (const x of d) if (x.limite) sus = Math.min(sus, x.limite.y0);
+    adevarat(sus < a.prag - a.inaltime,
+      "pata de fum nu urca deasupra usii");
+  });
+
+  test("in sala se face putin fum, si se risipeste dupa aceea", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const m = j.geomManusi();
+    atingeIn(j, m.x, m.y);
+    j.avanseaza(60);
+    atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
+    j.avanseaza(8000);
+    const cand = j.s6.fum;
+    adevarat(cand > 0.5, "nu s-a facut fum in sala: " + cand);
+    j.avanseaza(60000);
+    adevarat(j.s6.fum < cand, "fumul nu se risipeste deloc");
+    adevarat(j.s6.fum > 0, "fumul s-a dus cu totul, ca si cum nimic n-ar fi ars");
+  });
+
+  test("marginea usii are textura de material ars", function () {
+    /* O gaura cu conturul curat arata taiata cu foarfeca, nu arsa. Trebuie
+       parleala din jur, carbunele de pe buza si franjurii de fibre rupte. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    j.s6.arsura = 1; j.s6.faza = "gaura";
+    const d = j.doar(function () { j.deseneazaArsura(j.ceas.t); });
+    const franjuri = d.filter(function (x) {
+      return x.op === "stroke" && typeof x.stil === "string" &&
+             /rgba\((18, 8, 3|52, 26, 11)/.test(x.stil);
+    });
+    adevarat(franjuri.length > 30,
+      "marginea are numai " + franjuri.length + " franjuri: e o linie, nu hartie arsa");
+    const parleala = d.filter(function (x) {
+      return x.stil && x.stil.gradient &&
+             x.stil.gradient.some(function (c) { return /146, 92, 40/.test(String(c)); });
+    });
+    adevarat(parleala.length > 0, "lipseste parleala din jurul gaurii");
+  });
+
+  test("cenusa rece se vede in continuare prin usa", function () {
+    /* Parleala din jurul gaurii se picta cu doua contururi puse in acelasi
+       traseu. Al doilea `beginPath` il stergea pe primul, inelul devenea disc, si
+       maro-ul se turna peste toata gaura — adica peste singura culoare rece din
+       scena, care e tot rostul ei. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    j.s6.arsura = 1; j.s6.faza = "gaura";
+    const d = j.doar(function () { j.deseneazaArsura(j.ceas.t); });
+    const rece = d.filter(function (x) {
+      return typeof x.stil === "string" &&
+             String(x.stil).toLowerCase() === String(j.CENUSA_ALBASTRA).toLowerCase();
+    });
+    adevarat(rece.length > 0, "nu se mai vede cenusa albastra prin usa");
   });
 
   test("pe perete scrie ce e expresionismul", function () {

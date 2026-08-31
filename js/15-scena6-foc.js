@@ -35,6 +35,15 @@ const AUR_RAMA6      = '#c98b2c';
 /* Singura culoare rece din toată sala. Stă în gaura arsă, la sfârșit, și tocmai
    de-aia se vede: după cinci minute de galben, o cenușă albăstruie sare în ochi
    ca o fereastră deschisă iarna. */
+/* Paleta cu care se pictează pereții și pardoseala. Patru trepte de valoare, de
+   la lumina din mijlocul sălii până la umbra de pe margini, și în fiecare treaptă
+   mai multe tonuri care se bat cap în cap — cum se pune culoarea în
+   expresionism. Toate calde: regula sălii ține și aici. */
+const TONURI_APRINSE = ['#ffd884', '#ffbe4a', '#ffa02a', '#f2e2b0', '#ffcf60'];
+const TONURI_CALDE   = ['#e8a03a', '#e08a2a', '#d9701e', '#eeb455', '#c98a2c'];
+const TONURI_ARSE    = ['#dd6a1e', '#c8481c', '#b8531e', '#a8321a', '#d0621a'];
+const TONURI_ADANCI  = ['#8e2a16', '#5e2410', '#6b3218', '#43190a', '#7a2a12'];
+
 const CENUSA_ALBASTRA = '#8fa4c4';
 const CENUSA_INCHISA  = '#5c6c8c';
 
@@ -51,8 +60,10 @@ const s6 = {
   frige: 0,              // cât pulsează avertismentul, după o atingere cu mâna goală
   aburi: 0,              // cât de vaporos e ecranul
   arsura: 0,             // cât a ars din tapet, 0..1
-  colt: 0,               // cât arde colțul ecranului
-  scanteie: null         // { x, y, vx, vy }
+  flacara: 0,            // cât de tare arde peretele la piciorul arsurii
+  funingine: 0,          // cât s-a înnegrit peretele deasupra flăcării — nu se mai duce
+  fum: 0,                // cât fum s-a strâns în sală
+  scanteie: null         // { x, y, t }
 };
 
 /* ---------- MĂSURILE SĂLII ---------- */
@@ -76,8 +87,15 @@ function cornisaPeretelui(u) {
 }
 
 function geomSala6() {
-  const orizontul = H * 0.60;          // unde peretele întâlnește pardoseala, la mijloc
-  const latSus = W * 0.56;             // cât de îngustă e sala în fund
+  /* Linia unde peretele întâlnește pardoseala, la mijlocul sălii. Cu cât e mai
+     sus, cu atât se vede mai multă podea — adică sala e mai adâncă. Era la 60%
+     din înălțime și, cu tot ce se petrece în ea, sala arăta ca un hol lung: între
+     șevalet și peretele din fund rămânea un pustiu prin care nu trece nimeni.
+     Coborâtă, sala se strânge în jurul focului, cum se cuvine unei rotonde. */
+  const orizontul = H * 0.545;
+  /* Și fundul sălii e mai lat decât era. O rotondă strâmtată prea tare în fund
+     se citește tunel, nu cameră rotundă. */
+  const latSus = W * 0.70;
 
   /* Pânza stă **pe un șevalet, în mijlocul sălii** — nu atârnată pe perete. Un
      tablou pe perete e un obiect de muzeu, terminat, la care te uiți. Unul pe
@@ -94,10 +112,18 @@ function geomSala6() {
      rămânea un hol gol cu un afiș la capăt — rotundă degeaba, fiindcă privirea
      nu avea ce să ocolească. Acum lucrarea, șevaletul, măsuța și blana de sub
      ele ocupă chiar planul întâi, unde stai tu. */
-  const tablouLat = Math.min(W * 0.40, H * 0.62);
+  /* Cât de mare e lucrarea, și unde stă pe înălțime.
+
+     Mai mare și mai sus decât era. Cu pânza mică și așezată jos, deasupra ei
+     rămânea o jumătate de perete gol — și un perete gol deasupra unei lucrări o
+     face să pară o poză agățată, nu lucrul pentru care s-a deschis sala. Acum
+     urcă până aproape de cornișă, iar sub ea, în față, rămâne pardoseala pe care
+     stai tu: șevaletul nu mai calcă pe marginea de jos a ecranului, ci ceva mai
+     sus, ca să ai unde să fii. */
+  const tablouLat = Math.min(W * 0.42, H * 0.70);
   const tablouInalt = tablouLat * 0.68;
-  const tablouY = orizontul - tablouInalt * 0.62;
-  const sevaletTalpa = H * 0.965;      // unde calcă picioarele șevaletului
+  const tablouY = orizontul - tablouInalt * 0.92;
+  const sevaletTalpa = H * 0.885;      // unde calcă picioarele șevaletului
   return {
     orizontul, latSus,
     tablouX: W * 0.5 - tablouLat / 2,
@@ -139,13 +165,16 @@ function geomSala6() {
    înțelege din formă și din loc că sala continuă dincolo, fără să scrie nimeni
    asta nicăieri. Și e chiar drumul pe care focul a venit: colțul de jos-dreapta
    al ecranului a ars primul, iar arsura urcă de acolo. */
-const ARSURA_U = 0.80;          // pe ce parte din lățimea peretelui stă
+/* Cât de spre margine stă ușa. Trebuie să încapă întreagă între rama lucrării și
+   marginea ecranului: intrată peste pânză, se ascunde pe jumătate în spatele ei
+   și redevine ce era la început — o gaură, nu o trecere. */
+const ARSURA_U = 0.855;         // pe ce parte din lățimea peretelui stă
 const ARSURA_LAT = 0.78;        // cât e de lată față de raza ei
 const ARSURA_INALT = 1.15;      // și cât e de înaltă — o ușă, nu o fereastră
 
 function geomArsura(cat) {
   const g = geomSala6();
-  const plin = Math.min(W, H) * 0.22;
+  const plin = Math.min(W, H) * 0.21;
   const r = plin * atenuare(Math.min(1, cat === undefined ? 1 : Math.max(0, cat)));
   /* Pragul rămâne pe loc cât crește gaura: focul mănâncă tapetul **în sus**,
      dinspre podea, nu se umflă dintr-un punct din perete.
@@ -182,28 +211,119 @@ const TEXT_FISA_EXPRESIONISM =
 /* Sala asta e despre valoarea petei picturale. Ar fi fost de râs ca tocmai ea să
    fie zugrăvită neted, cu gradiente lucioase: tema scrisă pe perete și
    dezmințită de perete. Așa că peretele, ca și lucrarea de pe șevalet, e pus din
-   pete de pastă — se vede tușa, se vede unde a apăsat pensula.
+   pete de pastă.
 
-   O pată de pastă nu e o elipsă colorată. Vopseaua groasă are un **relief**:
-   pe muchia dinspre lumină prinde o dungă mai deschisă, iar pe cealaltă lasă o
-   umbră. Trei treceri, deci — corpul, creasta, umbra — și abia atunci ochiul
-   citește „pastă", nu „pată". Cu una singură iese o confetti.
+   O pată de pastă nu e o elipsă colorată — asta a fost prima încercare, și de
+   aproape se vedea limpede ce e: un ou de culoare, moale pe toate laturile.
+   Vopseaua groasă se pune cu cuțitul, și cuțitul lasă cu totul altceva:
+
+     - **muchii drepte, nu rotunde.** Lama e dreaptă; pata iese un patrulater
+       strâmb, cu colțuri, nu un bob.
+     - **un capăt gros și unul subțire.** Acolo unde s-a lăsat lama e o buză
+       groasă de vopsea; acolo unde s-a ridicat, pasta se termină rupt, în vârf.
+     - **o creastă și o umbră**, pe cele două muchii lungi. Stratul are grosime,
+       deci prinde lumina pe o margine și o pierde pe cealaltă. Asta e tot ce
+       deosebește pasta de o pată plată — și fără ea nimic altceva nu ajută.
+     - **râcâituri pe dinăuntru**, dungile pe care le lasă lama trecând peste
+       vopseaua de dedesubt.
 
    Lumina din sală vine din tablou, de la foc; creasta stă mereu spre el. */
-const PASTA_CREASTA = 'rgba(255, 226, 164, ';
-const PASTA_UMBRA   = 'rgba(72, 26, 10, ';
+const PASTA_CREASTA = 'rgba(255, 232, 176, ';
+const PASTA_UMBRA   = 'rgba(58, 20, 8, ';
+
+/* Un pseudo-aleator legat de loc. Aceeași tușă iese la fel de fiecare dată când
+   se repictează ștampila — altfel peretele ar tresări la orice redimensionare —
+   dar două tușe alăturate nu seamănă. */
+function zvacnet(x, y, i) {
+  const v = Math.sin(x * 12.9898 + y * 78.233 + i * 37.719) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/* Conturul unei tușe de cuțit, în coordonatele ei: lungimea pe x, grosimea pe y.
+   Capătul gros e la stânga, vârful la dreapta. */
+function traseulTusei(c, L, G, z) {
+  c.beginPath();
+  c.moveTo(-L, -G * (0.62 + z(0) * 0.34));
+  c.lineTo(-L * (0.52 + z(1) * 0.2), -G * (0.88 + z(2) * 0.26));
+  c.lineTo(L * (0.06 + z(3) * 0.2), -G * (0.82 + z(4) * 0.3));
+  c.lineTo(L * 0.74, -G * (0.34 + z(5) * 0.24));
+  c.lineTo(L, -G * (0.02 + z(6) * 0.14));          // vârful, unde s-a ridicat lama
+  c.lineTo(L * (0.7 + z(7) * 0.12), G * (0.3 + z(8) * 0.24));
+  c.lineTo(-L * (0.02 + z(9) * 0.22), G * (0.8 + z(10) * 0.3));
+  c.lineTo(-L * (0.58 + z(11) * 0.2), G * (0.86 + z(12) * 0.24));
+  c.lineTo(-L, G * (0.5 + z(13) * 0.36));
+  c.closePath();
+}
 
 function pataDePasta(c, x, y, lung, gros, unghi, culoare, alfa, relief) {
   const a = alfa === undefined ? 1 : alfa;
   const rel = relief === undefined ? 1 : relief;
-  tusa(c, x, y, lung, gros, unghi, culoare, a);
-  // creasta: o dungă subțire pe muchia dinspre lumină
-  const dx = Math.sin(unghi) * gros * 0.26, dy = -Math.cos(unghi) * gros * 0.26;
-  tusa(c, x + dx, y + dy, lung * 0.82, gros * 0.34, unghi,
-       PASTA_CREASTA + (0.5 * rel).toFixed(3) + ')', a);
-  // și umbra pe cealaltă, cât să se simtă grosimea stratului
-  tusa(c, x - dx * 1.15, y - dy * 1.15, lung * 0.74, gros * 0.28, unghi,
-       PASTA_UMBRA + (0.34 * rel).toFixed(3) + ')', a);
+  const L = Math.max(1, lung / 2), G = Math.max(0.6, gros / 2);
+  const z = function (i) { return zvacnet(x, y, i); };
+
+  c.save();
+  /* Transparența se **înmulțește** cu cea din jur, nu o înlocuiește: la fel ca
+     la `tusa`, altfel orice strat cerut mai stins iese la fel de apăsat. */
+  const stins = c.globalAlpha;
+  c.globalAlpha = a * stins;
+  c.translate(x, y);
+  c.rotate(unghi);
+
+  // corpul petei
+  traseulTusei(c, L, G, z);
+  c.fillStyle = culoare;
+  c.fill();
+
+  /* Creasta și umbra stau **înăuntrul** petei, ca să urmeze exact muchia ei
+     strâmbă, nu să fie două dungi drepte lipite pe deasupra.
+
+     Se fac dintr-un singur truc: același contur, mutat puțin în jos, trasat cu
+     linie groasă și tăiat la forma petei. Din tot conturul mutat rămâne numai
+     dunga care cade **pe muchia de sus** — adică exact buza care prinde lumina.
+     Mutat în sus, rămâne muchia de jos, care stă în umbră.
+
+     Am încercat întâi cu două pene umplute, care acopereau fiecare o treime din
+     lățimea petei. Ieșea o lamă crem cu un pic de culoare pe la mijloc: se vedea
+     creasta, nu vopseaua. O creastă e o dungă, nu o jumătate de pată. */
+  c.save();
+  traseulTusei(c, L, G, z);
+  c.clip();
+
+  c.save();
+  c.translate(0, G * 0.58);
+  traseulTusei(c, L, G, z);
+  c.restore();
+  c.strokeStyle = PASTA_CREASTA + (0.42 * rel).toFixed(3) + ')';
+  c.lineWidth = G * 0.34;
+  c.stroke();
+
+  c.save();
+  c.translate(0, -G * 0.55);
+  traseulTusei(c, L, G, z);
+  c.restore();
+  c.strokeStyle = PASTA_UMBRA + (0.36 * rel).toFixed(3) + ')';
+  c.lineWidth = G * 0.32;
+  c.stroke();
+
+  /* Buza groasă de la capătul din care a plecat lama: acolo se adună vopseaua
+     ridicată de pe paletă, și e partea cea mai înaltă a stratului. */
+  c.fillStyle = PASTA_CREASTA + (0.22 * rel).toFixed(3) + ')';
+  c.beginPath();
+  c.ellipse(-L * 0.82, -G * 0.2, L * 0.16, G * 0.44, 0, 0, Math.PI * 2);
+  c.fill();
+
+  // râcâiturile lăsate de lamă pe dinăuntru
+  c.strokeStyle = PASTA_UMBRA + (0.26 * rel).toFixed(3) + ')';
+  c.lineWidth = Math.max(0.5, G * 0.11);
+  for (let k = 0; k < 2; k++) {
+    const yy = G * (k === 0 ? -0.24 : 0.28) + G * (z(k + 5) - 0.5) * 0.4;
+    c.beginPath();
+    c.moveTo(-L * 0.7, yy);
+    c.lineTo(L * (0.5 + z(k + 9) * 0.4), yy * (0.4 + z(k + 3) * 0.4));
+    c.stroke();
+  }
+  c.restore();
+  c.restore();
 }
 
 /* ---------- SALA, PICTATĂ O SINGURĂ DATĂ ---------- */
@@ -311,56 +431,70 @@ function pictezaSalaFocului(c) {
   }
   c.globalAlpha = 1;
 
-  /* Pasta de pe pereți. Peste tapetul zugrăvit trec tușele, ca și cum toată sala
-     ar fi fost pictată cu pensula, nu vopsită cu rola. Ele urmează curbura
-     peretelui — culcate spre orizontală în mijloc, unde peretele vine drept spre
-     tine, și tot mai înclinate spre margini, unde fuge în adâncime. Din
-     îndreptarea asta se citește rotundul a doua oară, după lese.
+  /* Pasta de pe pereți.
 
-     Culoarea fiecărei tușe se ia din locul ei, nu la sorți: aprinsă în mijloc,
-     unde bate focul, brună spre margini. La sorți, peretele ar fi ieșit pestriț
-     și clarobscurul pictat cu grijă în gradient s-ar fi pierdut sub el. */
-  /* Puține și mari, nu multe și mărunte. Cu șase sute de fleculețe peretele
-     ieșea zgrunțuros, ca o tencuială stropită — se vedea zgomot, nu pensulă. O
-     tușă trebuie să fie destul de lată cât să se citească drept urmă de pensulă
-     de la locul unde stai. */
-  const PETE_PERETE = 300;
-  for (let k = 0; k < PETE_PERETE; k++) {
-    const a = samanta(3700 + k * 3.3), b = samanta(3770 + k * 6.7);
-    const jos = temeliaPeretelui(a, g.orizontul), sus = cornisaPeretelui(a);
-    const x = W * a, y = sus + (jos - sus) * b;
-    const fata = Math.sin(a * Math.PI);           // 1 în mijloc, 0 pe margini
-    const departe = 1 - fata;
-    const culoare = fata > 0.86 ? GALBEN_LUMINA
-                  : (fata > 0.62 ? GALBEN_SALA
-                  : (fata > 0.36 ? PORTOCALIU
-                  : (fata > 0.18 ? ROSU_ADANC : BRUN_UMBRA)));
-    /* Tușele de sus, de sub cornișă, se culcă spre boltă; cele de jos stau mai
-       drept. Nu e un capriciu: pensula unui zugrav de boltă merge pe unde merge
-       zidul. */
-    const unghi = (a - 0.5) * 1.9 + (b - 0.55) * 1.3;
-    const lung = Math.min(W, H) * (0.05 + b * 0.06) * (0.5 + fata * 0.8);
-    c.globalAlpha = 0.13 + fata * 0.20 + samanta(3840 + k * 4.1) * 0.10;
-    pataDePasta(c, x, y, lung, lung * (0.24 + a * 0.10), unghi, culoare, 1,
-                0.5 + fata * 0.5);
+     Nu împrăștiată la sorți, ci pe o **rețea cu zvâcnet**: câte o tușă pentru
+     fiecare ochi al rețelei, mutată din locul ei cu ceva mai puțin de un ochi și
+     făcută cu un sfert mai lungă decât ochiul. Așa tușele se ating și se acoperă
+     una pe alta, adică fac o suprafață pictată.
+
+     Împrăștiate la întâmplare, oricâte ar fi, rămân boabe de orez pe un perete
+     vopsit: la sorți curat se adună în ciorchini și lasă goluri, iar golurile
+     sunt tocmai vopseaua de dedesubt, care se vede și strică tot. O suprafață
+     acoperită cu tușe are un singur secret, și acela e că e **acoperită**.
+
+     Culoarea: valoarea urmează lumina — aprins în mijloc, stins spre margini,
+     altfel clarobscurul se pierde — dar tonul sare de la o tușă la alta, în
+     lăuntrul aceleiași trepte. Tema sălii e expresionismul, iar expresionismul
+     nu întinde o culoare pe o suprafață: pune alături tușe care se ceartă. */
+  const NU = 46, NV = 22;
+  for (let iu = 0; iu < NU; iu++) {
+    for (let iv = 0; iv < NV; iv++) {
+      const n = iu * NV + iv;
+      const zu = samanta(3700 + n * 3.3), zv = samanta(3770 + n * 6.7);
+      const zc = samanta(3840 + n * 4.1), ze = samanta(3910 + n * 5.9);
+      const u = Math.min(0.999, Math.max(0.001, (iu + 0.5 + (zu - 0.5) * 0.9) / NU));
+      const v = (iv + 0.5 + (zv - 0.5) * 0.9) / NV;
+      const jos = temeliaPeretelui(u, g.orizontul), sus = cornisaPeretelui(u);
+      const x = W * u, y = sus + (jos - sus) * v;
+      const fata = Math.sin(u * Math.PI);          // 1 în mijloc, 0 pe margini
+
+      const treapta = fata > 0.86 ? TONURI_APRINSE
+                    : (fata > 0.62 ? TONURI_CALDE
+                    : (fata > 0.36 ? TONURI_ARSE : TONURI_ADANCI));
+      const culoare = treapta[Math.floor(zc * treapta.length)];
+
+      /* Tușele de sus, de sub cornișă, se culcă spre boltă; cele de jos stau mai
+         drept. Nu e un capriciu: pensula unui zugrav de boltă merge pe unde merge
+         zidul, iar din îndreptarea asta se citește rotundul a doua oară, după
+         lese. */
+      const unghi = (u - 0.5) * 1.9 + (ze - 0.55) * 0.9;
+      /* Lungi și subțiri, nu bondoace. O tușă cât un ou, oricât de bine
+         acoperă, se citește piatră de caldarâm — și un perete de caldarâm nu e
+         un perete pictat. Lama e lungă; urma ei e de patru-cinci ori mai lungă
+         decât lată, și tocmai raportul ăsta o face să pară trasă, nu pusă. */
+      const ochi = Math.max(W / NU, (jos - sus) / NV);
+      const lung = ochi * (2.4 + ze * 1.5);
+      c.globalAlpha = 0.42 + fata * 0.3;
+      pataDePasta(c, x, y, lung, ochi * (0.34 + zu * 0.2), unghi, culoare, 1,
+                  0.45 + fata * 0.55);
+    }
   }
   /* Peste ele, câteva zeci de tușe apăsate — cele care se văd din capătul sălii
-     și care spun că peretele **a fost pictat**, nu vopsit. Puse cu aceeași
-     socoteală ca celelalte, dar cu pensula încărcată. */
-  for (let k = 0; k < 46; k++) {
+     și care spun că peretele **a fost pictat**, nu vopsit. Galbenul cel mai
+     deschis numai chiar în mijloc: împărțit mai larg, se adunau într-un nor
+     alburiu deasupra lucrării, și ochiul se ducea la nor, nu la foc. */
+  for (let k = 0; k < 90; k++) {
     const a = samanta(3960 + k * 7.9), b = samanta(4020 + k * 4.7);
     const jos = temeliaPeretelui(a, g.orizontul), sus = cornisaPeretelui(a);
     const x = W * a, y = sus + (jos - sus) * b;
     const fata = Math.sin(a * Math.PI);
     if (fata < 0.22) continue;                   // în umbra de la margini n-are ce căuta
-    const lung = Math.min(W, H) * (0.09 + b * 0.07) * fata;
-    c.globalAlpha = 0.16 + fata * 0.18;
-    /* Galbenul cel mai deschis numai chiar în mijloc. Împărțit mai larg, tușele
-       apăsate se adunau într-un nor alburiu deasupra lucrării — și ochiul se
-       ducea la nor, nu la foc. */
-    pataDePasta(c, x, y, lung, lung * 0.3, (a - 0.5) * 1.9 + (b - 0.55) * 1.1,
-                fata > 0.88 ? GALBEN_LUMINA : (fata > 0.5 ? PORTOCALIU : ROSU_ADANC),
-                1, 1);
+    const lung = Math.min(W, H) * (0.06 + b * 0.06) * fata;
+    c.globalAlpha = 0.34 + fata * 0.3;
+    const tare = fata > 0.88 ? TONURI_APRINSE : (fata > 0.5 ? TONURI_ARSE : TONURI_ADANCI);
+    pataDePasta(c, x, y, lung, lung * 0.24, (a - 0.5) * 1.9 + (b - 0.55) * 1.1,
+                tare[Math.floor(samanta(4080 + k * 9.1) * tare.length)], 1, 1);
   }
   c.globalAlpha = 1;
 
@@ -413,8 +547,8 @@ function podeaDeSah(c, g) {
   for (let r = 0; r < RANDURI; r++) {
     /* Adâncimea crește neliniar: pătrățelele din fund sunt mult mai scunde decât
        cele de sub tine. La pas egal, pardoseala ar arăta ca o față de masă. */
-    const t0 = Math.pow(r / RANDURI, 1.9);
-    const t1 = Math.pow((r + 1) / RANDURI, 1.9);
+    const t0 = Math.pow(r / RANDURI, 1.65);
+    const t1 = Math.pow((r + 1) / RANDURI, 1.65);
     const y0 = intre(sus - H * 0.02, jos, t0), y1 = intre(sus - H * 0.02, jos, t1);
     const lat0 = intre(g.latSus, W * 1.9, t0);
     const lat1 = intre(g.latSus, W * 1.9, t1);
@@ -434,6 +568,50 @@ function podeaDeSah(c, g) {
       c.fill();
     }
   }
+
+  /* Și pardoseala e pictată, nu desenată. Tabla de șah rămâne reperul neutru al
+     sălii — se citește mai departe pătrat cu pătrat — dar peste ea trec tușele,
+     ca peste tot restul. Fără ele, într-o sală în care peretele, lucrarea și rama
+     sunt puse cu cuțitul, pardoseala rămânea singurul lucru turnat: o folie de
+     linoleum sub o pictură.
+
+     Tot pe rețea cu zvâcnet, dar rețeaua e a pardoselii: se strânge spre fund
+     odată cu pătratele, deci și tușele se micșorează cu depărtarea. Culoarea
+     fiecăreia se ia din pătratul pe care cade — deschisă pe alb, întunecată pe
+     negru — altfel tabla de șah se îneacă, iar cu ea se duce singurul reper
+     neutru al sălii. */
+  const PU = 54, PV = 20;
+  for (let iv = 0; iv < PV; iv++) {
+    for (let iu = 0; iu < PU; iu++) {
+      const n = iv * PU + iu;
+      const zu = samanta(5400 + n * 3.7), zv = samanta(5470 + n * 6.1);
+      const ze = samanta(5530 + n * 4.3);
+      const vv = Math.min(1, Math.max(0, (iv + 0.5 + (zv - 0.5) * 0.9) / PV));
+      const t = Math.pow(vv, 1.65);
+      const uu = (iu + 0.5 + (zu - 0.5) * 0.9) / PU;
+      const y = intre(sus, jos, t);
+      const lat = intre(g.latSus, W * 1.9, t);
+      const x = W * 0.5 + (uu - 0.5) * lat;
+      // pe ce pătrat a căzut: aceeași socoteală ca la desenul tablei
+      const r = Math.min(RANDURI - 1, Math.floor(vv * RANDURI));
+      const col = Math.min(COLOANE - 1, Math.max(0, Math.floor(uu * COLOANE)));
+      const deschis = (r + col) % 2 === 0;
+      /* Mai stinse decât cele de pe pereți, și culcate aproape pe orizontală, cum
+         merge mâna peste o podea. Puse la fel de apăsat, tabla de șah se îneca
+         într-un caldarâm — iar ea e singurul reper neutru al sălii, măsura după
+         care ochiul judecă cât de aprins e restul. Pardoseala trebuie să se vadă
+         **pictată**, nu acoperită. */
+      const ochi = Math.max(lat / PU, (jos - sus) * (0.5 + t) / PV);
+      const lung = ochi * (2.2 + ze * 1.3);
+      c.globalAlpha = (deschis ? 0.16 : 0.22) + ze * 0.14;
+      pataDePasta(c, x, y, lung, ochi * (0.3 + zu * 0.18),
+                  (uu - 0.5) * 0.4 + (ze - 0.5) * 0.36,
+                  deschis ? (ze > 0.6 ? '#fbf5e8' : (ze > 0.3 ? '#e6dcc6' : '#cdbb9c'))
+                          : (ze > 0.6 ? '#3a2a1c' : (ze > 0.3 ? '#1f1a14' : '#0d0b08')),
+                  1, deschis ? 0.7 : 0.4);
+    }
+  }
+  c.globalAlpha = 1;
 
   /* Pe pardoseală cade lumina focului: un oval cald care se stinge spre margini.
      Fără el, tabla de șah e un desen tehnic lipit sub perete. */
@@ -733,18 +911,113 @@ function rotitaSevalet(c, x, y, r) {
   c.fill();
 }
 
-/* ---------- RAMA PREȚIOASĂ ---------- */
-/* Aceeași sculptură de brâuri ca în galeria a patra și în sala a cincea. Se
-   pictează o dată, la o mărime de referință, și pe urmă se întinde: brâurile ei
-   sunt sute de ornamente, iar sculptate din nou la fiecare cadru ar costa cât
-   toată sala.
+/* ---------- RAMA DE ATELIER ---------- */
+/* Nu rama prețioasă din galeria a patra. Aceea e o ramă de muzeu: sculptată,
+   aurită, cu sute de ornamente — a unui tablou terminat, clasat, atârnat.
 
-   Culcată, ca lucrarea din ea. Rama de referință trebuie să aibă chiar
-   proporțiile pânzei: întinsă dintr-una înaltă peste una lată, sculptura de pe
-   laturi s-ar lăți de două ori mai mult decât cea de sus și de jos, și s-ar
-   vedea de la prima privire că e aceeași floare turtită. */
+   Aici suntem în atelierul cuiva care lucrează. Pe pereții lui, lucrările stau
+   în rame late și simple, de lemn vopsit, puse ca să ție pânza, nu ca s-o
+   încununeze. O ramă bogată în jurul unei lucrări de pe șevalet spune că lucrul
+   s-a terminat — și atunci scânteia care sare din ea n-ar mai avea de unde să
+   sară.
+
+   E vopsită cu aceeași pastă ca tot restul sălii: și ea a fost pictată, nu
+   turnată. Se face o dată, pe o pânză de referință, și pe urmă se întinde. */
 const ramaFocului = { panza: null, marg: 0, latime: 0, inaltime: 0 };
-const PROFIL_RAMA6 = 0.085;
+const PROFIL_RAMA6 = 0.055;          // cât de lată e rama față de pânză
+const LEMN_RAMA6   = '#4a2412';
+const LEMN_RAMA_SUS = '#8a4a22';
+const LEMN_RAMA_JOS = '#251006';
+
+function pictezaRamaFocului(c, lat, inalt, marg) {
+  const b = Math.round(lat * PROFIL_RAMA6);   // lățimea brâului
+  const x0 = marg, y0 = marg, x1 = marg + lat, y1 = marg + inalt;
+
+  /* Brâul, ca un cadru gol: conturul din afară și cel dinăuntru, umplute cu
+     regula „par-impar" — o singură umplere, nu patru scânduri lipite una de
+     alta, care ar lăsa cusături pe diagonalele colțurilor. */
+  const brau = function () {
+    c.beginPath();
+    c.rect(x0, y0, lat, inalt);
+    c.rect(x0 + b, y0 + b, lat - b * 2, inalt - b * 2);
+  };
+  brau();
+  c.fillStyle = LEMN_RAMA6;
+  c.fill('evenodd');
+
+  c.save();
+  brau();
+  c.clip('evenodd');
+
+  /* Lumina vine din tablou, adică dinăuntru: latura de sus și cea din stânga
+     sunt cele care o prind, cele de jos și din dreapta stau în umbră. Fără
+     asta, rama e patru dungi de aceeași culoare, deci o dungă. */
+  const lumina = c.createLinearGradient(x0, y0, x1, y1);
+  lumina.addColorStop(0, LEMN_RAMA_SUS);
+  lumina.addColorStop(0.5, LEMN_RAMA6);
+  lumina.addColorStop(1, LEMN_RAMA_JOS);
+  c.globalAlpha = 0.75;
+  c.fillStyle = lumina;
+  c.fillRect(x0, y0, lat, inalt);
+  c.globalAlpha = 1;
+
+  /* Pasta de pe lemn, tot pe rețea: de-a lungul fiecărei laturi, tușe culcate pe
+     direcția ei. Împrăștiate la sorți, rama ieșea pestriță ca o scoarță de
+     copac; înșirate pe latură, se citește lemn vopsit cu pensula. */
+  const laturi = [
+    { lx: x0, ly: y0, dx: lat, dy: 0, gx: 0, gy: b, u: 0 },            // sus
+    { lx: x0, ly: y1 - b, dx: lat, dy: 0, gx: 0, gy: b, u: 0 },        // jos
+    { lx: x0, ly: y0, dx: 0, dy: inalt, gx: b, gy: 0, u: 1.5708 },     // stânga
+    { lx: x1 - b, ly: y0, dx: 0, dy: inalt, gx: b, gy: 0, u: 1.5708 }  // dreapta
+  ];
+  for (let l = 0; l < laturi.length; l++) {
+    const L = laturi[l];
+    const lungimea = Math.hypot(L.dx, L.dy);
+    const N = Math.max(6, Math.round(lungimea / (b * 0.55)));
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < 2; j++) {
+        const n = l * 997 + i * 7 + j;
+        const za = samanta(5100 + n * 3.9), zb = samanta(5170 + n * 6.3);
+        const ze = samanta(5230 + n * 4.7);
+        const q = (i + 0.5 + (za - 0.5) * 0.9) / N;
+        const w = (j + 0.5 + (zb - 0.5) * 0.9) / 2;
+        const x = L.lx + L.dx * q + L.gx * w;
+        const y = L.ly + L.dy * q + L.gy * w;
+        c.globalAlpha = 0.45 + ze * 0.3;
+        pataDePasta(c, x, y, b * (1.5 + ze * 0.9), b * (0.34 + za * 0.16),
+                    L.u + (ze - 0.5) * 0.5,
+                    ze > 0.66 ? LEMN_RAMA_SUS : (ze > 0.3 ? LEMN_RAMA6 : LEMN_RAMA_JOS),
+                    1, 0.7);
+      }
+    }
+  }
+  c.globalAlpha = 1;
+
+  /* Muchia dinăuntru, unde lemnul cade spre pânză: o dungă deschisă și una
+     închisă, lipite. Ea face rama să pară groasă. */
+  c.strokeStyle = 'rgba(212, 150, 82, 0.6)';
+  c.lineWidth = Math.max(1.5, b * 0.11);
+  c.strokeRect(x0 + b, y0 + b, lat - b * 2, inalt - b * 2);
+  c.strokeStyle = 'rgba(20, 8, 3, 0.55)';
+  c.lineWidth = Math.max(1.5, b * 0.09);
+  c.strokeRect(x0 + b * 0.82, y0 + b * 0.82, lat - b * 1.64, inalt - b * 1.64);
+
+  // și muchia din afară, ca rama să nu se piardă în perete
+  c.strokeStyle = 'rgba(16, 6, 2, 0.6)';
+  c.lineWidth = Math.max(1.5, b * 0.1);
+  c.strokeRect(x0, y0, lat, inalt);
+
+  // îmbinările din colțuri, tăiate în unghi, ca la orice ramă de lemn
+  c.strokeStyle = 'rgba(20, 8, 3, 0.45)';
+  c.lineWidth = Math.max(1, b * 0.06);
+  for (const sx of [0, 1]) for (const sy of [0, 1]) {
+    c.beginPath();
+    c.moveTo(x0 + sx * lat, y0 + sy * inalt);
+    c.lineTo(x0 + sx * lat + (sx ? -b : b), y0 + sy * inalt + (sy ? -b : b));
+    c.stroke();
+  }
+  c.restore();
+}
 
 function pregatesteRamaFocului() {
   if (ramaFocului.panza) return ramaFocului;
@@ -752,13 +1025,7 @@ function pregatesteRamaFocului() {
   const marg = Math.round(lat * PROFIL_RAMA6);
   const p = document.createElement('canvas');
   p.width = lat + marg * 2; p.height = inalt + marg * 2;
-  const pc = p.getContext('2d');
-  pictezaRama(pc, { ramaX: p.width / 2, ramaY: p.height / 2, ramaW: lat, ramaH: inalt },
-              1, PROFIL_RAMA6);
-  /* Golim deschiderea: rama se așază **peste** pictură, deci prin mijlocul ei
-     trebuie să se vadă focul. */
-  const gol = Math.round(lat * PROFIL_RAMA6);
-  pc.clearRect(marg + gol, marg + gol, lat - gol * 2, inalt - gol * 2);
+  pictezaRamaFocului(p.getContext('2d'), lat, inalt, marg);
   ramaFocului.panza = p; ramaFocului.marg = marg;
   ramaFocului.latime = lat; ramaFocului.inaltime = inalt;
   return ramaFocului;
@@ -1056,7 +1323,16 @@ function deseneazaTabloulFocului(acum) {
      întâi — ieșeau limbi albe pe margine și roșii în mijloc, adică un foc care nu
      știe unde îi e inima. Albul rămâne numai pentru miez; e cea mai tare valoare
      din tot tabloul, și dacă se împrăștie nu mai arde nimic. */
-  for (let k = 0; k < 96; k++) {
+  /* Flăcările se pun cu **același cuțit** ca peretele și ca noaptea din spatele
+     lor. Cât erau tușe moi, focul era singurul lucru din tablou pictat altfel
+     decât restul — și atunci ce le deosebește nu mai era valoarea, ci felul cum
+     sunt puse. Or tocmai asta are sala de arătat: aceeași pastă, alt grad de
+     căldură.
+
+     Sunt mai puține decât înainte, fiindcă fiecare e acum o pată adevărată, cu
+     creastă și umbră, nu o dungă. O sută de limbi subțiri fac fum; cincizeci de
+     pete groase fac foc. */
+  for (let k = 0; k < 54; k++) {
     const a = samanta(3400 + k * 3.7), b = samanta(3460 + k * 5.9);
     const departeDeAx = Math.abs(a - 0.5) * 2;       // 0 în ax, 1 la margine
     const unda = Math.sin(acum * (0.0022 + b * 0.0035) + k * 1.7);
@@ -1067,9 +1343,9 @@ function deseneazaTabloulFocului(acum) {
     const caldura = (1 - departeDeAx) * 0.75 + (1 - b) * 0.25;
     const culoare = caldura > 0.84 ? '#fff6d2' : (caldura > 0.62 ? '#ffcb52'
                   : (caldura > 0.38 ? '#ef8420' : (caldura > 0.2 ? '#c8481c' : '#8e2a16')));
-    ctx.globalAlpha = 0.3 + b * 0.34;
-    tusa(ctx, fx, fy, inaltime * 0.92, w * (0.018 + b * 0.03),
-         -1.5708 + unda * 0.2, culoare, 1);
+    ctx.globalAlpha = 0.5 + b * 0.42;
+    pataDePasta(ctx, fx, fy, inaltime * 0.92, w * (0.05 + b * 0.07),
+                -1.5708 + unda * 0.2, culoare, 1, 0.5 + caldura * 0.5);
   }
   ctx.globalAlpha = 1;
 
@@ -1131,7 +1407,14 @@ function razaArsurii(ang, r, acum) {
 
 /* Conturul, tras cu curbe prin mijlocul dintre puncte. Legate cu drepte, chiar și
    niște raze line dau un poligon; trecute prin mijloace, dau o margine moale. */
-function conturArsurii(c, cx, cy, r, acum, latime, inaltime) {
+/* `adauga` spune să nu se înceapă un traseu nou, ci să se pună conturul peste
+   cel de dinainte. Așa se face un **inel**: două contururi în același traseu,
+   umplute cu regula par-impar, lasă gol mijlocul.
+
+   Fără el, pârleala din jurul găurii se turna în toată gaura, fiindcă al doilea
+   `beginPath` îl ștergea pe primul — și cenușa albastră dinăuntru, care e
+   singura culoare rece din toată scena și tot rostul ei, dispărea sub un maro. */
+function conturArsurii(c, cx, cy, r, acum, latime, inaltime, adauga) {
   const PUNCTE = 72;
   const kx = latime === undefined ? ARSURA_LAT : latime;
   const ky = inaltime === undefined ? ARSURA_INALT : inaltime;
@@ -1141,7 +1424,7 @@ function conturArsurii(c, cx, cy, r, acum, latime, inaltime) {
     const raza = razaArsurii(ang, r, acum);
     p.push({ x: cx + Math.cos(ang) * raza * kx, y: cy + Math.sin(ang) * raza * ky });
   }
-  c.beginPath();
+  if (!adauga) c.beginPath();
   c.moveTo((p[0].x + p[PUNCTE - 1].x) / 2, (p[0].y + p[PUNCTE - 1].y) / 2);
   for (let k = 0; k < PUNCTE; k++) {
     const a = p[k], b = p[(k + 1) % PUNCTE];
@@ -1211,55 +1494,259 @@ function deseneazaArsura(acum) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
-  /* Marginea, încă vie. Trei treceri: jarul lat și stins pe dinafară, dunga de
-     cărbune pe contur, și firicelul galben care mănâncă hârtia chiar acum. */
+  /* Marginea. Aici se joacă tot: o gaură cu conturul curat arată tăiată cu
+     foarfeca, nu arsă. Hârtia mâncată de foc are patru brâuri, unul în altul, și
+     fiecare spune altceva:
+
+       1. **pârleala** — un halo lat, cafeniu, care se pierde în tapet. Focul a
+          încălzit hârtia mult dincolo de unde a mâncat-o.
+       2. **brâul rumenit** — maro închis, mai strâns, unde hârtia s-a copt.
+       3. **cărbunele** — dunga aproape neagră de pe chiar buza găurii.
+       4. **franjurii** — firicele negre care ies din contur în afară, ca fibrele
+          rupte ale hârtiei arse. Fără ele marginea rămâne o linie, oricât de
+          bine ar fi colorată; cu ele se citește **material**, nu desen.
+
+     Peste toate, cât timp mai arde, firicelul galben care mănâncă hârtia chiar
+     acum — și numai atunci: o gaură care strălucește la nesfârșit nu s-a
+     terminat de ars niciodată. */
   ctx.save();
-  ctx.shadowColor = 'rgba(255, 150, 40, 0.9)';
-  ctx.shadowBlur = Math.max(6, r * 0.22);
-  ctx.strokeStyle = 'rgba(60, 24, 10, 0.95)';
-  ctx.lineWidth = Math.max(2, r * 0.055);
+
+  // 1-2. pârleala și brâul rumenit, în afara găurii
+  ctx.save();
+  conturArsurii(ctx, cx, cy, r * 1.5, acum);
+  conturArsurii(ctx, cx, cy, r, acum, undefined, undefined, true);
+  ctx.clip('evenodd');
+  const parleala = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 1.5);
+  parleala.addColorStop(0, 'rgba(28, 12, 5, 0.95)');
+  parleala.addColorStop(0.28, 'rgba(92, 46, 18, 0.8)');
+  parleala.addColorStop(0.62, 'rgba(146, 92, 40, 0.42)');
+  parleala.addColorStop(1, 'rgba(160, 110, 54, 0)');
+  ctx.fillStyle = parleala;
+  ctx.fillRect(cx - arsura.latime * 1.7, cy - arsura.inaltime * 1.7,
+               arsura.latime * 3.4, arsura.inaltime * 3.4);
+  ctx.restore();
+
+  // 3. cărbunele de pe buză
+  ctx.strokeStyle = 'rgba(22, 10, 4, 0.92)';
+  ctx.lineWidth = Math.max(2, r * 0.05);
   conturArsurii(ctx, cx, cy, r, acum);
   ctx.stroke();
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = `rgba(255, 196, 80, ${0.5 + 0.5 * Math.sin(acum * 0.005)})`;
-  ctx.lineWidth = Math.max(1, r * 0.02);
-  conturArsurii(ctx, cx, cy, r * 1.02, acum);
-  ctx.stroke();
+
+  // 4. franjurii de hârtie arsă, care ies din contur
+  /* Franjurii nu stau la pas egal de jur împrejur: așa ies gene, nu hârtie arsă.
+     Fibrele se rup în pâlcuri — pe o bucată de margine ies mai multe și mai
+     lungi, pe alta niciuna, fiindcă acolo focul a mâncat curat. Două sinusuri
+     lente fac exact pâlcurile astea. */
+  const FRANJURI = 84;
+  ctx.lineCap = 'round';
+  for (let k = 0; k < FRANJURI; k++) {
+    const ang = (k / FRANJURI) * Math.PI * 2 + samanta(4200 + k * 3.1) * 0.05;
+    const e = samanta(4260 + k * 5.3), f = samanta(4320 + k * 6.7);
+    const palc = 0.5 + 0.5 * Math.sin(ang * 3.0 + 1.1) * Math.sin(ang * 5.0 + 3.7);
+    if (palc < 0.28) continue;                    // aici marginea e mâncată curat
+    const raza = razaArsurii(ang, r, acum);
+    const px = cx + Math.cos(ang) * raza * ARSURA_LAT;
+    const py = cy + Math.sin(ang) * raza * ARSURA_INALT;
+    const afara = 1 + (0.015 + e * 0.055) * palc;
+    ctx.strokeStyle = f > 0.55 ? 'rgba(18, 8, 3, 0.9)' : 'rgba(52, 26, 11, 0.75)';
+    ctx.lineWidth = Math.max(0.8, r * (0.01 + f * 0.02));
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(ang) * raza * ARSURA_LAT * 0.96,
+               cy + Math.sin(ang) * raza * ARSURA_INALT * 0.96);
+    ctx.lineTo(cx + Math.cos(ang + (e - 0.5) * 0.08) * raza * ARSURA_LAT * afara,
+               cy + Math.sin(ang + (e - 0.5) * 0.08) * raza * ARSURA_INALT * afara);
+    ctx.stroke();
+  }
+
+  // firicelul viu, numai cât mai arde
+  if (s6.flacara > 0.02) {
+    ctx.strokeStyle = `rgba(255, 196, 80, ${(0.45 + 0.45 * Math.sin(acum * 0.005)) * s6.flacara})`;
+    ctx.lineWidth = Math.max(1, r * 0.022);
+    ctx.shadowColor = 'rgba(255, 150, 40, 0.9)';
+    ctx.shadowBlur = Math.max(6, r * 0.2);
+    conturArsurii(ctx, cx, cy, r * 1.01, acum);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
   ctx.restore();
 
   ctx.restore();
 }
 
-/* Colțul ecranului care ia foc. Nu e o metaforă: scânteia chiar sare din pânză
-   până acolo, iar de acolo pornește arsura. */
-function deseneazaColtulAprins(acum) {
-  if (s6.colt <= 0) return;
-  const p = Math.min(1, s6.colt);
-  const r = Math.max(W, H) * 0.42 * p;
-  ctx.save();
-  const flacara = ctx.createRadialGradient(W, H, 0, W, H, r);
-  flacara.addColorStop(0, `rgba(255, 240, 190, ${0.85 * p})`);
-  flacara.addColorStop(0.2, `rgba(255, 170, 50, ${0.6 * p})`);
-  flacara.addColorStop(0.6, `rgba(200, 70, 20, ${0.25 * p})`);
-  flacara.addColorStop(1, 'rgba(200, 70, 20, 0)');
-  ctx.fillStyle = flacara;
-  ctx.fillRect(0, 0, W, H);
+/* Funinginea. Când arde un tapet, flacăra e mică și scurtă, dar deasupra ei
+   peretele se înnegrește pe o suprafață de câteva ori mai mare: fumul urcă lipit
+   de zid și lasă o pată lată, cu vârful răsfirat, mai deasă la mijloc. E semnul
+   după care se recunoaște un perete care a ars, mai mult decât flacăra însăși —
+   flacăra trece, funinginea rămâne.
 
-  // limbi care urcă pe marginea de jos-dreapta
-  /* Flăcările stau lipite de colț și se sting cu cât se depărtează de el. Împrăștiate
-     egal pe un sfert de ecran — cum erau întâi — ajungeau pastile palide plutind
-     pe pardoseală: focul are nevoie de un loc din care arde, altfel nu e foc. */
-  for (let k = 0; k < 54; k++) {
-    const a = samanta(4000 + k * 5.7), b = samanta(4060 + k * 3.9);
-    const departe = Math.max(a, b);             // îndesite spre colț
+   Se desenează după arsură și înainte de flacără, adică între gaură și focul care
+   o mănâncă: pata de fum stă pe perete, focul stă în fața peretelui. */
+function deseneazaFuninginea(acum) {
+  if (s6.funingine <= 0) return;
+  const p = Math.min(1, s6.funingine);
+  const a = geomArsura(Math.max(0.25, s6.arsura));
+  const lat = a.latime * 2.3;
+  const inalt = a.inaltime * 2.4 * (0.5 + p * 0.5);
+  const varf = a.prag - a.inaltime * 0.4 - inalt;
+
+  ctx.save();
+  // funinginea stă pe perete, deci se taie la perete
+  ctx.beginPath();
+  ctx.moveTo(0, -H);
+  ctx.lineTo(W, -H);
+  for (let k = 60; k >= 0; k--) {
+    const u = k / 60;
+    ctx.lineTo(W * u, temeliaPeretelui(u, geomSala6().orizontul));
+  }
+  ctx.closePath();
+  ctx.clip();
+
+  /* Pata de bază: un evantai care se lățește în sus, ca urma de fum de deasupra
+     unei prize arse. Nu un oval — fumul urcă, nu se împrăștie deopotrivă. */
+  for (let k = 0; k < 3; k++) {
+    const q = 1 - k * 0.28;
+    ctx.fillStyle = `rgba(10, 8, 7, ${0.22 * p * q})`;
+    ctx.beginPath();
+    ctx.moveTo(a.cx - lat * 0.42 * q, a.prag);
+    ctx.quadraticCurveTo(a.cx - lat * 0.95 * q, varf + inalt * 0.5,
+                         a.cx - lat * 0.72 * q, varf);
+    ctx.quadraticCurveTo(a.cx, varf - inalt * 0.16, a.cx + lat * 0.72 * q, varf);
+    ctx.quadraticCurveTo(a.cx + lat * 0.95 * q, varf + inalt * 0.5,
+                         a.cx + lat * 0.42 * q, a.prag);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  /* Marginea nu e netedă: fumul lasă limbi și pete, care se sting spre vârf. Tot
+     cu cuțitul, ca tot restul sălii — și funinginea e o pată picturală. */
+  for (let k = 0; k < 44; k++) {
+    const u = samanta(4400 + k * 3.7), v = samanta(4470 + k * 6.1);
+    const e = samanta(4530 + k * 4.3);
+    const h = Math.pow(v, 0.8);
+    const raza = lat * (0.45 + h * 0.55);
+    const x = a.cx + (u - 0.5) * raza * 2;
+    const y = intre(a.prag, varf - inalt * 0.1, h);
+    const departe = Math.abs(u - 0.5) * 2;
+    ctx.globalAlpha = 0.34 * p * (1 - h * 0.6) * (1 - departe * 0.7);
+    pataDePasta(ctx, x, y, lat * (0.12 + e * 0.2), lat * (0.05 + e * 0.06),
+                -1.5708 + (u - 0.5) * 1.2,
+                e > 0.6 ? '#1a1512' : (e > 0.3 ? '#0d0a08' : '#241a14'), 1, 0.35);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+/* Peretele care arde, la piciorul viitoarei uși.
+
+   Nu e o metaforă și nu e un colț de ecran: scânteia a căzut chiar aici, pe
+   tapet, lângă podea, iar focul mănâncă hârtia de jos în sus — cum arde orice
+   perete. De-aia arsura crește și ea în sus, cu pragul rămas pe loc: flacăra e
+   la temelie, iar gaura e ce a lăsat în urmă. */
+function deseneazaFlacaraPeretelui(acum) {
+  if (s6.flacara <= 0) return;
+  const p = Math.min(1, s6.flacara);
+  const a = geomArsura(s6.arsura);
+  const plin = geomArsura(1);
+  // cât de lat e focul: cel puțin cât scânteia care tocmai a căzut, pe urmă cât gaura
+  const lat = Math.max(plin.latime * 0.5, a.latime * 1.15);
+  const talpa = a.prag;
+
+  ctx.save();
+  /* Tot ce arde stă pe perete, deci se taie la perete — ca și arsura. O flacără
+     care se revarsă peste tabla de șah ar arde pardoseala, nu tapetul. */
+  ctx.beginPath();
+  ctx.moveTo(0, -H);
+  ctx.lineTo(W, -H);
+  for (let k = 60; k >= 0; k--) {
+    const u = k / 60;
+    ctx.lineTo(W * u, temeliaPeretelui(u, geomSala6().orizontul));
+  }
+  ctx.closePath();
+  ctx.clip();
+
+  // lumina pe care o aruncă focul pe peretele din jur
+  const halo = ctx.createRadialGradient(a.cx, talpa - lat * 0.2, 0,
+                                        a.cx, talpa - lat * 0.2, lat * 3.4);
+  halo.addColorStop(0, `rgba(255, 238, 180, ${0.5 * p})`);
+  halo.addColorStop(0.28, `rgba(255, 168, 50, ${0.34 * p})`);
+  halo.addColorStop(0.7, `rgba(200, 70, 20, ${0.14 * p})`);
+  halo.addColorStop(1, 'rgba(200, 70, 20, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(a.cx - lat * 3.4, talpa - lat * 3.6, lat * 6.8, lat * 4.4);
+
+  /* Limbile. Urcă de la podea în sus și se sting cu înălțimea; cele mai înalte
+     lambă chiar marginea arsă, acolo unde hârtia se mănâncă în clipa asta. Puse
+     cu același cuțit ca tot restul sălii — până și focul care strică e pictat. */
+  const inaltMax = Math.max(lat * 1.6, a.inaltime * 1.3);
+  for (let k = 0; k < 40; k++) {
+    const q = samanta(4000 + k * 5.7), b = samanta(4060 + k * 3.9);
     const unda = Math.sin(acum * (0.005 + b * 0.006) + k * 2.1);
-    const fx = W - a * W * 0.34 * p;
-    const fy = H - b * H * 0.30 * p;
-    const lung = H * 0.05 * (0.35 + (1 - departe) * 1.1) * p;
-    ctx.globalAlpha = (0.22 + (1 - departe) * 0.6) * p;
-    tusa(ctx, fx + unda * H * 0.008, fy - lung * 0.3, lung, W * 0.009 * (0.6 + b),
-         -1.5708 + unda * 0.34,
-         departe < 0.25 ? '#fff2c6' : (departe < 0.55 ? '#ffb347' : '#c8461a'), 1);
+    const fx = a.cx + (q - 0.5) * lat * 2.0 + unda * lat * 0.09;
+    const departeDeAx = Math.abs(q - 0.5) * 2;
+    // în mijlocul focului limbile sunt cele mai înalte
+    const lung = inaltMax * (0.18 + b * 0.5 + (1 - departeDeAx) * 0.45) * p;
+    const fy = talpa - lung * (0.42 + b * 0.3);
+    const caldura = (1 - departeDeAx) * 0.7 + (1 - b) * 0.3;
+    ctx.globalAlpha = (0.34 + (1 - departeDeAx) * 0.5) * p;
+    pataDePasta(ctx, fx, fy, lung, lat * (0.1 + b * 0.14),
+                -1.5708 + unda * 0.34,
+                caldura > 0.8 ? '#fff2c6' : (caldura > 0.55 ? '#ffb347'
+                              : (caldura > 0.3 ? '#e8802a' : '#c8461a')), 1,
+                0.5 + caldura * 0.5);
+  }
+  ctx.globalAlpha = 1;
+
+  // scântei care urcă pe perete, desprinse din flacără
+  for (let k = 0; k < 22; k++) {
+    const q = samanta(4130 + k * 4.3);
+    const urcare = ((acum * (0.00018 + q * 0.00022) + q) % 1);
+    const sx = a.cx + (q - 0.5) * lat * 1.7 + Math.sin(acum * 0.003 + k) * lat * 0.18;
+    const sy = talpa - urcare * inaltMax * 1.5;
+    ctx.globalAlpha = (1 - urcare) * 0.8 * p;
+    ctx.fillStyle = urcare < 0.4 ? '#fff0b8' : '#e8802a';
+    ctx.beginPath();
+    ctx.arc(sx, sy, Math.max(0.8, lat * 0.022 * (1 - urcare * 0.6)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+/* Fumul din sală. Puțin — cât să se simtă că arde ceva în cameră, nu cât să nu
+   se mai vadă lucrarea. Se strânge sub cornișă, cum face fumul într-o încăpere
+   închisă: urcă lipit de perete și se adună la tavan, de unde coboară încet.
+   Trage spre partea în care arde, fiindcă de acolo vine. */
+function deseneazaFumulSalii(acum) {
+  if (s6.fum <= 0.01) return;
+  const p = Math.min(1, s6.fum);
+  const a = geomArsura(1);
+  ctx.save();
+
+  // pătura de fum de sub tavan
+  const patura = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+  patura.addColorStop(0, `rgba(26, 20, 16, ${0.24 * p})`);
+  patura.addColorStop(0.55, `rgba(40, 30, 24, ${0.09 * p})`);
+  patura.addColorStop(1, 'rgba(40, 30, 24, 0)');
+  ctx.fillStyle = patura;
+  ctx.fillRect(0, 0, W, H * 0.5);
+
+  /* Rotocoalele. Se mișcă încet, fiecare pe socoteala lui, dintr-o sămânță fixă:
+     la întâmplare curată fumul ar clocoti, iar fumul nu clocotește, se târăște. */
+  for (let k = 0; k < 26; k++) {
+    const q = samanta(4600 + k * 3.9), b = samanta(4660 + k * 5.7);
+    const deriva = ((acum * (0.000018 + q * 0.000026) + b) % 1);
+    const x = intre(a.cx, W * 0.12, deriva) + Math.sin(acum * 0.0004 + k) * W * 0.03;
+    const y = intre(H * 0.30, H * 0.045, Math.pow(deriva, 0.7)) +
+              Math.sin(acum * 0.0006 + k * 2.1) * H * 0.02;
+    const raza = Math.min(W, H) * (0.05 + b * 0.09) * (0.5 + deriva * 0.9);
+    ctx.globalAlpha = 0.16 * p * Math.sin(Math.min(1, deriva * 1.6) * Math.PI * 0.9);
+    const rotocol = ctx.createRadialGradient(x, y, 0, x, y, raza);
+    rotocol.addColorStop(0, 'rgba(52, 42, 34, 0.9)');
+    rotocol.addColorStop(1, 'rgba(52, 42, 34, 0)');
+    ctx.fillStyle = rotocol;
+    ctx.beginPath();
+    ctx.arc(x, y, raza, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -1270,7 +1757,8 @@ function intraInFoc(acum) {
   stare = 'foc';
   s6.faza = 'intrare'; s6.t0 = acum; s6.ultimulCadru = acum;
   s6.manusiPuse = false; s6.refuzuri = 0; s6.frige = 0;
-  s6.aburi = 1; s6.arsura = 0; s6.colt = 0; s6.scanteie = null;
+  s6.aburi = 1; s6.arsura = 0; s6.flacara = 0; s6.scanteie = null;
+  s6.funingine = 0; s6.fum = 0;
   pregatesteSalaFocului();
   opresteMuzicaMuzeu();
   opresteNatura();
@@ -1364,14 +1852,24 @@ function actualizeazaFocul(acum) {
   }
   else if (s6.faza === 'scanteie') {
     /* Ecranul se face vaporos, ca aerul deasupra jarului, iar scânteia zboară din
-       pânză spre colțul de jos-dreapta. Când ajunge, colțul ia foc. */
+       pânză **spre peretele din dreapta**, la piciorul lui.
+
+       Zbura înainte spre colțul de jos-dreapta al ecranului, adică spre tine, în
+       planul întâi — și pe urmă apărea o gaură în peretele din fund. Nu se putea:
+       nimic din ce sare în față n-are cum să ardă ceva din spate. Ochiul vede
+       traiectoria și așteaptă ca focul să iasă unde a căzut scânteia; când iese
+       în altă parte, scena nu se mai leagă, chiar dacă nimeni n-ar ști să spună
+       de ce.
+
+       Acum cade exact în locul din care va crește ușa. */
     s6.aburi = Math.min(0.55, s6.aburi + dt / 900);
     const p = Math.min(1, (acum - s6.t0) / 1500);
     const g = geomSala6();
-    s6.scanteie.x = intre(W * 0.5, W * 0.985, atenuare(p));
-    // sare în arc: întâi urcă, apoi cade în colț
-    s6.scanteie.y = intre(g.tablouY + g.tablouInalt * 0.78, H * 0.97, p * p) -
-                    Math.sin(p * Math.PI) * H * 0.22;
+    const a = geomArsura(1);
+    s6.scanteie.x = intre(W * 0.5, a.cx, atenuare(p));
+    // sare în arc: întâi urcă, apoi coboară la piciorul peretelui
+    s6.scanteie.y = intre(g.tablouY + g.tablouInalt * 0.78, a.prag, p * p) -
+                    Math.sin(p * Math.PI) * H * 0.18;
     s6.scanteie.t = p;
     if (p >= 1) {
       s6.faza = 'arde'; s6.t0 = acum;
@@ -1379,16 +1877,22 @@ function actualizeazaFocul(acum) {
     }
   }
   else if (s6.faza === 'arde') {
-    s6.colt = Math.min(1, s6.colt + dt / 1100);
+    s6.flacara = Math.min(1, s6.flacara + dt / 1100);
+    /* Funinginea se strânge cât arde și **rămâne**: e singurul lucru din scenă
+       care nu se întoarce la loc. Fumul se strânge și el, dar pe urmă se
+       risipește — o sală nu rămâne plină de fum. */
+    s6.funingine = Math.min(1, s6.funingine + dt / 2200);
+    s6.fum = Math.min(1, s6.fum + dt / 2600);
     s6.aburi = Math.max(0.18, s6.aburi - dt / 2600);
     if (acum - s6.t0 > 900) s6.arsura = Math.min(1, s6.arsura + dt / 2600);
-    // colțul se potolește după ce arsura a mâncat peretele
-    if (s6.arsura > 0.55) s6.colt = Math.max(0, s6.colt - dt / 1800);
+    // flacăra se potolește după ce arsura a mâncat destul din perete
+    if (s6.arsura > 0.55) s6.flacara = Math.max(0, s6.flacara - dt / 1800);
     if (s6.arsura >= 1) { s6.faza = 'gaura'; s6.t0 = acum; }
   }
   else if (s6.faza === 'gaura') {
-    s6.colt = Math.max(0, s6.colt - dt / 1600);
+    s6.flacara = Math.max(0, s6.flacara - dt / 1600);
     s6.aburi = Math.max(0, s6.aburi - dt / 2200);
+    s6.fum = Math.max(0.16, s6.fum - dt / 9000);   // se risipește, dar nu de tot
   }
 }
 
@@ -1401,13 +1905,15 @@ function deseneazaScena6(t, acum) {
      șevaletul stă în mijlocul sălii, deci în fața ei, iar masa lângă el. Așa,
      când peretele arde, pânza rămâne să se vadă în picioare pe fundalul rece —
      și tot atunci se vede cel mai bine ce are scena de arătat: cald pe rece. */
+  deseneazaFuninginea(acum);
   deseneazaArsura(acum);
+  deseneazaFlacaraPeretelui(acum);
   const g6 = geomSala6();
   sevaletul(ctx, g6, acum);
   deseneazaTabloulFocului(acum);
   masaCuManusi(ctx, g6);
   deseneazaManusi(acum);
-  deseneazaColtulAprins(acum);
+  deseneazaFumulSalii(acum);
 
   // scânteia care zboară
   if (s6.scanteie && s6.faza === 'scanteie') {
@@ -1470,11 +1976,13 @@ function deseneazaScena6(t, acum) {
     /* Pe o plăcuță, ca și avertismentul de la mănuși. Scrisul rece cade tocmai pe
        pătratele negre ale pardoselii, unde albăstriul lui se pierde — iar cuvântul
        care spune cum se iese din scenă e ultimul care are voie să nu se vadă. */
-    /* Sub prag, dar și sub lucrare: pusă la o palmă de podea, plăcuța intra cu
-       colțul în rama aurită, iar două lucruri suprapuse nu se citesc nici unul. */
+    /* Chiar sub gaură, pe pardoseală, nu în mijlocul ecranului și nici împinsă în
+       josul lui. Un îndemn scris în altă parte decât lucrul despre care vorbește
+       îl trimite pe om să caute; scris sub prag, degetul îl urmează de la sine.
+       Se dă la o parte doar cât să nu iasă din ecran. */
     const lat = Math.min(W * 0.26, ecran(260));
     const tx = Math.max(lat * 0.55, Math.min(W - lat * 0.55, a.cx));
-    const ty = Math.max(a.prag + H * 0.05, H * 0.86);
+    const ty = Math.min(H - H * 0.075, a.prag + H * 0.045);
     ctx.save();
     ctx.fillStyle = 'rgba(14, 20, 32, 0.82)';
     dreptunghi(tx - lat / 2, ty - H * 0.018, lat, H * 0.062, ecran(12));
