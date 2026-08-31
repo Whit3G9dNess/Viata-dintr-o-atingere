@@ -42,3 +42,12 @@ function factorAgitatie() {
 function esteAbsent() {
   return performance.now() - cursor.ultimaMiscare > 6000;
 }
+
+/* Degetul e ținut minte în pixeli de pânză. Dacă pânza își schimbă mărimea și
+   mâna stă pe loc, punctul rămâne unde era în măsura veche — iar tot ce se ia
+   după deget (balonul care fuge, cercelul care se lasă spre el, lupa) se duce
+   după o fantomă, până la prima mișcare a mâinii. */
+laRedimensionare.push(function (kx, ky) {
+  if (cursor.x > -9000) { cursor.x *= kx; cursor.y *= ky; }
+  if (pozitiaAnterioara) { pozitiaAnterioara.x *= kx; pozitiaAnterioara.y *= ky; }
+});

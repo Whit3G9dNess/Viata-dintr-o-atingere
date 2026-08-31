@@ -155,3 +155,18 @@ function actualizeazaBalonul(acum) {
     balon.vy -= 3;
   }
 }
+
+/* Balonul, urma lui și tremurul membranei sunt socotite în pixeli de pânză.
+   Când pânza se schimbă sub ei — la o treaptă de calitate sau la o fereastră
+   trasă de colț — balonul ar rămâne unde era în măsura veche: pe o pânză
+   micșorată, asta înseamnă lipit de marginea din dreapta jos, sau chiar afară
+   din ea, cu urma lui rămasă în urmă ca o coadă ruptă. */
+laRedimensionare.push(function (kx, ky) {
+  const k = Math.min(kx, ky);           // razele nu se turtesc, se micșorează
+  balon.x *= kx; balon.y *= ky;
+  balon.vx *= kx; balon.vy *= ky;
+  balon.razaBaza *= k;
+  balon.tinta.x *= kx; balon.tinta.y *= ky;
+  for (const punct of urma) { punct.x *= kx; punct.y *= ky; }
+  for (const m of membrana) { m.o *= k; m.v *= k; }
+});

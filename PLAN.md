@@ -36,6 +36,10 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 16 | Țăranii calcă, sala respiră, rama vine mai târziu | ✅ gata |
 | 17 | Muzică de Mozart, liniște în grădină, nouă îndreptări | ✅ gata |
 | 18 | Un buzunar cu nume, fișe de sală, balonul care pocnește | ✅ gata |
+| 19 | Sala rotundă a focului | ✅ gata |
+| 20 | Grădina care îneca jocul | ✅ gata |
+| 21 | Măsurile pânzei: cercelul, manualul, lagul | ✅ gata |
+| 22 | Sala focului: lucrare culcată, pastă, blană, ușa arsă | ✅ gata |
 
 ---
 
@@ -546,6 +550,125 @@ dintr-odată cu două trepte, în loc să aștepte două secunde și jumătate p
 fiecare. Cele șapte secunde de smucituri de dinainte erau exact timpul în care omul
 crede că jucăria e stricată.
 
+## Etapa a douăzeci și una — măsurile pânzei
+
+„În scena când elefantul se așează pe iarbă e mult lag și e un bug: cercelul se
+face lung și mare, și la fel și manualul."
+
+Trei fețe ale aceleiași cauze. Nu desenăm pe ecran, ci pe o **pânză plafonată**,
+întinsă pe urmă cu CSS peste toată fereastra; iar `reglezaCalitatea` o mai
+micșorează o dată când cadrele întârzie. `W` și `H` nu sunt fereastra, iar
+raportul dintre ele și fereastră se schimbă în timpul jocului. Scena a treia nu
+era pregătită pentru asta.
+
+1. **Cercelul lung și mare.** `s3.butonBaza`, `s3.butonX/Y` și `s3.butonR` se
+   socoteau o singură dată, la intrarea în scenă, în pixeli de pânză. Când pânza
+   cobora de la 1450 de pixeli la 800, cercelul rămânea la coordonata veche —
+   adică în dreapta ecranului, cu lănțișorul întins de la ureche până acolo, și
+   cu raza de dinainte, deci mare cât o roșie. Leacul: o listă `laRedimensionare`,
+   în care fiecare scenă își lasă un ascultător și își mută lucrurile în noua
+   măsură. Au primit câte unul cursorul, balonul cu urma lui, mingea cu elefantul
+   și petele, cercelul și lupa. Grădina n-a avut nevoie: ea își ținea de la bun
+   început plantele în fracțiuni de ecran.
+
+2. **Manualul mare.** `Math.min(W * 0.42, 470)`. Cei 470 sunt pixeli ficși: pe
+   pânză întreagă cartea ieșea o treime din lățime, pe pânză micșorată sărea la
+   42%. La fel diploma, scrisoarea, bilețelele, plicul și toate literele scrise
+   `20px`. Acum trec prin `ecran(470)` și `scrisGeorgia(20)`, care traduc pixelii
+   de ecran în pixeli de pânză.
+
+   Tot de aici a ieșit și un lucru vechi, care nu se vedea: **titlul deschiderii
+   nu încăpea pe ecran**. „VIAȚA DINTR-O ATINGERE", cu răriturile dintre litere,
+   măsura 112% din lățime pe o fereastră de laptop — se tăia de amândouă
+   marginile, la orice calitate. Acum se măsoară și se strânge, literă și rărire
+   deodată.
+
+3. **Lagul.** Bucla vicioasă. Fiecare treaptă de calitate repictează din temelii
+   fundalul grădinii **și** toată sala galeriei, care se pregătește din vreme
+   tocmai cât ții manualul în mână. Cadrul acela dura mult, intra în media de
+   fluență, media zicea „ne înecăm", deci mai cobora o treaptă — care repicta iar
+   tot. Iar când urca înapoi, se îneca din nou și cobora: un balans fără sfârșit,
+   cu o repictare completă la fiecare tur.
+
+   Trei îndreptări: cadrul schimbării nu se mai măsoară; o treaptă care s-a înecat
+   la scurt timp după ce am urcat la ea se închide (`plafonCalitate`), așa că
+   balansul se stinge în două-trei tururi în loc să țină la nesfârșit; iar
+   redimensionările de la tras de fereastră se adună într-una singură.
+
+Cinci teste noi apără toate astea: cercelul rămâne la ureche peste o
+redimensionare și nu se umflă când coboară calitatea, manualul păstrează aceeași
+parte din ecran, mingea și elefantul își țin locul, iar calitatea nu se mai
+leagănă la infinit.
+
+## Etapa a douăzeci și doua — sala focului, pusă în pastă
+
+Șase cereri deodată, toate despre aceeași sală. Le-am luat pe rând.
+
+1. **Lucrarea e culcată, nu în picioare.** Un foc de tabără e un lucru lat: are
+   noapte de-o parte și de alta, are dealuri în fund, are jar întins pe jos. Pe o
+   pânză înaltă tot ce nu e flacără se pierde, iar focul ajunge o lumânare în
+   mijlocul unui perete de întuneric. Rama prețioasă s-a întors și ea: sculptura
+   ei se pictează la chiar proporțiile pânzei, fiindcă întinsă dintr-una înaltă
+   peste una lată, aceeași floare s-ar fi văzut turtită pe laturi.
+
+   Șevaletul a cerut două îndreptări pe care nu le prevăzusem. Polița ieșea de sub
+   pânză cu patruzeci la sută din lățimea ei — o palmă la o pânză îngustă, o
+   bancă la una culcată. Iar picioarele din față, care înainte stăteau strânse
+   lângă catarg, au ajuns de-o parte și de alta a lucrării și răsăreau peste ramă
+   ca o poartă de fotbal. Acum urcă numai până sub muchia de sus a pânzei;
+   deasupra rămâne doar catargul cu clema, atât cât are un șevalet.
+
+2. **Mai în față.** Împinse în fund, pe o pânză mică, sala rămânea un hol gol cu
+   un afiș la capăt — rotundă degeaba, fiindcă privirea n-avea ce să ocolească.
+   Lucrarea coboară acum sub linia orizontului, iar șevaletul calcă la 96% din
+   înălțimea ecranului. Măsuța cu mănuși s-a mutat în stânga: în dreapta n-o mai
+   încape pânza lată, și oricum acolo urma să se deschidă o ușă.
+
+3. **Pereții din pete de pastă.** Trei sute de tușe mari peste tapet, plus vreo
+   patruzeci apăsate, din cele care se văd din capătul sălii. Culoarea fiecăreia
+   se ia din locul ei — aprinsă în mijloc, unde bate focul, brună spre margini —
+   nu la sorți: la sorți, clarobscurul pictat cu grijă în gradient s-ar fi pierdut
+   sub un perete pestriț. Prima încercare avea șase sute de fleculețe mărunte și
+   arăta a tencuială stropită: se vedea zgomot, nu pensulă.
+
+4. **Și lucrarea, tot în pastă.** Noaptea și dealurile din spatele focului erau
+   întinse cu gradientul — o suprafață lucioasă de sticlă, peste care focul, pus
+   din tușe, părea lipit. Acum sunt din același material, și atunci ochiul poate
+   să judece ce deosebește o pată fierbinte de una rece: nu felul cum e pusă, ci
+   valoarea ei. Asta e toată lecția scenei, dată fără un cuvânt scris. Fondul a
+   plecat pe ștampila lui, deci un cadru al lucrării costă acum **mai puțin**
+   decât înainte, nu mai mult.
+
+5. **Blana de pe jos.** Tabla de șah e reperul neutru al sălii, și tocmai de-aia
+   sala, cu foc cu tot, rămânea o încăpere de muzeu în care nu ți-ar veni să
+   stai. O blană întinsă sub șevalet și sub măsuță le strânge într-un singur loc
+   locuit. Prima era crem-alb și, peste tabla de șah, arăta a baltă de var: cea
+   mai deschisă valoare din toată sala, adică exact ce nu trebuie pe jos. Miere
+   ars, cu umbre brune — stă sub lucrare fără să i-o ia înainte.
+
+6. **Arsura, pe peretele din dreapta.** În mijlocul peretelui din fund se ascundea
+   pe jumătate în spatele șevaletului și arăta a gaură: se vedea prin ea, dar nu
+   se înțelegea că se poate intra. Pe latura din dreapta, mai înaltă decât lată și
+   sprijinită pe podea, se citește **ușă** — și e chiar drumul pe care a venit
+   focul, fiindcă întâi arde colțul de jos-dreapta al ecranului, iar arsura urcă
+   de acolo.
+
+   Două lucruri au ieșit la iveală abia desenând. Marginea arsă fâlfâie, deci
+   trecea de linia unde peretele întâlnește pardoseala și gaura se revărsa peste
+   tabla de șah ca o baltă; acum tot ce ține de arsură se taie la perete. Și
+   invers: pe un ecran înalt, la unele unghiuri rămânea o palmă de tapet între ușă
+   și podea — o ușă care nu atinge podeaua e o fereastră. Centrul s-a coborât cât
+   să treacă întotdeauna de prag și să fie tăiat de el.
+
+   Locul arsurii se scoate acum dintr-un singur loc, `geomArsura`: și desenul, și
+   locul pe care apeși, și testele. Cât erau trei socoteli scrise una lângă alta,
+   gaura se putea muta din desen fără să se mute și atingerea.
+
+Șapte teste noi: lucrarea e culcată, lucrarea și șevaletul stau în planul întâi,
+pereții au creste de pastă, fondul lucrării la fel, fondul nu se repictează la
+fiecare cadru, blana ajunge și sub măsuță și sub șevalet, iar arsura e o ușă pe
+peretele din dreapta, sprijinită pe podea și fără să încalece lucrarea.
+
 ## Rămas de făcut
 
 - **Pridvorul casei** din scena a cincea e văzut din față, plat: stâlpii și
@@ -564,6 +687,9 @@ crede că jucăria e stricată.
 - **Șevaletul** e văzut drept din față. Piciorul din spate îl sprijină, dar sala
   e rotundă și lucrarea stă în mijlocul ei: la un moment dat ar merita văzut
   puțin din trei sferturi, cum îl vezi când intri pe ușă.
+- **Fișa de sală din sala focului**, pe un ecran înalt și îngust, se strânge într-o
+  coloană de un cuvânt pe rând. Panoul își ține lățimea în fracțiune de lățime a
+  ferestrei, iar pe vertical rămâne prea îngust pentru textul lui.
 - **Împărțirea în `js/`** e verificată numai prin faptul că testele trec: ele
   citesc lista din `index.html` și rulează exact fișierele pe care le încarcă
   pagina, în ordinea lor. Deci codul e bun. Ce n-a cântărit nimeni e **unde s-a

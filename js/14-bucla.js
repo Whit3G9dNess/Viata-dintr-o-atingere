@@ -33,8 +33,8 @@ function cadru(t) {
        desenează chiar acum cu urma lui. Fără titluri — se înțelege din primul
        cuvânt despre ce e vorba, iar un titlu deasupra unei singure fraze e o
        etichetă lipită degeaba. Cu negru, ca să se poată citi. */
-    const marimeDef = Math.max(11, Math.min(W, H) * 0.019);
-    const latDef = Math.min(W * 0.26, 340);
+    const marimeDef = Math.max(ecran(11), Math.min(W, H) * 0.019);
+    const latDef = Math.min(W * 0.26, ecran(340));
     definitiePeFundal(DEFINITIE_PUNCT, W * 0.175, H * 0.5, latDef,
                       marimeDef, '#1c1a16', null, 'mijloc');
     definitiePeFundal(DEFINITIE_LINIE, W * 0.825, H * 0.5, latDef,
@@ -100,8 +100,8 @@ function cadru(t) {
        linia orizontului — acolo unde cerul se sfârșește și începe pământul pe
        care cad petele. Fără titlu și cu negru, ca să se poată citi. */
     definitiePeFundal(DEFINITIE_PATA, W * 0.235, orizont() - H * 0.012,
-                      Math.min(W * 0.34, 420),
-                      Math.max(11, Math.min(W, H) * 0.019),
+                      Math.min(W * 0.34, ecran(420)),
+                      Math.max(ecran(11), Math.min(W, H) * 0.019),
                       '#1c1a16', null, 'jos');
     deseneazaBaloaneleDeCuloare();   // în spatele elefantului: par să iasă din el
     deseneazaGradina(1, 0, 0.82);    // grădina din depărtare

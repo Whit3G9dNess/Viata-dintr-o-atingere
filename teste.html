@@ -423,6 +423,9 @@ return {
   definitiePeFundal: typeof definitiePeFundal !== "undefined" ? definitiePeFundal : null,
   DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   reglezaCalitatea: typeof reglezaCalitatea !== "undefined" ? reglezaCalitatea : null,
+  ecran: typeof ecran !== "undefined" ? ecran : null,
+  plafonCalitate: function () { return typeof plafonCalitate !== "undefined" ? plafonCalitate : null; },
+  laRedimensionare: typeof laRedimensionare !== "undefined" ? laRedimensionare : null,
   calitate: function () { return typeof calitate !== "undefined" ? calitate : null; },
   s6: typeof s6 !== "undefined" ? s6 : null,
   intraInFoc: typeof intraInFoc !== "undefined" ? intraInFoc : null,
@@ -430,6 +433,10 @@ return {
   click6: typeof click6 !== "undefined" ? click6 : null,
   geomSala6: typeof geomSala6 !== "undefined" ? geomSala6 : null,
   geomManusi: typeof geomManusi !== "undefined" ? geomManusi : null,
+  geomArsura: typeof geomArsura !== "undefined" ? geomArsura : null,
+  geomBlana: typeof geomBlana !== "undefined" ? geomBlana : null,
+  pictezaFundalTablou: typeof pictezaFundalTablou !== "undefined" ? pictezaFundalTablou : null,
+  deseneazaTabloulFocului: typeof deseneazaTabloulFocului !== "undefined" ? deseneazaTabloulFocului : null,
   temeliaPeretelui: typeof temeliaPeretelui !== "undefined" ? temeliaPeretelui : null,
   cornisaPeretelui: typeof cornisaPeretelui !== "undefined" ? cornisaPeretelui : null,
   pregatesteSalaFocului: typeof pregatesteSalaFocului !== "undefined" ? pregatesteSalaFocului : null,
@@ -440,7 +447,7 @@ return {
   culorileSalii6: (function () {
     if (typeof GALBEN_SALA === "undefined") return null;
     return { GALBEN_SALA, GALBEN_LUMINA, PORTOCALIU, ROSU_ADANC, BRUN_UMBRA,
-             BRUN_ADANC, AUR_RAMA6 };
+             BRUN_ADANC, AUR_RAMA6, BLANA_CLARA, BLANA_UMBRA, BLANA_VARF };
   })(),
   PRAG_LUPA_IN_MANA: typeof PRAG_LUPA_IN_MANA !== "undefined" ? PRAG_LUPA_IN_MANA : null,
   click5: typeof click5 !== "undefined" ? click5 : null,
@@ -1360,6 +1367,89 @@ function ruleaza() {
     j.avanseaza(30000, 8);                    // cadre de 8 ms: merge ca uns
     adevarat(j.calitate() > cazuta,
       "calitatea a rămas la " + j.calitate() + " deși jocul merge lin");
+  });
+
+  /* Regulatorul de calitate micșorează pânza. Tot ce e ținut minte în pixeli de
+     pânză — și tot ce e scris în pixeli rotunzi — trebuie să treacă prin
+     schimbarea asta fără să se mute și fără să se umfle. Așa a apărut bug-ul cu
+     cercelul întins peste toată grădina: pânza cobora, cercelul rămânea unde
+     fusese, adică în dreapta ecranului. */
+
+  test("cercelul rămâne la ureche și după ce se schimbă mărimea ferestrei", function () {
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    laMuzeu(j, "sonerie");
+    j.redimensioneaza(900, 620);
+    const g = j.geomMuzeu();
+    const bazaX = g.cx + g.urecheX + g.urecheRX * 0.15;
+    const bazaY = g.lobUreche + g.capR * 0.3;
+    aproape(j.s3.butonX, bazaX, g.capR * 0.12, "cercelul a rămas în măsura veche");
+    aproape(j.s3.butonY, bazaY, g.capR * 0.12, "cercelul a rămas în măsura veche");
+    aproape(j.s3.butonR, g.capR * 0.17, g.capR * 0.02,
+      "cercelul are altă rază decât urechea de care atârnă");
+  });
+
+  test("cercelul nu se umflă când calitatea coboară", function () {
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    laMuzeu(j, "sonerie");
+    const inainte = j.s3.butonR / j.W();
+    j.avanseaza(20000, 45);                   // cadre lungi: calitatea coboară
+    adevarat(j.calitate() < 1, "calitatea n-a coborât, deci testul nu probează nimic");
+    aproape(j.s3.butonR / j.W(), inainte, 0.002,
+      "cercelul ocupă altă parte din ecran decât înainte");
+  });
+
+  test("manualul păstrează aceeași parte din ecran când calitatea coboară", function () {
+    const j = porneste({ latime: 1900, inaltime: 1000 });
+    laMuzeu(j, "manual");
+    const latimea = function () {
+      const desene = j.doar(function () { j.deseneazaManual(1); });
+      let x0 = Infinity, x1 = -Infinity;
+      for (const d of desene) if (d.limite) { x0 = Math.min(x0, d.limite.x0); x1 = Math.max(x1, d.limite.x1); }
+      return (x1 - x0) / j.W();
+    };
+    const inainte = latimea();
+    j.avanseaza(20000, 45);
+    adevarat(j.calitate() < 1, "calitatea n-a coborât, deci testul nu probează nimic");
+    aproape(latimea(), inainte, 0.02,
+      "cartea acoperă altă parte din ecran: " + Math.round(inainte * 100) + "% → " +
+      Math.round(latimea() * 100) + "%");
+  });
+
+  test("mingea și elefantul își țin locul peste o redimensionare", function () {
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    j.mergiLaStarea("minge");
+    j.minge.x = j.W() * 0.4; j.minge.sol = j.nivelulSolului(); j.minge.y = j.minge.sol;
+    j.minge.raza = Math.min(j.W(), j.H()) * 0.09;
+    j.elefant.x = j.W() * 0.7;
+    j.redimensioneaza(800, 450);              // aceeași proporție, pânză pe jumătate
+    aproape(j.minge.x / j.W(), 0.4, 0.01, "mingea s-a mutat pe orizontală");
+    aproape(j.minge.sol, j.nivelulSolului(), 2, "mingea a rămas sub pământ sau deasupra lui");
+    aproape(j.minge.raza / Math.min(j.W(), j.H()), 0.09, 0.005, "mingea și-a schimbat mărimea");
+    aproape(j.elefant.x / j.W(), 0.7, 0.01, "elefantul s-a mutat");
+  });
+
+  test("calitatea nu urcă și coboară la nesfârșit", function () {
+    /* Fiecare treaptă repictează din temelii grădina și sala. O jucărie care
+       urcă, se îneacă, coboară, urcă iar, face asta la infinit — și tocmai
+       repictările alea se simt ca lag. După o urcare care n-a ținut, treapta se
+       închide. */
+    const j = porneste({ latime: 1600, inaltime: 900 });
+    laMuzeu(j, "sonerie");
+
+    /* Un calculator care nu duce treapta de sus: de fiecare dată când jucăria
+       urcă, cadrele se lungesc la loc. Așa arată balansul din care nu se mai
+       iese — și fiecare tur repictează grădina și sala. */
+    const varfuri = [];
+    for (let tur = 0; tur < 4; tur++) {
+      j.avanseaza(9000, 45);                  // se îneacă: coboară
+      j.avanseaza(12000, 8);                  // pare că merge: urcă înapoi
+      varfuri.push(j.calitate());
+    }
+    adevarat(varfuri[0] > 0.55, "calitatea nu urcă deloc, deci testul nu probează nimic");
+    adevarat(varfuri[varfuri.length - 1] < varfuri[0],
+      "urcă la fel de sus și la al patrulea tur (" + varfuri.join(" → ") +
+      "): balansul se repetă la nesfârșit");
+    adevarat(j.plafonCalitate() < 1, "plafonul a rămas sus, deși urcările s-au înecat");
   });
 
   test("grădina se desenează cu ștampile, nu frunză cu frunză", function () {
@@ -2994,9 +3084,106 @@ function ruleaza() {
     atingeIn(j, j.W() * 0.5, g.tablouY + g.tablouInalt * 0.5);
     j.avanseaza(9000);
     egal(j.s6.faza, "gaura", "n-am ajuns la gaura");
-    atingeIn(j, j.W() * 0.5, g.orizontul - j.H() * 0.16);
+    const a = j.geomArsura(1);
+    atingeIn(j, a.cx, a.cy);
     j.avanseaza(60);
     adevarat(j.stare() !== "foc", "gaura nu duce nicaieri: am ramas in sala");
+  });
+
+  test("lucrarea de pe sevalet e culcata, nu in picioare", function () {
+    /* Un foc de tabara e un lucru lat: are noapte de-o parte si de alta, dealuri
+       in fund, jar intins pe jos. Pe o panza inalta tot ce nu e flacara se
+       pierde, si focul ajunge o lumanare intr-un perete de intuneric. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    adevarat(g.tablouLat > g.tablouInalt * 1.2,
+      "panza e tot inalta: " + Math.round(g.tablouLat) + "x" + Math.round(g.tablouInalt));
+  });
+
+  test("lucrarea si sevaletul stau in planul intai, nu in fundul salii", function () {
+    /* Impinse in fund, pe o panza mica, sala ramanea un hol gol cu un afis la
+       capat — rotunda degeaba, fiindca privirea n-avea ce sa ocoleasca. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    adevarat(g.tablouY + g.tablouInalt > g.orizontul + j.H() * 0.08,
+      "panza se termina deasupra orizontului, adica in fundul salii");
+    adevarat(g.sevaletTalpa > j.H() * 0.93,
+      "sevaletul calca sus, la " + Math.round(g.sevaletTalpa / j.H() * 100) + "% din inaltime");
+  });
+
+  test("peretii sunt pusi din pete de pasta, nu intinsi neted", function () {
+    /* Sala asta e despre valoarea petei picturale. Ar fi de ras ca tocmai ea sa
+       fie zugravita neted, cu gradiente lucioase: tema scrisa pe perete si
+       dezmintita de perete. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    /* O tusa de pasta se pune in trei treceri: corpul, creasta dinspre lumina si
+       umbra de pe cealalta muchie. Crestele se numara usor — au o culoare pe care
+       n-o mai foloseste nimic altceva in sala. */
+    let creste = 0;
+    for (const el of j.panzeAscunse) {
+      const p = el._panza;
+      if (!p || !p.desene) continue;
+      for (const d of p.desene) {
+        if (typeof d.stil === "string" && d.stil.indexOf("rgba(255, 226, 164") === 0) creste++;
+      }
+    }
+    adevarat(creste > 200,
+      "peretele are numai " + creste + " creste de pasta: e vopsit, nu pictat");
+  });
+
+  test("si fondul lucrarii e pus din pasta, ca focul din ea", function () {
+    /* Puse amandoua din pasta, focul si noaptea sunt din acelasi material, si
+       ochiul poate judeca ce deosebeste o pata fierbinte de una rece: nu felul
+       cum e pusa, ci valoarea ei. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    adevarat(j.pictezaFundalTablou !== null, "lipseste fondul pictat al lucrarii");
+    const d = j.doar(function () { j.pictezaFundalTablou(j.panza.ctx, 400, 272); });
+    const creste = d.filter(function (x) {
+      return typeof x.stil === "string" && /^rgba\(255, 226, 164/.test(x.stil);
+    });
+    adevarat(creste.length > 150,
+      "fondul lucrarii are numai " + creste.length + " creste: e un gradient, nu pictura");
+  });
+
+  test("fondul lucrarii se picteaza o data, nu la fiecare cadru", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inFoc(j);
+    const d = j.doar(function () { j.deseneazaTabloulFocului(j.ceas.t); });
+    adevarat(d.length < 700,
+      "un cadru al lucrarii cere " + d.length + " operatii: fondul se repicteaza degeaba");
+  });
+
+  test("sub sevalet si sub masuta e o blana", function () {
+    /* Tabla de sah e reperul neutru al salii, si tocmai de-aia sala, cu foc cu
+       tot, ramanea o incapere de muzeu in care nu ti-ar veni sa stai. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    adevarat(j.geomBlana !== null, "lipseste blana de pe jos");
+    const b = j.geomBlana();
+    adevarat(b.cx - b.rx < g.masaX && b.cx + b.rx > j.W() * 0.5 + g.tablouLat * 0.3,
+      "blana nu ajunge si sub masuta, si sub sevalet");
+    adevarat(b.cy + b.ry <= j.H(), "blana iese din ecran pe jos");
+  });
+
+  test("arsura e o usa pe peretele din dreapta, sprijinita pe podea", function () {
+    /* In mijlocul peretelui din fund se ascundea pe jumatate in spatele
+       sevaletului si arata a gaura, nu a trecere. Pe latura din dreapta,
+       sprijinita pe podea si cat un om de inalta, se citeste usa. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inFoc(j);
+    const a = j.geomArsura(1);
+    adevarat(a.cx > j.W() * 0.66, "arsura nu e pe peretele din dreapta: x = " +
+      Math.round(a.cx / j.W() * 100) + "%");
+    adevarat(a.inaltime > a.latime * 1.2,
+      "arsura e mai lata decat inalta, deci arata a fereastra, nu a usa");
+    // pragul cade chiar pe linia unde peretele intalneste pardoseala
+    aproape(a.prag, j.temeliaPeretelui(a.cx / j.W(), g.orizontul), 2,
+      "pragul usii nu se sprijina pe podea");
+    // si nu se incaleca peste sevalet
+    adevarat(a.cx - a.latime > j.W() * 0.5 + g.tablouLat * 0.5,
+      "usa intra peste lucrarea de pe sevalet");
   });
 
   test("pe perete scrie ce e expresionismul", function () {

@@ -246,12 +246,29 @@ function alfaPagina(t, p) {
    dacă nu, titlul rămâne întreg, doar mai strâns. */
 function titluDeTipar(text, cx, cy, marime, spatiu, alfa) {
   ctx.save();
-  ctx.font = `${marime}px Georgia`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = `rgba(246, 238, 224, ${alfa})`;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = `${Math.round(spatiu)}px`;
-  const lat = ctx.measureText(text).width;
+
+  /* Titlul se strânge până încape între margini. Mărimea lui e socotită din
+     lățimea ecranului, dar răriturile dintre litere se adună: „VIAȚA DINTR-O
+     ATINGERE" are douăzeci și două de litere, și pe un ecran cât o fereastră de
+     laptop ieșea cu un cuvânt în stânga și unul în dreapta, tăiate de margine.
+     Aici îl măsurăm întâi și, dacă nu încape, micșorăm deodată și litera, și
+     rărirea — altfel, strânse numai literele, rărirea rămâne mare și titlul
+     arată răsfirat. */
+  const latMax = W * 0.88;
+  const pune = () => {
+    ctx.font = `${marime}px Georgia`;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${spatiu.toFixed(2)}px`;
+    return ctx.measureText(text).width;
+  };
+  let lat = pune();
+  if (lat > latMax) {
+    const k = latMax / lat;
+    marime *= k; spatiu *= k;
+    lat = pune();
+  }
   ctx.fillText(text, cx, cy);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
   ctx.restore();

@@ -52,6 +52,13 @@ const laRedimensionare = [];
    coborât calitatea. */
 function ecran(n) { return n * scalaPanzei; }
 
+/* Aceleași litere, măsurate în pixeli de-ai ecranului, nu de-ai pânzei. Un
+   „20px" scris de-a dreptul crește pe ecran atunci când pânza se micșorează —
+   textul ajunge cu un cap mai mare decât îl voiam. */
+function scrisGeorgia(px, stil) {
+  return (stil ? stil + ' ' : '') + Math.max(6, Math.round(ecran(px))) + 'px Georgia';
+}
+
 function redimensioneaza() {
   const Wv = W, Hv = H;
   const lf = Math.max(1, window.innerWidth), inf = Math.max(1, window.innerHeight);
@@ -75,7 +82,11 @@ function detaliuFin() { return calitate > 0.7; }
 let mediaCadru = 16, ultimulCadruLa = 0, ultimaSchimbare = 0;
 /* Cea mai bună treaptă la care avem voie să urcăm. Pornește de la 1 și coboară
    pentru totdeauna dacă se dovedește că mașina n-o duce. */
-let plafonCalitate = 1, aUrcatUltima = false;
+let plafonCalitate = 1, candAUrcat = -1e9;
+/* Cât timp după o urcare mai socotim că înecul e din vina ei. Mai încolo de
+   atât, o poticnire e a scenei care tocmai s-a deschis, nu a treptei — și
+   n-avem de ce să închidem o treaptă care s-a ținut un minut întreg. */
+const RASPUNDEREA_URCARII = 8000;
 
 function reglezaCalitatea(t) {
   if (ultimulCadruLa) {
@@ -101,12 +112,14 @@ function reglezaCalitatea(t) {
        nu se ține pe calculatorul ăsta: o închidem, ca să nu ne mai întoarcem la
        ea. Altfel jucăria urcă, se îneacă, coboară, urcă iar — la nesfârșit, și
        de fiecare dată repictează grădina și sala. Balansul ăsta e chiar lagul. */
-    if (aUrcatUltima) plafonCalitate = Math.max(0.55, calitate - 0.15);
+    if (t - candAUrcat < RASPUNDEREA_URCARII) {
+      plafonCalitate = Math.max(0.55, calitate - 0.15);
+    }
     calitate = Math.max(0.55, calitate - (seIneaca ? 0.3 : 0.15));
-    aUrcatUltima = false;
+    candAUrcat = -1e9;
   } else if (mediaCadru < 13 && calitate < plafonCalitate) {
     calitate = Math.min(plafonCalitate, calitate + 0.15);
-    aUrcatUltima = true;
+    candAUrcat = t;
   } else {
     return;
   }

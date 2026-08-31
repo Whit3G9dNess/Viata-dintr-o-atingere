@@ -711,7 +711,7 @@ function intindereaSpreStanga() { return unitateElefant(elefant.scara) * 118; }
 /* Unde se opreste, ca sa nu intre cu capul in scris. Nu mai mult de 0.86 din
    latime: pe un ecran ingust ar fi impins pana afara din cadru. */
 function margineaDinStanga() {
-  const dreaptaScrisului = W * 0.235 + Math.min(W * 0.34, 420) / 2 + W * 0.012;
+  const dreaptaScrisului = W * 0.235 + Math.min(W * 0.34, ecran(420)) / 2 + W * 0.012;
   return Math.min(W * 0.86, dreaptaScrisului + intindereaSpreStanga());
 }
 
@@ -857,3 +857,32 @@ function actualizeazaElefantul(acum) {
      nicio stare noua, adaugata mai tarziu si uitand de scris. */
   elefant.x = Math.max(margineaDinStanga(), elefant.x);
 }
+
+/* Toată lumea scenei a doua e scrisă în pixeli de pânză: unde e mingea, cât e
+   de mare, unde calcă elefantul, unde au căzut petele, unde plutesc norii.
+   Grădina face excepție — plantele își țin locul în fracțiuni de ecran, așa că
+   ele se descurcă singure la orice mărime. Restul le mutăm noi.
+
+   Fără asta, o singură treaptă de calitate lăsa mingea sub linia pământului și
+   petele plutind în cer. */
+laRedimensionare.push(function (kx, ky) {
+  const k = Math.min(kx, ky);
+
+  minge.x *= kx; minge.y *= ky; minge.vy *= ky; minge.sol *= ky;
+  minge.raza *= k; minge.razaStart *= k; minge.razaTinta *= k;
+
+  elefant.x *= kx; elefant.tintaX *= kx;
+  elefant.prindeDe.x *= kx; elefant.prindeDe.y *= ky;
+  elefant.razaPrinsa *= k;
+
+  for (const b of baloaneCuloare) {
+    b.x *= kx; b.y *= ky; b.raza *= k;
+    if (b.tintaX !== undefined) b.tintaX *= kx;
+    if (b.tintaY !== undefined) b.tintaY *= ky;
+  }
+  for (const n of nori) { n.x *= kx; n.y *= ky; n.latime *= k; }
+  for (const pata of pete) {
+    pata.x *= kx; pata.y *= ky; pata.marime *= k;
+    for (const s of pata.stropi) { s.dx *= kx; s.dy *= ky; s.r *= k; }
+  }
+});

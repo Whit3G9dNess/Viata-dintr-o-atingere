@@ -1774,7 +1774,7 @@ function deseneazaScena5(t, acum) {
       ? 'Fă 10 pași în spate.'
       : (ramase > 0 ? 'Încă ' + ramase + (ramase === 1 ? ' pas.' : ' pași.') : '');
     if (vorba) {
-      ctx.font = 'bold 22px Georgia';
+      ctx.font = scrisGeorgia(22, 'bold');
       const latV = ctx.measureText(vorba).width;
       ctx.save();
       ctx.globalAlpha = 0.85;
@@ -1789,7 +1789,7 @@ function deseneazaScena5(t, acum) {
       const cy = incape ? subRama : Math.min(H - 34, susPantofi + Math.min(W, H) * 0.06);
       dreptunghi(cx - latV / 2 - 20, cy - 12, latV + 40, 42, 13);
       ctx.restore();
-      textIncadrat(vorba, cx, cy, W * 0.6, 26, 'bold 22px Georgia', '#3a3327');
+      textIncadrat(vorba, cx, cy, W * 0.6, ecran(26), scrisGeorgia(22, 'bold'), '#3a3327');
     }
   }
 
@@ -1797,17 +1797,17 @@ function deseneazaScena5(t, acum) {
      auzea, dar suna a robot, nu a om care striga peste camp. Mai bine citit. */
   if (s5.faza === 'viu') {
     const vorba = 'De acolo, de departe, ne vezi mai bine? Hai cu noi!';
-    ctx.font = 'bold 22px Georgia';
+    ctx.font = scrisGeorgia(22, 'bold');
     const latV = ctx.measureText(vorba).width;
     ctx.save();
     ctx.globalAlpha = 0.9;
     ctx.fillStyle = CREM_HARTIE;
     dreptunghi(W * 0.5 - latV / 2 - 22, H * 0.84 - 12, latV + 44, 44, 14);
     ctx.restore();
-    textIncadrat(vorba, W * 0.5, H * 0.84, W * 0.7, 26, 'bold 22px Georgia', '#3a3327');
+    textIncadrat(vorba, W * 0.5, H * 0.84, W * 0.7, ecran(26), scrisGeorgia(22, 'bold'), '#3a3327');
   }
   if (s5.faza === 'casa' && s5.usi > 0.5) {
     textIncadrat('Hai înăuntru.', W * 0.5, H * 0.86, W * 0.5, 26,
-                 'bold 21px Georgia', '#4a4132');
+                 scrisGeorgia(21, 'bold'), '#4a4132');
   }
 }

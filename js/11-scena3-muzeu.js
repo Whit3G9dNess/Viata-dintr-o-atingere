@@ -74,13 +74,6 @@ function faza3(nume) { s3.faza = nume; s3.t0 = performance.now(); }
 function actiune3(acum) { s3.ultimaActiune = acum; s3.nivelInactiv = 0; }
 
 // ---- text & bilete ----
-/* Aceleași litere, măsurate în pixeli de-ai ecranului, nu de-ai pânzei. Un
-   „20px" scris de-a dreptul crește pe ecran atunci când pânza se micșorează —
-   textul ajunge cu un cap mai mare decât îl voiam. */
-function scrisGeorgia(px, stil) {
-  return (stil ? stil + ' ' : '') + Math.max(9, Math.round(ecran(px))) + 'px Georgia';
-}
-
 function textIncadrat(text, x, y, latMax, hLinie, font, culoare, aliniere = 'center') {
   ctx.font = font; ctx.fillStyle = culoare; ctx.textAlign = aliniere; ctx.textBaseline = 'top';
   const cuv = text.split(' '); let linie = '', yy = y;

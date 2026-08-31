@@ -32,7 +32,7 @@ const s4 = {
 function geomMiniatura() {
   // rama e mare cât să se vadă sculptura de pe ea, nu o pată pe perete
   // rama e mare cât să i se vadă sculptura, dar tot atârnată pe perete
-  const ramaW = Math.min(W * 0.32, 560), ramaH = ramaW * 0.86;
+  const ramaW = Math.min(W * 0.32, ecran(560)), ramaH = ramaW * 0.86;
   const ramaX = W * 0.5, ramaY = H * 0.44;
   return {
     ramaX, ramaY, ramaW, ramaH,
@@ -342,7 +342,7 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   for (let k = 0; k < 14 && latTitlu(marimeT) > latScris && marimeT > pw * 0.04; k++) {
     marimeT *= 0.93;
   }
-  marimeT = Math.max(8, marimeT);
+  marimeT = Math.max(ecran(8), marimeT);
   const susText = my + pw * 0.05 + marimeT * 1.9;
 
   /* Litera își caută mărimea la care textul încape în câmp. */
@@ -353,7 +353,7 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
     if (susText + cate * marimeR * 1.34 <= my + mh - pw * 0.05 || marimeR <= pw * 0.04) break;
     marimeR *= 0.93;
   }
-  marimeR = Math.max(7, marimeR);
+  marimeR = Math.max(ecran(7), marimeR);
 
   c.textAlign = 'left'; c.textBaseline = 'top';
 
@@ -1321,14 +1321,14 @@ function deseneazaPrinLupa(lx, ly, r, acum) {
 // O vorbă pusă sus, pe o plăcuță de lumină, ca să se citească pe întuneric.
 function vorbaGaleriei(text) {
   const y = H * 0.09;
-  ctx.font = 'bold 19px Georgia';
+  ctx.font = scrisGeorgia(19, 'bold');
   const lat = ctx.measureText(text).width;
   ctx.save();
   ctx.globalAlpha = 0.82;
   ctx.fillStyle = CREM_HARTIE;
   dreptunghi(W * 0.5 - lat / 2 - 18, y - 10, lat + 36, 38, 12);
   ctx.restore();
-  textIncadrat(text, W * 0.5, y, W * 0.8, 24, 'bold 19px Georgia', '#2b2113');
+  textIncadrat(text, W * 0.5, y, W * 0.8, ecran(24), scrisGeorgia(19, 'bold'), '#2b2113');
 }
 
 function deseneazaScena4(t, acum) {
@@ -1408,3 +1408,19 @@ function deseneazaScena4(t, acum) {
     vorbaGaleriei('Atinge rama.');
   }
 }
+
+/* Lupa își ține mărimea și locul de odihnă în pixeli de pânză, socotite o
+   singură dată, la intrarea în sală. Dacă pânza se schimbă după aceea, lupa
+   rămâne mare cât era și așezată lângă o consolă care s-a mutat între timp —
+   plutind în aer, sau ieșită din ecran. */
+laRedimensionare.push(function (kx, ky) {
+  if (stare !== 'galerie') return;
+  const m = geomMiniatura();
+  const cons = geomConsola(m);
+  s4.lupaR = Math.min(W, H) * 0.105;
+  const repausX = cons.x + cons.w * 0.26;
+  const repausY = cons.y - s4.lupaR * 0.88;
+  if (s4.lupaLuata) { s4.lupaX *= kx; s4.lupaY *= ky; }   // e în mână: merge după deget
+  else { s4.lupaX = repausX; s4.lupaY = repausY; }
+  s4.lupaRepausX = repausX; s4.lupaRepausY = repausY;
+});

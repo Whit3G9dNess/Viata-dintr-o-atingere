@@ -1,5 +1,9 @@
 function deseneazaInvitatia(t) {
-  const cat = (parte, min, max) => Math.round(Math.min(Math.max(W * parte, min), max));
+  /* Marginile de jos și de sus ale literei sunt și ele măsuri de ecran: pe o
+     pânză micșorată de regulatorul de calitate, un „26" scris de-a dreptul e
+     mai mare decât pare, fiindcă pânza se întinde pe urmă peste tot ecranul. */
+  const cat = (parte, min, max) =>
+    Math.round(Math.min(Math.max(W * parte, ecran(min)), ecran(max)));
 
   // pagina întâi: titlul singur
   const tp = ceasulInvitatiei(t);
