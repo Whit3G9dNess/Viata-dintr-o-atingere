@@ -74,6 +74,13 @@ function faza3(nume) { s3.faza = nume; s3.t0 = performance.now(); }
 function actiune3(acum) { s3.ultimaActiune = acum; s3.nivelInactiv = 0; }
 
 // ---- text & bilete ----
+/* Aceleași litere, măsurate în pixeli de-ai ecranului, nu de-ai pânzei. Un
+   „20px" scris de-a dreptul crește pe ecran atunci când pânza se micșorează —
+   textul ajunge cu un cap mai mare decât îl voiam. */
+function scrisGeorgia(px, stil) {
+  return (stil ? stil + ' ' : '') + Math.max(9, Math.round(ecran(px))) + 'px Georgia';
+}
+
 function textIncadrat(text, x, y, latMax, hLinie, font, culoare, aliniere = 'center') {
   ctx.font = font; ctx.fillStyle = culoare; ctx.textAlign = aliniere; ctx.textBaseline = 'top';
   const cuv = text.split(' '); let linie = '', yy = y;
@@ -89,7 +96,7 @@ const DURATA_BILET = 5200;    // cât stă un bilet pe ecran
 const STINGERE_BILET = 700;   // și cât durează până se topește de tot
 
 function aratBilet(text, w = 250, h = 120) {
-  w = Math.min(w, W * 0.42);
+  w = Math.min(ecran(w), W * 0.42); h = ecran(h);
   s3.laturaBilet = -s3.laturaBilet;
   s3.bilet = {
     text, w, h, latura: s3.laturaBilet,
@@ -176,7 +183,7 @@ function deseneazaBilet() {
   ctx.strokeStyle = ALAMA; ctx.lineWidth = 1;
   traseuFisa(b.w - 19, b.h - 19); ctx.stroke();
   ornamentFisa(b.w, b.h);
-  textIncadrat(b.text, 0, -b.h / 2 + 22, b.w - 48, 21, '16px Georgia', '#2b2b2b');
+  textIncadrat(b.text, 0, -b.h / 2 + ecran(22), b.w - ecran(48), ecran(21), scrisGeorgia(16), '#2b2b2b');
   ctx.restore();
 }
 
@@ -555,7 +562,7 @@ function varfulTrompeiMuzeu() {
    custodele ți-o întinde cu trompa — cu chenar, sigiliu și tot dichisul. */
 function daDiploma() {
   const g = geomMuzeu();
-  const w = Math.min(W * 0.42, 470);
+  const w = Math.min(W * 0.42, ecran(470));
   s3.diploma = {
     w, h: w * 0.66, p: 0, nascut: performance.now(),
     x: Math.max(w * 0.55, g.cx - g.corpW * 0.42 - w * 0.28),
@@ -648,7 +655,7 @@ function deseneazaManual(d) {
   /* Cartea se oprește sub bărbia lui: dacă ar sta în mijlocul ecranului i-ar
      acoperi fața, iar el tocmai ți-o arată. Și se trage puțin la stânga, ca să
      nu ascundă cercelul din urechea dreaptă. */
-  const wMare = Math.min(W * 0.42, 470);
+  const wMare = Math.min(W * 0.42, ecran(470));
   const w = intre(Math.min(W, H) * 0.11, wMare, p);
   const h = w * 0.66;
   const yMare = Math.min(H - wMare * 0.34 - 14, g.capY + g.capR + wMare * 0.34 + 6);
@@ -1344,6 +1351,7 @@ function deseneazaMuzeu(alfa = 1) {
 
 // ---- desen: plicul ----
 function deseneazaPlic(x, y, s, alfa = 1) {
+  s *= scalaPanzei;               // plicul e măsurat în pixeli de-ai ecranului
   ctx.save(); ctx.globalAlpha = alfa; ctx.translate(x, y);
   ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6;
   ctx.fillStyle = '#f0e9d8';
@@ -1556,24 +1564,24 @@ function deseneazaScena3(t, acum) {
     deseneazaPlic(s3.plicX, s3.plicY, puls);
     /* Vorba stă deasupra custodelui, nu sub plic: acolo se uită ochiul când
        intră în scenă, și de acolo n-are ce să acopere. */
-    textIncadrat('Ai primit un plic. Deschide-l.', W * 0.5, H * 0.1, W * 0.7, 26,
-                 'bold 20px Georgia', CREM_HARTIE);
+    textIncadrat('Ai primit un plic. Deschide-l.', W * 0.5, H * 0.1, W * 0.7, ecran(26),
+                 scrisGeorgia(20, 'bold'), CREM_HARTIE);
   }
   else if (s3.faza === 'scrisoare') {
     // scrisoarea oficială
-    const w = Math.min(W * 0.7, 520), h = Math.min(H * 0.5, 320), x = W * 0.5, y = H * 0.46;
+    const w = Math.min(W * 0.7, ecran(520)), h = Math.min(H * 0.5, ecran(320)), x = W * 0.5, y = H * 0.46;
     ctx.save(); ctx.translate(x, y);
     ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
     ctx.fillStyle = '#f7f2e6'; ctx.fillRect(-w / 2, -h / 2, w, h);
     ctx.shadowColor = 'transparent';
-    ctx.fillStyle = '#b23a48'; ctx.font = 'bold 20px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('NOTIFICARE OFICIALĂ', 0, -h / 2 + 22);
+    ctx.fillStyle = '#b23a48'; ctx.font = scrisGeorgia(20, 'bold'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('NOTIFICARE OFICIALĂ', 0, -h / 2 + ecran(22));
     textIncadrat('Stimate jucător, prin prezenta vă notificăm că este de datoria dumneavoastră legală să trageți custodele de cercel.',
-      0, -h / 2 + 66, w - 60, 28, '19px Georgia', '#2b2b2b');
-    ctx.textAlign = 'right'; ctx.fillStyle = '#555'; ctx.font = 'italic 15px Georgia';
-    ctx.fillText('— Direcțiunea Muzeului', w / 2 - 30, h / 2 - 40);
+      0, -h / 2 + ecran(66), w - ecran(60), ecran(28), scrisGeorgia(19), '#2b2b2b');
+    ctx.textAlign = 'right'; ctx.fillStyle = '#555'; ctx.font = scrisGeorgia(15, 'italic');
+    ctx.fillText('— Direcțiunea Muzeului', w / 2 - ecran(30), h / 2 - ecran(40));
     ctx.restore();
-    textIncadrat('(atinge scrisoarea)', W * 0.5, y + h / 2 + 16, W * 0.5, 20, '15px Georgia', '#666');
+    textIncadrat('(atinge scrisoarea)', W * 0.5, y + h / 2 + ecran(16), W * 0.5, ecran(20), scrisGeorgia(15), '#666');
   }
   else if (s3.faza === 'manual') {
     deseneazaManual(s3.manualDeschidere);
@@ -1587,26 +1595,26 @@ function deseneazaScena3(t, acum) {
          plăcuță de lumină, care costă o umplere. */
       const vorba = 'Trage-l de cercel.';
       const tx = W * 0.88, ty = H * 0.3;
-      ctx.font = 'bold 19px Georgia';
+      ctx.font = scrisGeorgia(19, 'bold');
       const latVorba = ctx.measureText(vorba).width;
       ctx.save();
       ctx.globalAlpha = 0.7;
       ctx.fillStyle = CREM_HARTIE;
-      dreptunghi(tx - latVorba / 2 - 15, ty - 9, latVorba + 30, 36, 11);
+      dreptunghi(tx - latVorba / 2 - ecran(15), ty - ecran(9), latVorba + ecran(30), ecran(36), ecran(11));
       ctx.restore();
-      textIncadrat(vorba, tx, ty, W * 0.24, 22, 'bold 19px Georgia', '#22301c');
+      textIncadrat(vorba, tx, ty, W * 0.24, ecran(22), scrisGeorgia(19, 'bold'), '#22301c');
     }
     if (s3.faza === 'nuMaApasa' && s3.butonFuge) {
-      textIncadrat('Prinde-l și apasă-l!', W * 0.5, geomMuzeu().top - 10, W * 0.5, 20, 'bold 18px Georgia', '#b23a48');
+      textIncadrat('Prinde-l și apasă-l!', W * 0.5, geomMuzeu().top - ecran(10), W * 0.5, ecran(20), scrisGeorgia(18, 'bold'), '#b23a48');
     }
   }
   else if (s3.faza === 'aburi') {
     const p = Math.min((acum - s3.t0) / 2500, 1);
     ctx.fillStyle = `rgba(255,255,255,${p})`; ctx.fillRect(0, 0, W, H);
     if (p > 0.7) {
-      ctx.fillStyle = '#555'; ctx.font = 'bold 26px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      textIncadrat('Ai fost înghițit de viu de propria curiozitate.', W * 0.5, H * 0.45, W * 0.7, 34, 'bold 26px Georgia', '#555');
-      textIncadrat('(atinge pentru a relua)', W * 0.5, H * 0.6, W * 0.5, 22, '16px Georgia', '#999');
+      ctx.fillStyle = '#555'; ctx.font = scrisGeorgia(26, 'bold'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      textIncadrat('Ai fost înghițit de viu de propria curiozitate.', W * 0.5, H * 0.45, W * 0.7, ecran(34), scrisGeorgia(26, 'bold'), '#555');
+      textIncadrat('(atinge pentru a relua)', W * 0.5, H * 0.6, W * 0.5, ecran(22), scrisGeorgia(16), '#999');
     }
     return;
   }
@@ -1626,7 +1634,7 @@ function deseneazaScena3(t, acum) {
     textIncadrat(s3.incercari > 0
       ? 'Ai încercat până s-a făcut floare. Ai câștigat răbdarea, care e mai rară.'
       : 'Felicitări, ai spart bucla prin ignoranță. Ai câștigat iluminarea spirituală.',
-      W * 0.5, H * 0.2, W * 0.7, 30, 'bold 22px Georgia', '#456');
+      W * 0.5, H * 0.2, W * 0.7, ecran(30), scrisGeorgia(22, 'bold'), '#456');
     return;
   }
   /* Faza 'usaDeschisa' nu mai desenează nimic aici: haina se desface singură,
@@ -1692,3 +1700,42 @@ function click3(acum) {
   }
   if (s3.faza === 'aburi') { intrareScena3(acum); return; }   // relansează scena
 }
+
+
+/* Când pânza își schimbă mărimea — fie că tragi de fereastră, fie că a coborât
+   o treaptă de calitate — socotelile scenei rămân scrise în măsura veche.
+   Cercelul e cazul cel mai vizibil: baza lui e ținută minte în pixeli, iar
+   într-o pânză micșorată acei pixeli cad undeva în dreapta, dincolo de ureche.
+   Lănțișorul, care se trage de la ureche până la el, se face atunci lung cât
+   toată grădina — iar cercelul, cu raza lui de dinainte, se face mare cât o
+   roșie. Aici punem totul înapoi la locul lui, în noua măsură. */
+laRedimensionare.push(function (kx, ky) {
+  if (stare !== 'muzeu') return;
+  const g = geomMuzeu();
+  const bazaNoua = s3.cercelInPalma
+    ? { x: g.cx - g.capR * 1.05, y: g.capY + g.capR * 2.05 }
+    : { x: g.cx + g.urecheX + g.urecheRX * 0.15, y: g.lobUreche + g.capR * 0.3 };
+
+  if (s3.butonFuge) {
+    // scăpat din ureche, umblă de capul lui: îl mutăm proporțional
+    s3.butonX *= kx; s3.butonY *= ky;
+  } else {
+    // atârnă în lănțișor: păstrăm cât e tras față de bază
+    const dx = (s3.butonX - s3.butonBaza.x) * kx;
+    const dy = (s3.butonY - s3.butonBaza.y) * ky;
+    s3.butonX = bazaNoua.x + dx; s3.butonY = bazaNoua.y + dy;
+  }
+  s3.butonBaza = bazaNoua;
+  s3.butonR = g.capR * (s3.cercelInPalma ? 0.3 : 0.17);
+
+  s3.plicX *= kx; s3.plicY *= ky;
+  if (s3.bilet) {
+    const b = s3.bilet;
+    b.x *= kx; b.xRost *= kx; b.y *= ky; b.rest *= ky;
+    b.w *= kx; b.h *= ky;
+  }
+  if (s3.diploma) {
+    const d = s3.diploma;
+    d.x *= kx; d.y *= ky; d.w *= kx; d.h *= kx;
+  }
+});
