@@ -114,20 +114,29 @@ function deseneazaFundalImpartit(progres) {
       });
     }
   }
+  /* Norii care s-au hotărât să plece se topesc încet și pe urmă ies din listă.
+     Se umblă de la coadă spre cap, ca ștergerea să nu sară peste vecin. */
+  for (let k = nori.length - 1; k >= 0; k--) {
+    if (nori[k].seStinge === undefined) continue;
+    nori[k].seStinge -= 0.006;
+    if (nori[k].seStinge <= 0) nori.splice(k, 1);
+  }
+
   for (const nor of nori) {
     nor.x += nor.viteza;
     if (nor.x - nor.latime * 1.6 > W) nor.x = -nor.latime * 1.6;
     const g = marime * 0.02;
+    const catSeVede = nor.seStinge === undefined ? 1 : Math.max(0, nor.seStinge);
     const forma = () => {
       dreptunghi(nor.x, nor.y, nor.latime, g * 1.1, g * 0.55);
       dreptunghi(nor.x + nor.latime * 0.18, nor.y - g * 0.75, nor.latime * 0.55, g, g * 0.5);
       dreptunghi(nor.x + nor.latime * 0.42, nor.y + g * 0.55, nor.latime * 0.5, g * 0.9, g * 0.45);
     };
-    ctx.fillStyle = `rgba(206, 210, 217, ${0.75 * progres})`;
+    ctx.fillStyle = `rgba(206, 210, 217, ${0.75 * progres * catSeVede})`;
     forma();
     if (nor.tenta) {                 // ce a rămas în nor din culorile aspirate
       ctx.save();
-      ctx.globalAlpha = nor.tenta * progres;
+      ctx.globalAlpha = nor.tenta * progres * catSeVede;
       ctx.fillStyle = nor.culoare;
       forma();
       ctx.restore();
@@ -628,7 +637,7 @@ function punePata(c, pata) {
    Deci: cele așezate se pictează o dată pe o pânză ascunsă și pe urmă se copiază
    dintr-o mișcare; cele în curs de aspirare se desenează în continuare de mână.
    Ștampila se face din nou numai când se schimbă cine e așezat și cine nu. */
-const stampaPetelor = { panza: null, cheie: '' };
+const stampaPetelor = { panza: null, cheie: '', cutie: null };
 
 function deseneazaPetele() {
   const asezate = [];
@@ -647,8 +656,29 @@ function deseneazaPetele() {
     c.clearRect(0, 0, W, H);
     for (const pata of asezate) punePata(c, pata);
     stampaPetelor.cheie = cheie;
+    /* Numai dreptunghiul în care chiar au căzut pete. Petele adunate ocupă câteva
+       zeci de mii de pixeli; pânza toată are aproape un milion. Copiată întreagă,
+       ștampila ar costa de douăzeci de ori cât desenul pe care îl înlocuiește —
+       adică fix pe dos față de ce voiam. */
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const pata of asezate) {
+      const r = pata.marime * 2.6;
+      if (pata.x - r < x0) x0 = pata.x - r;
+      if (pata.x + r > x1) x1 = pata.x + r;
+      if (pata.y - r < y0) y0 = pata.y - r;
+      if (pata.y + r > y1) y1 = pata.y + r;
+    }
+    stampaPetelor.cutie = asezate.length ? {
+      x: Math.max(0, Math.floor(x0)), y: Math.max(0, Math.floor(y0)),
+      lat: Math.min(W, Math.ceil(x1)) - Math.max(0, Math.floor(x0)),
+      inalt: Math.min(H, Math.ceil(y1)) - Math.max(0, Math.floor(y0))
+    } : null;
   }
-  if (asezate.length) ctx.drawImage(stampaPetelor.panza, 0, 0);
+  const cutie = stampaPetelor.cutie;
+  if (asezate.length && cutie && cutie.lat > 0 && cutie.inalt > 0) {
+    ctx.drawImage(stampaPetelor.panza, cutie.x, cutie.y, cutie.lat, cutie.inalt,
+                  cutie.x, cutie.y, cutie.lat, cutie.inalt);
+  }
 
   // cele care zboară spre trompă se desenează de mână, fiindcă se schimbă
   for (const pata of pete) {

@@ -87,8 +87,21 @@ function elibereazaCuloare(culoare, x, y, soarta) {
   baloaneCuloare.push(b);
 }
 
-/* Balonul atins se desface în nor, iar norul rămâne vopsit cu culoarea lui.
-   Asta se cheamă și când un balon scăpat iese din ecran pe sus. */
+/* Câți nori încap pe cer.
+
+   Nu era nicio limită: fiecare balon spart lăsa un nor, norii nu plecau
+   niciodată, iar după un sfert de oră de joacă cerul avea douăzeci și patru de
+   nori în loc de trei. Fiecare se desenează de două ori — o dată cenușiu, o dată
+   cu culoarea lui — din câte trei dreptunghiuri rotunjite, așa că socoteala
+   creștea odată cu ei. De-aici venea partea cea mai urâtă a poticnirii: **jocul
+   se îngreuna cu cât te jucai mai mult**, ceea ce e exact felul de defect pe care
+   nimeni nu-l bănuiește, fiindcă la început merge bine.
+
+   Zece e destul cât cerul să pară plin. Când vine al unsprezecelea, cel mai vechi
+   începe să se stingă și pleacă pe nesimțite — nu dispare dintr-o dată, fiindcă
+   un nor care se șterge sub ochii tăi se vede mai tare decât unul în plus. */
+const NORI_PE_CER = 10;
+
 function faNor(b) {
   nori.push({
     x: b.x,
@@ -98,6 +111,10 @@ function faNor(b) {
     culoare: b.culoare,
     tenta: 0.26 + Math.random() * 0.22
   });
+  // cei mai vechi de peste cap încep să se stingă
+  for (let k = 0; k < nori.length - NORI_PE_CER; k++) {
+    if (nori[k].seStinge === undefined) nori[k].seStinge = 1;
+  }
 }
 
 function actualizeazaBaloaneleDeCuloare() {
@@ -354,8 +371,34 @@ function bandaDeGradina(c, sol, g, alfa, minAdancime, maxAdancime, acum) {
 
    Ștampila se repictează numai când grădina chiar s-a schimbat: cât timp o plantă
    crește, la fiecare zecime de secundă; după ce toate s-au făcut mari, niciodată. */
-const stampaGradinii = { panza: null, cheie: '', pana: 0 };
+const stampaGradinii = { panza: null, cheie: '', pana: 0, cutie: null };
 const PAUZA_INTRE_STAMPE = 110;    // ms, cât se lasă între două repictări
+
+/* Cât loc ține pe ecran o bandă de plante.
+
+   Ștampila e cât toată pânza, ca socoteala coordonatelor să rămână simplă — dar
+   copiată toată, s-ar amesteca un ecran întreg de pixeli, chiar dacă plantele
+   stau într-o dungă de la mijloc în jos. Ori tocmai asta voiam să nu se mai
+   întâmple. Așa că ținem minte în ce dreptunghi au căzut și copiem numai atât. */
+function cutiaBenzii(sol, minAdancime, maxAdancime) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of gradina) {
+    if (p.adancime < minAdancime || p.adancime >= maxAdancime) continue;
+    if (p.crestere <= 0.001) continue;
+    const h = H * p.inaltime * (0.4 + 0.6 * p.adancime) * p.crestere;
+    const x = p.fx * W, y = intre(sol, H, p.adancime);
+    if (x - h * 0.9 < x0) x0 = x - h * 0.9;
+    if (x + h * 0.9 > x1) x1 = x + h * 0.9;
+    if (y - h * 1.1 < y0) y0 = y - h * 1.1;
+    if (y + h * 0.15 > y1) y1 = y + h * 0.15;
+  }
+  if (x0 === Infinity) return null;
+  return {
+    x: Math.max(0, Math.floor(x0)), y: Math.max(0, Math.floor(y0)),
+    lat: Math.min(W, Math.ceil(x1)) - Math.max(0, Math.floor(x0)),
+    inalt: Math.min(H, Math.ceil(y1)) - Math.max(0, Math.floor(y0))
+  };
+}
 
 function deseneazaGradinaStampilata(alfa, minAdancime, maxAdancime) {
   const acum = performance.now();
@@ -371,6 +414,7 @@ function deseneazaGradinaStampilata(alfa, minAdancime, maxAdancime) {
     bandaDeGradina(c, nivelulSolului(), stare === 'muzeu' ? geomMuzeu() : null,
                    1, minAdancime, maxAdancime, null);
     stampaGradinii.cheie = cheie;
+    stampaGradinii.cutie = cutiaBenzii(nivelulSolului(), minAdancime, maxAdancime);
     stampaGradinii.pana = acum + PAUZA_INTRE_STAMPE;
     /* Steagul se lasă jos numai când toate plantele s-au făcut mari. Lăsat jos
        aici, o plantă care abia răsare ar rămâne pe veci pe jumătate crescută. */
@@ -378,10 +422,12 @@ function deseneazaGradinaStampilata(alfa, minAdancime, maxAdancime) {
     for (const q of gradina) if (q.crestere < 1) { mai = true; break; }
     if (!mai) gradinaSchimbata = false;
   }
-  if (!stampaGradinii.panza) return;
+  const cutie = stampaGradinii.cutie;
+  if (!stampaGradinii.panza || !cutie || cutie.lat <= 0 || cutie.inalt <= 0) return;
   ctx.save();
   ctx.globalAlpha = alfa;
-  ctx.drawImage(stampaGradinii.panza, 0, 0);
+  ctx.drawImage(stampaGradinii.panza, cutie.x, cutie.y, cutie.lat, cutie.inalt,
+                cutie.x, cutie.y, cutie.lat, cutie.inalt);
   ctx.restore();
 }
 
