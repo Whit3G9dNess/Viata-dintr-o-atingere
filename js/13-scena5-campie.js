@@ -1282,23 +1282,60 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului,
   }
 
   if (!femeie) {
-    // pieptarul negru, cu găitan auriu pe margine
     c.fillStyle = PORT_ROMANESC.negru;
-    for (const lat of [-1, 1]) {
+    if (dinSpate) {
+      /* Din spate, pieptarul e **o singură foaie neagră**, nu două. Pe piept se
+         încheie și lasă cămașa albă la vedere pe mijloc; pe spate n-are nicio
+         deschizătură — de-aia, de la spate, un bărbat în port se vede negru de
+         la umeri până la brâu.
+
+         Cât timp desenam aceleași două canaturi și când se întorcea, îi rămânea
+         o dungă albă pe șira spinării: cămașa se vedea printr-o despicătură pe
+         care haina n-o are. Un amănunt mic, dar el e chiar semnul după care se
+         recunoaște un pieptar de un ilic descheiat. */
       c.beginPath();
-      c.moveTo(lat * s * 0.19, -s * 0.85);
-      c.quadraticCurveTo(lat * s * 0.235, -s * 0.62, lat * s * 0.19, -s * 0.44);
-      c.lineTo(lat * s * 0.07, -s * 0.44);
-      c.lineTo(lat * s * 0.07, -s * 0.81);
+      c.moveTo(-s * 0.19, -s * 0.85);
+      c.quadraticCurveTo(-s * 0.235, -s * 0.62, -s * 0.19, -s * 0.44);
+      c.lineTo(s * 0.19, -s * 0.44);
+      c.quadraticCurveTo(s * 0.235, -s * 0.62, s * 0.19, -s * 0.85);
+      // răscroiala gâtului, tăiată în muchia de sus
+      c.lineTo(s * 0.08, -s * 0.85);
+      c.quadraticCurveTo(0, -s * 0.80, -s * 0.08, -s * 0.85);
       c.closePath();
       c.fill();
-    }
-    c.strokeStyle = PORT_ROMANESC.aur;
-    c.lineWidth = Math.max(0.6, s * 0.014);
-    for (const lat of [-1, 1]) {
+      // găitanul auriu ocolește pe margine, nu pe mijloc: acolo nu e nicio cusătură
+      c.strokeStyle = PORT_ROMANESC.aur;
+      c.lineWidth = Math.max(0.6, s * 0.012);
       c.beginPath();
-      c.moveTo(lat * s * 0.075, -s * 0.81); c.lineTo(lat * s * 0.075, -s * 0.44);
+      c.moveTo(-s * 0.175, -s * 0.83);
+      c.quadraticCurveTo(-s * 0.215, -s * 0.62, -s * 0.175, -s * 0.455);
+      c.lineTo(s * 0.175, -s * 0.455);
+      c.quadraticCurveTo(s * 0.215, -s * 0.62, s * 0.175, -s * 0.83);
       c.stroke();
+      // cusătura de pe șira spinării, singurul semn de pe spate
+      c.globalAlpha = 0.45;
+      c.beginPath();
+      c.moveTo(0, -s * 0.79); c.lineTo(0, -s * 0.46);
+      c.stroke();
+      c.globalAlpha = 1;
+    } else {
+      // din față: două canaturi, cu găitan auriu pe marginea deschizăturii
+      for (const lat of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(lat * s * 0.19, -s * 0.85);
+        c.quadraticCurveTo(lat * s * 0.235, -s * 0.62, lat * s * 0.19, -s * 0.44);
+        c.lineTo(lat * s * 0.07, -s * 0.44);
+        c.lineTo(lat * s * 0.07, -s * 0.81);
+        c.closePath();
+        c.fill();
+      }
+      c.strokeStyle = PORT_ROMANESC.aur;
+      c.lineWidth = Math.max(0.6, s * 0.014);
+      for (const lat of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(lat * s * 0.075, -s * 0.81); c.lineTo(lat * s * 0.075, -s * 0.44);
+        c.stroke();
+      }
     }
   }
 
@@ -1581,6 +1618,34 @@ function intraInCampie(acum) {
   if (audio) sunetIntrareGalerie();
 }
 
+/* Unde stau taranii **pe ecran**, nu in panza. Ei se deseneaza in coordonatele
+   tabloului, iar tabloul se muta si se micsoreaza cu fiecare pas inapoi: ca sa
+   stii daca degetul a cazut pe unul din ei, trebuie facuta socoteala invers.
+
+   Locul lor se ia din aceleasi cifre din care se deseneaza (`TARANI`,
+   `marimeTaran`), nu scris a doua oara de mana: doua socoteli pentru acelasi
+   lucru se despart la prima schimbare, si atunci apesi pe om si nu se intampla
+   nimic. */
+function peTarani(px, py) {
+  const g = geomTabloului();
+  if (!g) return false;
+  for (const t of TARANI) {
+    const x = g.x + t.x * g.lat;
+    const y = g.y + t.y * g.inalt;
+    const inaltOm = marimeTaran(t, s5.plecare) * g.inalt;
+    // o cutie in jurul lui, ceva mai larga decat trupul: un om nu e o tinta
+    if (Math.abs(px - x) < inaltOm * 0.30 && py < y + inaltOm * 0.12 && py > y - inaltOm * 1.15) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/* Unde a ajuns lucrarea pe ecran la cadrul asta. Se pune deoparte in timp ce se
+   deseneaza, fiindca marimea ei se socoteste acolo din claritate si din pasi. */
+const tablouPeEcran = { x: 0, y: 0, lat: 0, inalt: 0, gata: false };
+function geomTabloului() { return tablouPeEcran.gata ? tablouPeEcran : null; }
+
 function click5(acum) {
   /* Cand usile s-au deschis, orice atingere pe tablou te duce inauntru. Pe tot
      tabloul, nu numai pe usa: usa e mica in panza, iar cine nu nimereste de doua
@@ -1588,6 +1653,20 @@ function click5(acum) {
   if (s5.faza === 'casa' && s5.usi > 0.75) {
     const T = pregatesteTablou();
     if (typeof intraInFoc === 'function') intraInFoc(acum);
+    return;
+  }
+  /* Atinsi in faza 'viu', taranii pleaca spre casa. Inainte plecau singuri, dupa
+     cinci secunde si ceva de asteptare: te chemau cu vorba lor scrisa, tu dadeai
+     clic pe ei, si nu se intampla nimic — pe urma, cand tocmai renuntasesi, se
+     intorceau din senin. Un om care te cheama si nu raspunde cand te duci la el
+     nu te-a chemat, s-a intamplat sa strige.
+
+     Ceasul ramane, dar ca plasa de siguranta: daca nu-i atingi, tot pleaca — o
+     scena nu trebuie sa astepte la nesfarsit un gest pe care jucatorul poate
+     sa nu-l gaseasca. */
+  if (s5.faza === 'viu' && peTarani(cursor.x, cursor.y)) {
+    s5.faza = 'casa'; s5.t0 = acum;
+    if (audio) sunetClopotel(660);
     return;
   }
   if (s5.faza !== 'sala' || s5.pasi >= PASI_INAPOI) return;
@@ -1704,6 +1783,10 @@ function deseneazaScena5(t, acum) {
   const rx = W * 0.5 - latRama / 2, ry = cy - inaltRama / 2;
   const x = rx + gr, y = ry + gr;
   s5.latimeTablou = latRama;
+  // tinem minte unde a cazut lucrarea, ca atingerea sa stie pe ce a nimerit
+  tablouPeEcran.x = x; tablouPeEcran.y = y;
+  tablouPeEcran.lat = lat; tablouPeEcran.inalt = inalt;
+  tablouPeEcran.gata = true;
   /* Rama „a apărut" când i-au intrat în ecran laturile aurite — atunci se vede
      și sala de sub ea. Sus și jos intră ceva mai târziu, fiindcă pânza e mai
      lată decât înaltă; asta se vede ca o ramă care se închide, nu ca o
@@ -1799,12 +1882,21 @@ function deseneazaScena5(t, acum) {
     const vorba = 'De acolo, de departe, ne vezi mai bine? Hai cu noi!';
     ctx.font = scrisGeorgia(22, 'bold');
     const latV = ctx.measureText(vorba).width;
+    /* Strigătul cade **între pantofi și ramă**, nu peste pantofi. Scris la o
+       înălțime fixă, plăcuța ateriza tocmai pe ei — iar pantofii sunt singurul
+       lucru din sală care spune unde stai tu, și un rând scris peste ei îi taie
+       în două. Aceeași socoteală ca la porunca de mai sus: gura liberă dintre
+       tălpi și marginea de jos a lucrării. */
+    const susPantofi = H - Math.min(W, H) * 0.17 * 1.02;
+    const subRama = ry + inaltRama;
+    const cy = Math.max(subRama + H * 0.035,
+                        Math.min(susPantofi - H * 0.035, (subRama + susPantofi) / 2));
     ctx.save();
     ctx.globalAlpha = 0.9;
     ctx.fillStyle = CREM_HARTIE;
-    dreptunghi(W * 0.5 - latV / 2 - 22, H * 0.84 - 12, latV + 44, 44, 14);
+    dreptunghi(W * 0.5 - latV / 2 - 22, cy - 12, latV + 44, 44, 14);
     ctx.restore();
-    textIncadrat(vorba, W * 0.5, H * 0.84, W * 0.7, ecran(26), scrisGeorgia(22, 'bold'), '#3a3327');
+    textIncadrat(vorba, W * 0.5, cy, W * 0.7, ecran(26), scrisGeorgia(22, 'bold'), '#3a3327');
   }
   if (s5.faza === 'casa' && s5.usi > 0.5) {
     textIncadrat('Hai înăuntru.', W * 0.5, H * 0.86, W * 0.5, 26,

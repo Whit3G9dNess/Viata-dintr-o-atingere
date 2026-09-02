@@ -41,6 +41,11 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 21 | Măsurile pânzei: cercelul, manualul, lagul | ✅ gata |
 | 22 | Sala focului: lucrare culcată, pastă, blană, ușa arsă | ✅ gata |
 | 23 | Pata picturală adevărată, și focul care are unde să ardă | ✅ gata |
+| 24 | Scena 7 — sala de gheață și cele trei funcții ale costumului | ✅ gata |
+| 25 | Două îndreptări la țărani: pieptarul din spate, strigătul | ✅ gata |
+| 26 | Scena 8 — sala de ulei, amprenta și chepengul | ✅ gata |
+| 27 | Un pumn de îndreptări cerute la fața locului | ✅ gata |
+| 28 | Sala a opta, refăcută: desenul necolorat, trusa și cercul cromatic | ✅ gata |
 
 ---
 
@@ -764,6 +769,245 @@ jos în sus cu pragul pe loc, funinginea se strânge deasupra flăcării și ră
 fumul se face și se risipește, marginea are franjuri și pârleală, iar cenușa rece
 se vede în continuare prin ușă.
 
+## Etapa a douăzeci și patra — sala a șaptea, de gheață
+
+Prima scenă nouă de la sala focului încoace, și prima care nu se sprijină pe
+căldură, ci pe lipsa ei. Se intră prin arsura din peretele sălii a șasea — drumul
+era croit acolo cu un singur rând de schimbat, și acum s-a schimbat.
+
+Tema: senzația termică prin culoare rece, și designul vestimentar ca artă
+decorativă. Se învață cele trei funcții ale costumului — protecție, utilitate,
+estetică — nu citindu-le de pe un panou, ci pornindu-le una câte una și simțind
+ce se schimbă în cameră după fiecare.
+
+**De ce vine imediat după foc.** Acolo totul era cald, gras, pictat cu cuțitul, cu
+marginile moi de pastă. Aici totul e rece, plat, tăiat — plane suprapuse și
+vectori ascuțiți, cubism și vorticism. Ochiul care tocmai a stat cinci minute în
+galben simte albastrul ăsta ca pe o palmă. Contrastul dintre cele două săli e
+chiar lecția, și niciuna nu l-ar putea da singură.
+
+**Frigul, în deget.** Nu se poate răci mâna nimănui, așa că se răcește cursorul.
+Sala își ține degetul ei, care aleargă după cel adevărat cu o iuțeală ce ține de
+cât de cald e: 10% dacă ai atins lucrarea cu mâna goală, 45% cât ține frigul
+sălii, 1:1 după funcția de utilitate. Sub 45% nu se coboară niciodată în afara
+înghețului — un cursor care nu ascultă nu e o senzație, e o defecțiune.
+
+Din îngheț nu se iese apăsând, ci frecând: fiecare schimbare de sens a mâinii
+umple o bară, iar la capăt gheața pocnește, ecranul tremură și cioburile zboară
+spre margini. Frecarea se măsoară pe mâna adevărată, în ascultătorul de mișcare —
+pe degetul întârziat n-ar fi simțit nimeni nimic, fiindcă cine scutură mouse-ul
+scutură mai repede decât apucă degetul înghețat să-l urmeze.
+
+**Cele trei funcții.** Sub costum stau trei forme, fiecare cu silueta ei: un scut,
+o roată dințată, o prismă. Un scut se recunoaște că apără, o roată că lucrează, o
+prismă că desface lumina — și așa funcțiile se țin minte după formă, nu după
+rândul scris sub ele. Apeși pe una: în caseta din dreapta se scrie definiția, iar
+pe costum se întâmplă altceva de fiecare dată.
+
+Bariera de la protecție a cerut o îndreptare pe care ne-a arătat-o chiar textul
+funcției: fișa spune că **se extinde o barieră geometrică ce curăță promoroaca de
+pe ecran**. Prima variantă lăsa bruma să se stingă singură — adevărat, dar nu ce
+scria. Acum bariera pleacă din fular și mătură ecranul, iar bruma se desenează
+numai în afara ei: se vede cum curăță.
+
+Roata a cerut altă lămurire. Nu leagă ea liniile de forță, le **trezește**;
+legatul rămâne al jucătorului. O mașină care face fapta în locul tău nu te învață
+la ce e bună.
+
+Podoaba costumului nu e nici broderie, nici curea. O curea e un obiect de
+utilitate, broderia ar fi din altă lume — caldă, țesută. Într-o sală de gheață,
+podoaba se taie din același material ca sala: un șir de cristale cu fețe, peste
+mijlocul hainei, din care pleacă mai încolo reflexiile de pe pereți.
+
+**Costumul, cubist.** Lângă haina văzută din față stau spatele ei, profilul din
+latură și un petic de căptușeală cu buzunarul la vedere — bucăți care în realitate
+n-au cum să se vadă în același timp. Nu e un ornament: exact asta face un tipar de
+croitorie. La deschiderea portalului, obiectul face singur ce a făcut pictorul cu
+el: se desface în bucăți care se depărtează și se strâng la loc, iar prin golul de
+la mijloc se vede tunelul.
+
+**Ce s-a nimerit greu.** Trei lucruri, toate din aceeași pricină — un desen care
+arăta altceva decât spunea:
+
+1. **Promoroaca** era întinsă peste tot ecranul. Sala dispărea sub ea, iar
+   promoroaca nu mai era o ramă, era o perdea. O ramă îngheață privirea; o perdea
+   o oprește, iar un jucător care nu vede nimic nu simte frig, simte că s-a
+   stricat ceva.
+2. **Costumul** nu se citea a costum: o cutie cu o curea peste mijloc. A trebuit
+   să capete mâneci cu cotul frânt, nasturi, revere, tiv — și o etichetă dedesubt.
+   Toată scena se sprijină pe faptul că știi de la bun început că e o haină.
+3. **Fularul** înghițea atingerile vecinilor. Îi dădusem o rază de peste două ori
+   cât el, ca să fie ușor de nimerit, și atunci apăsai pe nasturi și ți se
+   aprindea protecția. Un obiect care fură atingerile din jur face din trei părți
+   una.
+
+Și un lucru pe care l-am dus prea departe înainte să-l aduc înapoi: **cristalele
+de pe podea**. Fără ele sala arăta a navă spațială — linii neon, plane albastre,
+vârtej: totul spunea „viitor", nimic nu spunea „gheață". Trei bolovani de gheață
+pe jos schimbă cuvântul dintr-o dată, fiindcă ei sunt singurul lucru din cameră pe
+care ochiul îl recunoaște fără să-l gândească.
+
+**Sunetele** sunt și ele opusul celor din sala focului, nu focul dat mai încet:
+vânt de munte înfundat (zgomot alb printr-un trece-bandă strâns, nu printr-un
+trece-jos, care ar fi ieșit tot un duduit cald), pași neregulați pe zăpadă, iar la
+activarea funcțiilor metal — două note la o cvartă mărită, intervalul cel mai
+tăios din câte sunt. La sfârșit, o turbină care urcă.
+
+Douăsprezece teste noi pentru sala asta, plus două pentru scena cu țăranii.
+
+## Etapa a douăzeci și cincea — două îndreptări la țărani
+
+1. **Pieptarul, văzut din spate.** Pe piept se încheie și lasă cămașa albă la
+   vedere pe mijloc; pe spate n-are nicio deschizătură. Cu aceleași două canaturi
+   și când se întorcea, îi rămânea o dungă albă pe șira spinării — cămașa văzută
+   printr-o despicătură pe care haina n-o are. Acum, din spate, e o singură foaie
+   neagră, cu găitanul ocolind pe margine și o cusătură pe mijloc.
+2. **Strigătul lor** cădea peste pantofi. Ei sunt singurul lucru din sală care
+   spune unde stai tu, iar un rând scris peste ei îi taie în două. Acum plăcuța
+   se așază în gura liberă dintre tălpi și marginea de jos a lucrării, ca și
+   porunca de deasupra.
+
+## Etapa a douăzeci și șasea — sala a opta, de ulei
+
+> Sala descrisă aici a fost refăcută din temelii la **etapa a douăzeci și opta**:
+> pereții de sac, manechinul și pensula luată de pe lucrare nu mai există. Ce
+> urmează e cum a fost, și de ce — tema și chepengul au rămas.
+
+Tema: amprenta fizică. O lucrare în ulei nu e o imagine, e **materie** — o pastă
+care stă pe pânză, care se usucă zile întregi, care se ia pe deget dacă o atingi.
+Sala asta e singura din toată jucăria în care jucătorul nu se uită la o lucrare,
+ci face una: pereții sunt pânza lui.
+
+**De ce vine după gheață.** Acolo totul era tăiat, rece și rigid: nu puteai
+atinge nimic fără să înghețe, iar mișcarea îți era luată. Aici e exact pe dos —
+cald, gras, moale, și ți se dă voie peste tot. Sala a șaptea îți ia libertatea ca
+s-o simți; a opta ți-o dă înapoi cu vârf și îndesat. Și mai e ceva, care leagă
+toate sălile de dinainte: ai trecut prin galerii în care nu se pune mâna, iar
+aici scrie pe perete că muzeul e pânza ta.
+
+**Cum merge.** Pensula vine de la lucrare, nu de la intrare: până nu pui degetul
+în vopsea, nu știi că e udă, iar dacă nu știi asta, „muzeul e pânza ta" e o vorbă
+goală. Pe urmă mânjești oriunde — inclusiv lucrarea, ar fi caraghios s-o apere
+tocmai omul care ți-a spus că sala e a ta. Tot ce lași rămâne, pe o pânză ascunsă
+care se copiază la fiecare cadru dintr-o singură mișcare.
+
+**Chepengul.** Ușa spre sala a noua nu e pe perete, e **în podea**. Trei lucruri
+se leagă odată cu asta: vopseaua grea curge în jos, deci un strat gros pus pe o
+podea se scurge în crăpătura de sub el (pe un perete ar fi trebuit să inventăm de
+ce cade); ce urmează e apa, iar acuarela stă dedesubt, deci se coboară în ea, nu
+se trece alături; și mânjitul unei podele e cu totul altceva decât al unui perete
+— te apleci peste ea, o calci, e a ta.
+
+Prima variantă tăia ferestre în albul de plumb pe unde treceai cu pensula. La o
+sută la sută acoperire, ușa era deja toată la vedere — și atunci ce urma n-avea ce
+să descopere. Acum e pe dos: cu cât pui mai multă pastă, cu atât se ghicește mai
+tare muchia de dedesubt, iar la capăt capacul se ridică singur, cu vopseaua ta
+lipită pe el, și restul se scurge peste buză în gaură. Ce rămâne nu e o ușă făcută
+de joc, ci una care era acolo tot timpul — asta schimbă înțelesul faptei din „ai
+desenat o ușă" în „ai găsit-o".
+
+**Ce am învățat despre impasto.** Cinci lucruri, toate greșite la prima încercare
+și îndreptate pe rând: tușele trebuie **opace** (transparente ies o glazură, adică
+tehnica opusă); raportul e de vreo doi la unu, nu de șapte (lungi și subțiri se
+ascut în sulițe); se pun pe o rețea mai deasă decât sunt ele de mari, ca să se
+calce una pe alta; culoarea se ia pe zone, nu la sorți (altfel ies boabe de porumb
+împrăștiate); și mărimea trebuie să sară mult, altfel iese un model de tapet.
+
+Peste toate, **suportul trebuie să se vadă**: pasta stă în ostroave, iar între ele
+se zărește pânza goală. Acoperit peste tot, sacul dispărea cu totul.
+
+**Țesătura de sac** e urzeală și bătătură, nu două rânduri de dungi suprapuse: în
+fiecare ochi se vede care fir trece deasupra, ca la tabla de șah. Prima variantă,
+cu dungi, dădea o grilă; a doua, cu tonuri prea depărtate, dădea o tablă de șah
+cenușie. Ce trebuie e o sclipire măruntă, nu un contrast.
+
+**Sunetele** au fost și ele refăcute: primele ieșeau păcănituri, fiindcă `zgomot`
+urcă în două sutimi și se oprește la fel de sec. Un sunet cleios cere atac lent
+(vopseaua nu pocnește, se desprinde), filtru rezonant (sună a cavitate, nu a
+sâsâit) și frecvență care cade în timp ce sună. Plus desprinderea de la sfârșit —
+clipa în care pensula se ridică.
+
+Nouă teste noi pentru sala asta.
+
+## Etapa a douăzeci și șaptea — un pumn de îndreptări cerute la fața locului
+
+Toate din aceeași sesiune, toate din uitatul pe ecran:
+
+- **Fișele de sală se paginează centrat**, în toate scenele. Întinse de la o
+  margine la alta, arătau a coloană de ziar: ultimul rând atârna în stânga, iar
+  cuvintele scurte se depărtau ca să umple lățimea. O inscripție de perete nu se
+  justifică.
+- **Vesta custodelui** se taie acum la trupul lui, iar tăietura se lărgește odată
+  cu deschiderea. Închisă, e mulată; descheiată, poalele atârnă lângă el, cu cute
+  și cu tivul legănat — înainte se retezau drept la marginea burții și arătau ca
+  două bucăți de tablă.
+- **Țăranii se întorc când dai clic pe ei.** Înainte plecau singuri, după cinci
+  secunde: te chemau cu vorba lor scrisă, tu dădeai clic, nu se întâmpla nimic,
+  iar când renunțai se întorceau din senin. Un om care te cheamă și nu răspunde
+  când te duci la el nu te-a chemat, s-a întâmplat să strige.
+- **Baloanele de culoare** din scena a doua primesc o săgeată care pulsează. Am
+  scris o vreme și ce ai de făcut, dar o jucărie care îți spune „atinge-le" te
+  tratează ca pe un om care n-a înțeles — iar scena de până acolo nu ți-a cerut
+  nici să atingi punctul, nici să prinzi balonul.
+- **Notificarea oficială** și-a pierdut semnătura, iar foaia se croiește acum
+  după scris: o hârtie cu jumătate de pagină albă arată a formular neterminat.
+- **Fișa din sala de gheață** a rămas una singură, vorticismul, centrată pe
+  peretele din stânga. Două fișe acopereau tot peretele cu text, iar definiția
+  vorticismului o cuprinde oricum pe a cubismului. Cubismul rămâne în sală acolo
+  unde îi e locul: în costumul desfăcut în față, spate și laturi.
+- **Eticheta „COSTUM VORTICIST"** a plecat. Am pus-o ca să se știe din prima ce e
+  obiectul, dar între timp costumul a căpătat mâneci, nasturi, revere și salbă de
+  cristale — se recunoaște singur.
+
+## Etapa a douăzeci și opta — sala a opta, refăcută din desenul Danielei
+
+Prima sală a opta spunea prost ce avea de spus. Pereții erau de pânză de sac,
+gata acoperiți cu impasto, iar lucrarea centrală era o mantie pictată pe un
+manechin: intrai într-o cameră deja lucrată de altcineva și, ca să-ți lași
+amprenta, trebuia să mânjești peste munca lui. „Spațiul este pânza ta" scris pe
+un perete care e deja pictat e o contradicție, nu o invitație.
+
+Sala e acum **desenul făcut de mână** pentru jocul ăsta: o sală de muzeu
+neoclasică, în linie, complet necolorată. Hârtie albă, contur de creion, vitrine
+cu vaze, un podium cu funii și, pe el, o pelerină regală. Nimic nu e colorat
+dinainte — nici măcar textura pereților, fiindcă și o textură pusă de dinainte e
+tot o hotărâre luată în locul jucătorului.
+
+**Ce are jucătorul la îndemână.** Sus în stânga, o trusă cu șase ustensile:
+pensulă rotundă, pensulă lată, pensulă de tuș, bidinea, cuțit ascuțit, cuțit lat.
+Sub ea, cercul cromatic cu douăsprezece raze, în ordinea roții — fiecare culoare
+între cele două din care se face. Alegi una și una, și pui pastă unde vrei.
+Ustensilele lasă urme cu adevărat diferite (cuțitele lespezi, pensulele fire),
+altfel alegerea lor ar fi fost un buton fără urmare. Deasupra trusei stă
+îndemnul: „Spațiul este pânza ta. Lasă-ți amprenta. Personalizează spațiul."
+Fișa de sală, cea despre pigmenți, s-a mutat sus în dreapta, pe peretele din
+fund — unde stau fișele într-un muzeu adevărat.
+
+**Ce deschide chepengul.** Poți picta oriunde, dar numai **pelerina** deschide
+drumul: acoperită de tot, sub ea se dă la o parte un chepeng, culoarea se scurge
+acolo, și pe acolo se intră mai departe. Dacă s-ar fi socotit toată sala, ai fi
+deschis chepengul mâzgălind un colț de perete — și n-ar mai fi fost o lucrare
+terminată, ci un contor umplut.
+
+**Croiala, scrisă o singură dată.** Conturul desenat și socoteala acoperirii ies
+amândouă din `PROFIL_PELERINEI` — un tabel care spune, pentru fiecare înălțime,
+cât e pelerina de lată. Scrise separat, s-ar fi despărțit la prima schimbare: ai
+fi colorat o pelerină și ai fi acoperit alta. Prima variantă desena conturul pe o
+pânză de lucru și îi citea pixelii cu `getImageData` — corect, dar cel mai scump
+lucru pe care i-l poți cere unei pânze, și cu totul de neîncercat, fiindcă pânza
+prefăcută din teste n-are pixeli de citit.
+
+**Silueta.** A luat trei încercări. Prima era cât podiumul de lată, o cupolă care
+înghițea sala. A doua se lățea uniform de sus până jos — adică un abajur. Ce
+deosebește o mantie de un clopot sunt **umerii cei mai lați de sus** și
+**strângerea de la talie**: fără oprirea aia, orice contur care crește la vale se
+citește ca un clopot, oricâte broderii i-ai pune. Cutele stofei urmează același
+tabel, ca să se strângă și ele unde se strânge materialul.
+
+Unsprezece teste noi pentru sala refăcută (232 în total). Cele vechi vorbeau
+despre un manechin, o ușă pe perete și o pensulă care se ia de pe lucrare —
+lucruri care nu mai există.
+
 ## Rămas de făcut
 
 - **Pridvorul casei** din scena a cincea e văzut din față, plat: stâlpii și
@@ -776,9 +1020,11 @@ se vede în continuare prin ușă.
 - **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
   dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
   sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
-- **Ce urmează după arsură.** Gaura arsă duce deocamdată înapoi la custode,
-  fiindcă sala a șaptea încă nu e făcută. Drumul e croit; când va fi, aici se
-  schimbă un singur rând, în `iesiDinFoc`.
+- **Ce urmează după chepeng.** Coborârea din sala a opta duce deocamdată înapoi la
+  custode, fiindcă sala a noua — a acuarelei — încă nu e făcută. Drumul e croit, ca
+  la arsură și ca la vârtej; când va fi, aici se schimbă un singur rând, în
+  `iesiDinUlei`. Diluarea de la sfârșitul sălii a opta e chiar începutul ei:
+  culorile se desfac în apă și ecranul se umple de transparențe.
 - **Șevaletul** e văzut drept din față. Piciorul din spate îl sprijină, dar sala
   e rotundă și lucrarea stă în mijlocul ei: la un moment dat ar merita văzut
   puțin din trei sferturi, cum îl vezi când intri pe ușă.

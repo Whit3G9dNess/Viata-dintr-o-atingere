@@ -357,9 +357,13 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
 
   c.textAlign = 'left'; c.textBaseline = 'top';
 
-  // titlul, cu majuscule rărite, pictat în ocru ars
+  /* Titlul, centrat în casetă. Începea de la marginea din stânga, ca într-un
+     act; dar o fișă de sală nu e un act, e o inscripție — iar o inscripție stă
+     în axul locului pe care e scrisă. Se măsoară cu tot cu răriturile dintre
+     litere, altfel nu se poate centra. */
   c.font = `bold ${marimeT}px Georgia`;
-  let tx = stx;
+  const latT = latTitlu(marimeT);
+  let tx = mx + mw * 0.5 - latT / 2;
   for (const litera of String(titlu).toUpperCase()) {
     c.fillStyle = 'rgba(140, 104, 38, 0.35)';
     c.fillText(litera, tx + marimeT * 0.05, my + pw * 0.05 + marimeT * 0.05);
@@ -375,16 +379,24 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   c.stroke();
 
   /* Textul, scris de două ori: umbra lată de pigment, apoi litera curată peste
-     ea. Un singur strat arată a text pus pe deasupra; două arată a zugrăvit. */
+     ea. Un singur strat arată a text pus pe deasupra; două arată a zugrăvit.
+
+     Rândurile stau **centrate**, nu întinse de la o margine la alta. Întinse,
+     arătau a coloană de ziar: ultimul rând rămânea scurt și atârna în stânga, iar
+     cuvintele scurte de pe rândurile pline se depărtau unele de altele ca să
+     umple lățimea. O inscripție de perete nu se justifică — se așază pe ax, și
+     atunci marginea zdrențuită de-o parte și de alta e chiar semnul că a scris-o
+     o mână, nu o mașină de cules. */
   c.font = `${marimeR}px Georgia`;
+  c.textAlign = 'center';
   const randuri = randuriIncapute(c, text, latScris);
+  const axa = mx + mw * 0.5;
   let y = susText;
   for (let k = 0; k < randuri.length; k++) {
-    const ultimul = k === randuri.length - 1;
     c.fillStyle = 'rgba(90, 74, 40, 0.28)';
-    scrieIntins(c, randuri[k], stx + marimeR * 0.06, y + marimeR * 0.06, latScris, ultimul);
+    c.fillText(randuri[k], axa + marimeR * 0.06, y + marimeR * 0.06);
     c.fillStyle = 'rgba(58, 48, 30, 0.95)';
-    scrieIntins(c, randuri[k], stx, y, latScris, ultimul);
+    c.fillText(randuri[k], axa, y);
     y += marimeR * 1.34;
   }
   c.restore();

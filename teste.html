@@ -434,6 +434,50 @@ return {
   geomSala6: typeof geomSala6 !== "undefined" ? geomSala6 : null,
   geomManusi: typeof geomManusi !== "undefined" ? geomManusi : null,
   geomArsura: typeof geomArsura !== "undefined" ? geomArsura : null,
+  s7: typeof s7 !== "undefined" ? s7 : null,
+  s8: typeof s8 !== "undefined" ? s8 : null,
+  intraInUlei: typeof intraInUlei !== "undefined" ? intraInUlei : null,
+  iesiDinUlei: typeof iesiDinUlei !== "undefined" ? iesiDinUlei : null,
+  click8: typeof click8 !== "undefined" ? click8 : null,
+  geomSala8: typeof geomSala8 !== "undefined" ? geomSala8 : null,
+  puneTusa: typeof puneTusa !== "undefined" ? puneTusa : null,
+  USTENSILE: typeof USTENSILE !== "undefined" ? USTENSILE : null,
+  CERC_CROMATIC: typeof CERC_CROMATIC !== "undefined" ? CERC_CROMATIC : null,
+  peTrusa: typeof peTrusa !== "undefined" ? peTrusa : null,
+  peCerc: typeof peCerc !== "undefined" ? peCerc : null,
+  traseulPelerinei: typeof traseulPelerinei !== "undefined" ? traseulPelerinei : null,
+  cursorulScenei8: typeof cursorulScenei8 !== "undefined" ? cursorulScenei8 : null,
+  pensuleazaScena8: typeof pensuleazaScena8 !== "undefined" ? pensuleazaScena8 : null,
+  deseneazaScena8: typeof deseneazaScena8 !== "undefined" ? deseneazaScena8 : null,
+  actualizeazaUleiul: typeof actualizeazaUleiul !== "undefined" ? actualizeazaUleiul : null,
+  stratul: typeof stratul !== "undefined" ? stratul : null,
+  TEXT_FISA_PIGMENTI: typeof TEXT_FISA_PIGMENTI !== "undefined" ? TEXT_FISA_PIGMENTI : null,
+  atelierulScena8: function () { return typeof atelierulScena8 !== "undefined" ? atelierulScena8 : null; },
+  apaScena8: function () { return typeof apaScena8 !== "undefined" ? apaScena8 : null; },
+  intraInGheata: typeof intraInGheata !== "undefined" ? intraInGheata : null,
+  iesiDinGheata: typeof iesiDinGheata !== "undefined" ? iesiDinGheata : null,
+  click7: typeof click7 !== "undefined" ? click7 : null,
+  geomSala7: typeof geomSala7 !== "undefined" ? geomSala7 : null,
+  nodulPuzzle: typeof nodulPuzzle !== "undefined" ? nodulPuzzle : null,
+  NODURI_PUZZLE: typeof NODURI_PUZZLE !== "undefined" ? NODURI_PUZZLE : null,
+  FUNCTIILE_COSTUMULUI: typeof FUNCTIILE_COSTUMULUI !== "undefined" ? FUNCTIILE_COSTUMULUI : null,
+  FILTRE_DE_STIL: typeof FILTRE_DE_STIL !== "undefined" ? FILTRE_DE_STIL : null,
+  FORME_FUNCTIILOR: typeof FORME_FUNCTIILOR !== "undefined" ? FORME_FUNCTIILOR : null,
+  parteaCostumului: typeof parteaCostumului !== "undefined" ? parteaCostumului : null,
+  mobilitateaDegetului: typeof mobilitateaDegetului !== "undefined" ? mobilitateaDegetului : null,
+  frecareaScenei7: typeof frecareaScenei7 !== "undefined" ? frecareaScenei7 : null,
+  cursorulScenei7: typeof cursorulScenei7 !== "undefined" ? cursorulScenei7 : null,
+  deseneazaScena7: typeof deseneazaScena7 !== "undefined" ? deseneazaScena7 : null,
+  actualizeazaGheata: typeof actualizeazaGheata !== "undefined" ? actualizeazaGheata : null,
+  pictezaSalaGheata: typeof pictezaSalaGheata !== "undefined" ? pictezaSalaGheata : null,
+  deseneazaPromoroaca: typeof deseneazaPromoroaca !== "undefined" ? deseneazaPromoroaca : null,
+  culorileSalii7: (function () {
+    if (typeof ALBASTRU_MAT === "undefined") return null;
+    return { ALBASTRU_MAT, VIOLET_ADANC, INDIGO_UMBRA, NEGRU_RECE,
+             ARGINT_RECE, OTEL_RECE, ALB_GHEATA, CYAN_NEON, ULTRAVIOLET };
+  })(),
+  viscolulScena7: function () { return typeof viscolulScena7 !== "undefined" ? viscolulScena7 : null; },
+  turbinaScena7: function () { return typeof turbinaScena7 !== "undefined" ? turbinaScena7 : null; },
   deseneazaArsura: typeof deseneazaArsura !== "undefined" ? deseneazaArsura : null,
   deseneazaFuninginea: typeof deseneazaFuninginea !== "undefined" ? deseneazaFuninginea : null,
   deseneazaFumulSalii: typeof deseneazaFumulSalii !== "undefined" ? deseneazaFumulSalii : null,
@@ -2278,9 +2322,37 @@ function ruleaza() {
     j.click5(j.ceas.t);
     j.avanseaza(60);
     egal(j.stare(), "foc", "ușa deschisă nu duce nicăieri");
-    // iar galeria rămâne însemnată când ieșim prin arsură
+    /* Iar arsura din sala focului duce mai departe, în sala de gheață. Drumul era
+       croit de la bun început, cu un singur rând de schimbat; aici se verifică
+       tocmai că s-a schimbat. Însemnatul galeriei s-a mutat odată cu el, la
+       capătul de-acum al drumului. */
     j.iesiDinFoc(j.ceas.t);
+    egal(j.stare(), "gheata", "arsura nu duce în sala a șaptea");
+    j.iesiDinGheata(j.ceas.t);
+    egal(j.stare(), "ulei", "vârtejul nu duce în sala a opta");
+    j.iesiDinUlei(j.ceas.t);
     adevarat(j.s3.vizitat, "galeria prin care am trecut n-a rămas însemnată");
+  });
+
+  test("din spate, pieptarul bărbatului e o singură foaie neagră", function () {
+    /* Pe piept se încheie și lasă cămașa albă la vedere pe mijloc; pe spate n-are
+       nicio deschizătură. Cu aceleași două canaturi și când se întoarce, îi
+       rămânea o dungă albă pe șira spinării — cămașa văzută printr-o despicătură
+       pe care haina n-o are. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.taranIn !== null, "lipsește țăranul");
+    const negru = j.PORT_ROMANESC.negru;
+    const numaraNegrul = function (pleaca) {
+      const d = j.doar(function () {
+        j.taranIn(j.panza.ctx, j.W(), j.H(), 0.5, 0.7, 0.3, "barbat", 0, j.ceas.t, 0, 1, pleaca);
+      });
+      return formeCu(d, negru).length;
+    };
+    const fata = numaraNegrul(0);
+    const spate = numaraNegrul(0.4);
+    adevarat(spate > 0, "din spate nu se mai vede niciun pieptar");
+    adevarat(spate < fata,
+      "din spate pieptarul e tot din două canaturi (" + spate + " forme, ca din față)");
   });
 
   test("pânza se pictează o dată și pe urmă se copiază", function () {
@@ -3350,6 +3422,502 @@ function ruleaza() {
     j.click5(j.ceas.t);
     j.avanseaza(60);
     egal(j.stare(), "foc", "usa deschisa nu duce nicaieri");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a saptea: frigul, si cele trei functii ale costumului");
+
+  function inGheata(j) {
+    j.mergiLaStarea("gheata");
+    j.intraInGheata(j.ceas.t);
+    j.s7.faza = "sala";
+    j.avanseaza(100);
+    return j.geomSala7();
+  }
+
+  // atingerea in sala a saptea trece prin degetul intarziat al scenei, nu prin cursor
+  function atingeInGheata(j, x, y) {
+    j.s7.degetX = x; j.s7.degetY = y;
+    j.click7(j.ceas.t);
+  }
+
+  // cele trei forme de sub costum: scutul, roata, prisma
+  function apasaForma(j, k) {
+    const g = j.geomSala7();
+    atingeInGheata(j, g.formaX(k), g.formaY);
+  }
+
+  // toate trei functiile, pornite pe drumul lor
+  function porneste3Functii(j) {
+    apasaForma(j, 0);                       // scutul: protectia
+    apasaForma(j, 1);                       // roata: trezeste liniile de forta
+    for (let k = 0; k < j.NODURI_PUZZLE; k++) {
+      const n = j.nodulPuzzle(k);
+      atingeInGheata(j, n.x, n.y);
+    }
+    apasaForma(j, 2);                       // prisma: estetica
+  }
+
+  test("arsura din sala focului duce in sala de gheata", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("foc");
+    j.intraInFoc(j.ceas.t);
+    j.iesiDinFoc(j.ceas.t);
+    egal(j.stare(), "gheata", "arsura nu duce in sala a saptea");
+  });
+
+  test("in sala a saptea nu intra nicio culoare calda", function () {
+    /* Oglinda regulii din sala focului, si tot rostul trecerii dintre ele: acolo
+       totul era cald, aici nimic nu are voie sa fie. Un galben strecurat din
+       neatentie ar strica exact socul termic pentru care exista scena. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.culorileSalii7 !== null, "lipsesc culorile salii a saptea");
+    for (const nume of Object.keys(j.culorileSalii7)) {
+      const h = j.culorileSalii7[nume];
+      const n = parseInt(String(h).slice(1), 16);
+      const r = (n >> 16) & 255, b = n & 255;
+      adevarat(b >= r, "culoarea " + nume + " (" + h + ") e calda: rosu " + r + ", albastru " + b);
+    }
+  });
+
+  test("frigul se simte in deget: cursorul se misca mai greu", function () {
+    /* Frigul nu se spune, se face. Cum nu putem raci mana nimanui, racim
+       cursorul — si abia atunci functia de utilitate a costumului inseamna ceva. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    adevarat(j.mobilitateaDegetului() < 1,
+      "degetul se misca la fel de usor ca afara, deci nu e frig nicaieri");
+    const inainte = j.mobilitateaDegetului();
+    j.s7.inghetat = true;
+    adevarat(j.mobilitateaDegetului() < inainte,
+      "inghetat, degetul nu se misca mai greu decat inainte");
+    j.s7.inghetat = false;
+    j.s7.utilitate = true;
+    egal(j.mobilitateaDegetului(), 1,
+      "dupa functia de utilitate degetul tot nu si-a recapatat viteza");
+  });
+
+  test("lucrarea atinsa cu mana goala te ingheata", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    atingeInGheata(j, g.vx, g.vy);
+    adevarat(j.s7.inghetat, "am atins gheata cu mana goala si nu s-a intamplat nimic");
+    // si atat timp cat esti inghetat, apasatul nu mai ajuta la nimic
+    atingeInGheata(j, g.fularX, g.fularY);
+    adevarat(!j.s7.protectie,
+      "inghetat fiind, tot am putut porni o functie: din inghet nu se iese apasand");
+  });
+
+  test("din inghet se iese frecand, nu apasand", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    atingeInGheata(j, g.vx, g.vy);
+    adevarat(j.s7.inghetat, "n-am inghetat");
+    // fiecare schimbare de sens a mainii incalzeste
+    for (let k = 0; k < 40; k++) j.frecareaScenei7(k % 2 ? 60 : -60);
+    adevarat(j.s7.caldura > 0.5, "frecarea nu incalzeste: " + j.s7.caldura);
+    j.avanseaza(40);
+    adevarat(!j.s7.inghetat, "bara s-a umplut, dar am ramas inghetat");
+    adevarat(j.s7.cioburi.length > 0, "gheata nu s-a spart in cioburi");
+  });
+
+  test("fularul e functia de protectie: se desface si ia promoroaca", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    aproape(j.s7.promoroaca, 1, 0.01, "sala nu incepe inghetata pe margini");
+    atingeInGheata(j, g.fularX, g.fularY);
+    adevarat(j.s7.protectie, "fularul nu porneste functia de protectie");
+    j.avanseaza(3000);
+    aproape(j.s7.fularDesfacut, 1, 0.01, "fularul nu s-a desfacut in camera");
+    aproape(j.s7.promoroaca, 0, 0.01, "promoroaca n-a plecat odata cu fularul");
+  });
+
+  test("liniile de forta se leaga in ordine, si greseala nu strica lantul", function () {
+    /* O linie de forta are un sens: pleaca din vartej si se duce in afara. Legata
+       de-a valma, nu mai e o linie, e un desen. Iar un puzzle care se strica de
+       la prima greseala nu se mai incearca a doua oara. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    /* Intai scutul, ca sa nu inghetam: nodurile stau pe lucrarea centrala, iar
+       lucrarea centrala atinsa cu mana goala te ia in primire. Chiar asta e
+       randuiala salii — nu te apuci de mecanica pana nu te-ai imbracat. */
+    apasaForma(j, 0);
+    /* Cat liniile dorm, nodurile nu raspund: costumul n-a dat inca drumul la
+       caldura, deci n-ai ce lega. Abia roata le trezeste. */
+    const n0 = j.nodulPuzzle(0);
+    atingeInGheata(j, n0.x, n0.y);
+    egal(j.s7.nodLegat, 0, "nodurile se leaga inainte sa fi pornit micro-caldura");
+    apasaForma(j, 1);
+    adevarat(j.s7.puzzleTreaz, "roata n-a trezit liniile de forta");
+    const n2 = j.nodulPuzzle(2);
+    atingeInGheata(j, n2.x, n2.y);
+    egal(j.s7.nodLegat, 0, "nodul din mijloc s-a legat fara cele dinaintea lui");
+    adevarat(j.s7.gresit > 0, "greseala n-a zguduit nimic");
+    for (let k = 0; k < j.NODURI_PUZZLE; k++) {
+      const n = j.nodulPuzzle(k);
+      atingeInGheata(j, n.x, n.y);
+    }
+    egal(j.s7.nodLegat, j.NODURI_PUZZLE, "lantul nu s-a inchis");
+    adevarat(j.s7.utilitate, "lantul e intreg, dar functia de utilitate nu s-a aprins");
+    egal(j.mobilitateaDegetului(), 1, "degetul nu si-a recapatat viteza");
+  });
+
+  test("prisma e functia estetica: taie lumina pe pereti", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    apasaForma(j, 2);
+    adevarat(j.s7.estetica, "prisma nu porneste functia estetica");
+    adevarat(j.s7.filtru >= 0, "nu s-a pus niciun filtru de stil");
+    const intai = j.s7.filtru;
+    apasaForma(j, 2);
+    adevarat(j.s7.filtru !== intai, "prisma nu trece la urmatoarea taietura a luminii");
+    j.avanseaza(3000);
+    adevarat(j.s7.reflexii > 0.9, "reflexiile nu se aprind pe pereti");
+  });
+
+  test("fiecare forma de sub costum face altceva, si isi scrie definitia", function () {
+    /* Nu sunt trei butoane identice care fac acelasi lucru cu alta culoare:
+       scutul apara, roata da drumul la caldura, prisma desface lumina. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    adevarat(j.FORME_FUNCTIILOR !== null, "lipsesc formele functiilor");
+    const forme = j.FORME_FUNCTIILOR.map(function (f) { return f.forma; });
+    egal(new Set(forme).size, 3, "cele trei forme nu sunt diferite: " + forme.join(", "));
+
+    apasaForma(j, 0);
+    egal(j.s7.functiaAratata, 0, "scutul nu scrie definitia protectiei");
+    adevarat(j.s7.protectie, "scutul nu porneste protectia");
+    adevarat(!j.s7.puzzleTreaz, "scutul a trezit si liniile de forta");
+
+    apasaForma(j, 1);
+    egal(j.s7.functiaAratata, 1, "roata nu scrie definitia utilitatii");
+    adevarat(j.s7.puzzleTreaz, "roata nu trezeste liniile de forta");
+    adevarat(!j.s7.utilitate, "roata leaga ea liniile: fapta nu mai e a jucatorului");
+  });
+
+  test("podoaba costumului e din cristale, si se aprinde cu estetica", function () {
+    /* O curea e un obiect de utilitate; broderia ar fi din alta lume, calda si
+       tesuta. Intr-o sala de gheata, podoaba unui costum se taie din acelasi
+       material ca sala. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    const numara = function () {
+      const d = j.doar(function () { j.deseneazaScena7(j.ceas.t, j.ceas.t); });
+      return d.filter(function (x) {
+        return typeof x.stil === "string" &&
+               String(x.stil).toLowerCase() === String(j.culorileSalii7.ALB_GHEATA).toLowerCase();
+      }).length;
+    };
+    const stins = numara();
+    apasaForma(j, 2);
+    j.avanseaza(2000);
+    adevarat(numara() > stins,
+      "cristalele nu se aprind cand porneste functia estetica");
+  });
+
+  test("bariera geometrica se intinde si curata promoroaca", function () {
+    /* Fisa functiei spune ca se extinde o bariera care curata promoroaca de pe
+       ecran. Trebuie deci sa se vada cum o curata, nu doar sa dispara bruma. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    egal(j.s7.bariera, 0, "bariera exista inainte sa fi pornit protectia");
+    apasaForma(j, 0);
+    j.avanseaza(400);
+    adevarat(j.s7.bariera > 0 && j.s7.bariera < 1,
+      "bariera nu se intinde treptat: " + j.s7.bariera);
+    adevarat(j.s7.promoroaca > 0, "promoroaca a plecat inainte sa treaca bariera");
+    j.avanseaza(3000);
+    aproape(j.s7.bariera, 1, 0.01, "bariera nu ajunge sa acopere ecranul");
+    egal(j.s7.promoroaca, 0, "bariera a trecut, dar promoroaca a ramas");
+  });
+
+  test("cele trei functii deschid portalul, si el iese din costum", function () {
+    /* Costumul e cel care se face drum, nu vartejul de pe perete. Aia ramane
+       lucrare; poanta salii e ca un obiect de imbracat s-a dovedit a fi o usa. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    porneste3Functii(j);
+    j.avanseaza(4000);
+    // cele trei functii pregatesc iesirea; scuturarea finala o deschide
+    for (let k = 0; k < 40; k++) j.frecareaScenei7(k % 2 ? 60 : -60);
+    j.avanseaza(40);
+    egal(j.s7.faza, "portal", "cele trei functii si scuturarea n-au deschis nimic");
+    adevarat(Math.abs(g.portalX - g.costumX) < g.costumLat * 0.5,
+      "portalul nu se deschide in costum");
+    // si sarind in el, iesim din sala
+    atingeInGheata(j, g.portalX, g.portalY);
+    egal(j.s7.faza, "zbor", "n-am sarit in vartej");
+    j.avanseaza(4000);
+    adevarat(j.stare() !== "gheata", "zborul nu duce nicaieri: am ramas in sala");
+  });
+
+  test("vartejul e tras magnetic spre portal, dar nu-ti ia mana", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    j.s7.faza = "portal";
+    j.s7.degetX = j.W() * 0.1; j.s7.degetY = j.H() * 0.5;
+    const inainte = j.s7.degetX;
+    j.avanseaza(1500);
+    adevarat(j.s7.degetX > inainte, "cursorul nu e tras spre portal");
+    adevarat(j.s7.degetX < g.portalX - g.costumLat * 0.3,
+      "cursorul a fost inghitit de portal: nu mai poti alege");
+  });
+
+  test("scuturarea finala deschide portalul, nu doar cele trei functii", function () {
+    /* Prima data ai frecat ca sa scapi din inghet — un gest de nevoie. Acum
+       freci ca sa spargi gheata de pe lucrare: aceeasi miscare, dar cu costumul
+       pornit. Din ea iese intai frica, pe urma puterea. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    porneste3Functii(j);
+    j.avanseaza(3000);
+    adevarat(j.s7.cereScuturare, "cu toate trei aprinse, sala nu cere scuturarea");
+    egal(j.s7.faza, "sala", "portalul s-a deschis fara scuturare");
+    for (let k = 0; k < 40; k++) j.frecareaScenei7(k % 2 ? 60 : -60);
+    j.avanseaza(40);
+    egal(j.s7.faza, "portal", "scuturarea n-a deschis portalul");
+  });
+
+  test("fiecare parte a costumului isi spune functia in panoul din dreapta", function () {
+    /* Costumul nu e un buton, e un obiect cu parti — si asa se invata: pui
+       degetul pe guler, pe piept, pe poale, si afli de fiecare data la ce e buna
+       bucata aia. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inGheata(j);
+    egal(j.s7.functiaAratata, -1, "panoul arata ceva inainte sa fi atins nimic");
+    const h = g.costumInalt, cy = g.costumSus;
+    atingeInGheata(j, g.costumX, cy + h * 0.36);
+    egal(j.s7.functiaAratata, 2, "pieptul nu spune functia estetica");
+    atingeInGheata(j, g.costumX, cy + h * 0.8);
+    egal(j.s7.functiaAratata, 1, "poalele nu spun functia de utilitate");
+    atingeInGheata(j, g.fularX, g.fularY);
+    egal(j.s7.functiaAratata, 0, "fularul nu spune functia de protectie");
+    /* Fiecare functie isi are definitia, si niciuna nu mai are subtitlu in
+       paranteza: o paranteza care repeta in trei cuvinte ce scrie dedesubt nu
+       lamureste nimic, mai pune doar un rand de citit intre tine si fapta. */
+    for (const f of j.FUNCTIILE_COSTUMULUI) {
+      adevarat(f.text && f.text.length > 60, "functia " + f.nume + " n-are definitie");
+      adevarat(f.sub === undefined, "functia " + f.nume + " tot are subtitlu: " + f.sub);
+    }
+    const protectie = j.FUNCTIILE_COSTUMULUI[0];
+    adevarat(/scut termic împotriva mediului înconjurător/.test(protectie.text),
+      "definitia protectiei nu e cea ceruta: " + protectie.text);
+  });
+
+  test("pe perete scrie ce e vorticismul, si numai atat", function () {
+    /* Au fost doua fise, una sub alta. Impreuna acopereau tot peretele din stanga
+       cu text, si sala incepea cu saptezeci de cuvinte de citit inainte sa apuci
+       sa atingi ceva — iar definitia vorticismului o cuprinde oricum pe a
+       cubismului. Cubismul ramane in sala unde ii e locul: in costumul desfacut
+       in fata, spate si laturi, care se vede fara sa scrie nimeni ce e. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    let scris = "";
+    for (const el of j.panzeAscunse) {
+      const pz = el._panza;
+      if (pz && pz.desene) scris += " " + totTextul(pz.desene);
+    }
+    adevarat(/VORTICISM/.test(scris), "lipseste fisa vorticismului");
+    adevarat(/energia mașinilor|energia masinilor/i.test(scris),
+      "definitia vorticismului e taiata");
+    adevarat(!/CUBISM/.test(scris), "fisa cubismului e tot pe perete");
+  });
+
+  test("sala de gheata se picteaza o data si pe urma se copiaza", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inGheata(j);
+    const d = j.doar(function () { j.deseneazaScena7(j.ceas.t, j.ceas.t); });
+    const imagini = d.filter(function (x) { return x.op === "imagine"; });
+    adevarat(imagini.length > 0, "sala nu se copiaza de pe o stampila");
+    adevarat(d.length < 900,
+      "un cadru din sala de gheata cere " + d.length + " operatii");
+  });
+
+  test("afara se aude viscol, nu foc", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    j.mergiLaStarea("foc");
+    j.intraInFoc(j.ceas.t);
+    j.iesiDinFoc(j.ceas.t);
+    adevarat(j.viscolulScena7() !== null, "in sala de gheata nu sufla nimic");
+    egal(j.turbinaScena7(), null, "turbina porneste inainte de vreme");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a opta: sala nedesenata, si amprenta jucatorului");
+
+  function inUlei(j) {
+    j.mergiLaStarea("ulei");
+    j.intraInUlei(j.ceas.t);
+    j.avanseaza(100);
+    return j.geomSala8();
+  }
+
+  // pune pasta peste toata pelerina, ochi cu ochi
+  function acoperaPelerinaToata(j) {
+    const g = j.geomSala8();
+    for (let i = 0; i < 40; i++) {
+      for (let k = 0; k < 40; k++) {
+        j.puneTusa(g.pelCx - g.pelLat * 1.2 + (i + 0.5) * g.pelLat * 2.4 / 40,
+                   g.pelSus + (k + 0.5) * g.pelInalt * 1.06 / 40, j.ceas.t);
+      }
+    }
+  }
+
+  test("vartejul din sala de gheata duce in sala uleiului", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("gheata");
+    j.intraInGheata(j.ceas.t);
+    j.iesiDinGheata(j.ceas.t);
+    egal(j.stare(), "ulei", "vartejul nu duce in sala a opta");
+  });
+
+  test("sala e desenata in linie si necolorata", function () {
+    /* Pana aici te-ai uitat la lucrari gata facute. Aici lucrarea **nu exista
+       inca**: exista un desen, o trusa si un cerc cromatic. Daca sala ar veni
+       colorata, n-ar mai fi nimic de facut in ea. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    const sala = j.panzeAscunse.map(function (p) { return p._panza; })
+      .filter(function (p) { return p && p.desene && p.desene.length > 100; })[0];
+    adevarat(sala, "n-am gasit stampila salii");
+    const trase = sala.desene.filter(function (d) { return d.op === "stroke"; });
+    const umplute = sala.desene.filter(function (d) { return d.op === "fill"; });
+    adevarat(trase.length > umplute.length * 3,
+      "sala nu e desenata in linie: " + trase.length + " contururi la " +
+      umplute.length + " umpluturi");
+  });
+
+  test("trusa de ustensile: fiecare lasa alta urma", function () {
+    /* Nu sunt sase butoane cu aceeasi urma in alta culoare. Daca toate ar lasa
+       aceeasi pata, alegerea uneltei ar fi un decor. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    adevarat(j.USTENSILE !== null && j.USTENSILE.length >= 4, "lipsesc ustensilele");
+    const strat = j.stratul()._panza;
+    const latimi = [];
+    for (let u = 0; u < j.USTENSILE.length; u++) {
+      j.s8.unealta = u;
+      const de = strat.desene.length;
+      j.puneTusa(j.W() * 0.5, j.H() * 0.5, j.ceas.t);
+      let x0 = Infinity, x1 = -Infinity;
+      for (let q = de; q < strat.desene.length; q++) {
+        const lim = strat.desene[q].limite;
+        if (!lim) continue;
+        x0 = Math.min(x0, lim.x0); x1 = Math.max(x1, lim.x1);
+      }
+      if (x1 > x0) latimi.push(x1 - x0);
+    }
+    egal(latimi.length, j.USTENSILE.length, "n-au lasat toate uneltele urma");
+    const mic = Math.min.apply(null, latimi), mare = Math.max.apply(null, latimi);
+    adevarat(mare > mic * 1.5,
+      "toate uneltele lasa aceeasi urma: " + Math.round(mic) + " → " + Math.round(mare));
+  });
+
+  test("unealta si culoarea se aleg cu degetul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inUlei(j);
+    // ultima unealta din trusa
+    j.cursor.x = g.trusaX + g.trusaLat * 0.94;
+    j.cursor.y = g.trusaY + g.trusaInalt * 0.5;
+    j.click8(j.ceas.t);
+    egal(j.s8.unealta, j.USTENSILE.length - 1, "unealta din capat nu se ia");
+    // o rază din cercul cromatic
+    const inainte = j.s8.culoare;
+    j.cursor.x = g.cercCx - g.cercR * 0.6;
+    j.cursor.y = g.cercCy + g.cercR * 0.4;
+    j.click8(j.ceas.t);
+    adevarat(j.s8.culoare !== inainte, "raza din cercul cromatic nu se alege");
+    // si nici unealta, nici culoarea nu lasa vopsea sub ele
+    const tuse = j.s8.tuseFacute;
+    j.cursor.x = g.cercCx; j.cursor.y = g.cercCy;
+    j.click8(j.ceas.t);
+    egal(j.s8.tuseFacute, tuse, "apasand pe paleta am si pictat sub ea");
+  });
+
+  test("cercul cromatic are douasprezece raze, in ordinea rotii", function () {
+    /* Fiecare culoare sta intre cele doua din care se face. Cine se uita la el
+       invata asta fara sa-i spuna nimeni. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    egal(j.CERC_CROMATIC.length, 12, "cercul n-are douasprezece raze");
+    const rosu = j.CERC_CROMATIC[4], galben = j.CERC_CROMATIC[0], albastru = j.CERC_CROMATIC[8];
+    const canal = function (h, i) { return parseInt(h.slice(1 + i * 2, 3 + i * 2), 16); };
+    adevarat(canal(rosu, 0) > canal(rosu, 2) + 80, "raza 4 nu e rosie: " + rosu);
+    adevarat(canal(galben, 0) > 200 && canal(galben, 1) > 180 && canal(galben, 2) < 100,
+      "raza 0 nu e galbena: " + galben);
+    adevarat(canal(albastru, 2) > canal(albastru, 0) + 80, "raza 8 nu e albastra: " + albastru);
+  });
+
+  test("oriunde dai clic ramane pasta, si ea nu se sterge", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    const inainte = j.s8.tuseFacute;
+    j.cursor.x = j.W() * 0.62; j.cursor.y = j.H() * 0.7;
+    j.click8(j.ceas.t);
+    adevarat(j.s8.tuseFacute > inainte, "clicul pe perete n-a lasat nicio urma");
+    adevarat(j.stratul() !== null, "lipseste stratul de vopsea al jucatorului");
+  });
+
+  test("acoperirea se socoteste pe pelerina, nu pe toata sala", function () {
+    /* Sala e a ta: poti manji peste tot. Dar lucrarea neterminata e pelerina, si
+       numai ea deschide trapa — altfel ai deschide-o mazgalind un colt de
+       perete. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inUlei(j);
+    for (let k = 0; k < 30; k++) {
+      j.puneTusa(j.W() * 0.08 + Math.random() * j.W() * 0.06,
+                 j.H() * 0.72 + Math.random() * j.H() * 0.2, j.ceas.t);
+    }
+    egal(j.s8.acoperit, 0, "pictand pe perete s-a acoperit si pelerina");
+    acoperaPelerinaToata(j);
+    aproape(j.s8.acoperit, 1, 0.01, "pelerina nu s-a acoperit de tot");
+  });
+
+  test("acoperita de tot, culoarea se scurge prin trapa de sub podium", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    acoperaPelerinaToata(j);
+    j.avanseaza(60);
+    egal(j.s8.faza, "scurgere", "trapa nu s-a deschis");
+    adevarat(j.s8.perdea !== null, "nu s-a luat poza vopselei de pe pelerina");
+    j.avanseaza(5000);
+    egal(j.s8.faza, "diluare", "scurgerea nu duce la diluare");
+    j.avanseaza(7000);
+    adevarat(j.stare() !== "ulei", "diluarea nu duce mai departe");
+  });
+
+  test("pe perete scrie ce e pigmentul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    let scris = "";
+    for (const el of j.panzeAscunse) {
+      const pz = el._panza;
+      if (pz && pz.desene) scris += " " + totTextul(pz.desene);
+    }
+    adevarat(/prezen\u021b\u0103 fizic\u0103|prezenta fizica/i.test(scris),
+      "lipseste fisa despre pigment");
+    adevarat(/unde electromagnetice/i.test(scris),
+      "lipseste paragraful despre culorile spectrale");
+    adevarat(/cu\u021bitul de palet\u0103|cutitul de paleta/i.test(scris),
+      "lipseste paragraful despre cum se aplica vopseaua");
+    adevarat(!/PIGMENT/.test(scris), "fisa are tot titlu deasupra");
+  });
+
+  test("deasupra trusei scrie ca spatiul e al tau", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    const d = j.doar(function () { j.deseneazaScena8(j.ceas.t, j.ceas.t); });
+    adevarat(/p\u00e2nza ta|panza ta/i.test(totScrisul(d)),
+      "lipseste indemnul de deasupra ustensilelor");
+  });
+
+  test("in atelier se aude aerul gras, si apa abia la diluare", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inUlei(j);
+    adevarat(j.atelierulScena8() !== null, "in atelier nu se aude nimic");
+    egal(j.apaScena8(), null, "apa curge inainte de vreme");
   });
 
   /* ---------------------------------------------------------------- */

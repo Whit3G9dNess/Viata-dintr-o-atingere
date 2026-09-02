@@ -150,4 +150,6 @@ window.addEventListener('pointerdown', (e) => {
   /* — Scena 5: cei zece pași înapoi — */
   if (stare === 'campie') { click5(acum); return; }
   if (stare === 'foc') { click6(acum); return; }
+  if (stare === 'gheata') { click7(acum); return; }
+  if (stare === 'ulei') { click8(acum); return; }
 });

@@ -517,3 +517,395 @@ function sunetAtingere() {
   if (!audio) return;
   nota(1600, audio.currentTime, 0.045, 0.022, 'sine', 900);
 }
+
+/* ============================================================================
+   SCENA A ȘAPTEA — SUNETELE FRIGULUI
+
+   Toată scena a șasea a fost cald: foc care duduie, hârtie care plesnește,
+   lemn. Aici, dincolo de arsură, e frig — iar frigul nu se aude ca lipsa
+   focului, se aude ca altceva: vânt înfundat de munte, pași pe zăpadă, și
+   pe urmă metal.
+
+   De-aia sunetele astea nu sunt focul dat mai încet. Vântul e zgomot alb tăiat
+   sus de tot (un vânt care fluieră ar fi un vânt cald, de vară); pașii sunt
+   scârțâitul zăpezii îndesate, adică zgomot scurt și foarte înalt; iar la
+   activarea funcțiilor sună metal — note ascuțite, tăioase, cu armonice, nu
+   clopoței rotunzi. */
+
+let viscolulScena7 = null;
+
+function pornesteViscolul() {
+  if (!audio || viscolulScena7) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  /* Vânt de munte **înfundat**: îl auzi prin pereți, nu în față. Un trece-bandă
+     strâns în jurul unei frecvențe joase — cu filtru trece-jos, cum e focul, ar
+     fi ieșit tot un duduit, adică tot cald. */
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'bandpass';
+  filtru.frequency.setValueAtTime(320, t);
+  filtru.Q.setValueAtTime(1.1, t);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.055, t + 3);
+
+  /* Rafalele: filtrul urcă și coboară foarte încet, și odată cu el pare că
+     vântul se apropie și se depărtează. Două mișcări cu perioade care nu se
+     împart una la alta, ca să nu se audă ceasul din spatele lor. */
+  const rafala = audio.createOscillator();
+  rafala.type = 'sine';
+  rafala.frequency.setValueAtTime(0.07, t);
+  const cat = audio.createGain();
+  cat.gain.setValueAtTime(180, t);
+  rafala.connect(cat).connect(filtru.frequency);
+  rafala.start(t);
+
+  const suflu = audio.createOscillator();
+  suflu.type = 'sine';
+  suflu.frequency.setValueAtTime(0.113, t);
+  const catSuflu = audio.createGain();
+  catSuflu.gain.setValueAtTime(0.022, t);
+  suflu.connect(catSuflu).connect(vol.gain);
+  suflu.start(t);
+
+  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  viscolulScena7 = { sursa, rafala, suflu, vol, urmatorulPas: t + 1.5 };
+}
+
+/* Pașii pe zăpadă. Nu merg în cadență: cine umblă prin nămeți se oprește, se
+   afundă, își trage piciorul. De-aia răstimpul dintre ei e neregulat, iar
+   fiecare pas e două zgomote lipite — îndesarea și scârțâitul de deasupra. */
+function tinePasiiPeZapada() {
+  if (!audio || !viscolulScena7) return;
+  const acum = audio.currentTime;
+  while (viscolulScena7.urmatorulPas < acum + 2) {
+    const cand = viscolulScena7.urmatorulPas;
+    const tarie = 0.05 + Math.random() * 0.05;
+    zgomot(cand, 0.07, tarie, 1100, 260);                 // talpa care se afundă
+    zgomot(cand + 0.03, 0.11, tarie * 0.8, 5200, 2200);   // scârțâitul zăpezii
+    viscolulScena7.urmatorulPas = cand + 1.1 + Math.random() * 2.4;
+  }
+}
+
+function opresteViscolul() {
+  if (!viscolulScena7) return;
+  const v = viscolulScena7;
+  viscolulScena7 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    v.vol.gain.cancelScheduledValues(t);
+    v.vol.gain.setValueAtTime(Math.max(0.0001, v.vol.gain.value), t);
+    v.vol.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+    v.sursa.stop(t + 1.3);
+    v.rafala.stop(t + 1.3);
+    v.suflu.stop(t + 1.3);
+  } catch (e) { /* dacă s-a oprit deja, n-avem ce face */ }
+}
+
+/* Atingerea lucrării cu mâna goală: îngheață. Opusul lui `sunetFrige` — acolo
+   un sfârâit care te trage înapoi, aici o notă care **cade** și se subțiază,
+   ca aerul care se strânge. */
+function sunetInghet() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(1400, t, 0.5, 0.09, 'triangle', 180);
+  nota(2100, t + 0.02, 0.42, 0.05, 'sine', 300);
+  zgomot(t, 0.4, 0.07, 6000, 1200);
+}
+
+/* Metalul funcțiilor. Nu clopoțel: clopoțelul e rotund și cald. Aici două note
+   care se bat una de alta la o cvartă mărită — intervalul cel mai tăios din
+   câte sunt — trecute prin dinți de ferăstrău. */
+function sunetMetalic(frecventa = 1320) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(frecventa, t, 0.34, 0.07, 'sawtooth', frecventa * 3);
+  nota(frecventa * 1.414, t + 0.015, 0.3, 0.05, 'square', frecventa * 2);
+  zgomot(t, 0.06, 0.06, 7000, 3000);
+}
+
+/* Gheața care crapă. Un pocnet uscat, foarte scurt, urmat de firicelele care se
+   despică mai departe — crăpătura nu se oprește odată cu pocnetul, se duce prin
+   toată placa. */
+function sunetGheataCrapata() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.05, 0.34, 2600, 240);            // pocnetul
+  nota(140, t, 0.5, 0.16, 'triangle', 60);     // bufnetul de dedesubt
+  for (let k = 0; k < 9; k++) {
+    zgomot(t + 0.06 + k * 0.045 + Math.random() * 0.05, 0.03,
+           0.09 - k * 0.008, 5200 + Math.random() * 3000, 1800);
+  }
+}
+
+/* Turbina vorticistă. Un uruit care urcă: două voci grave, dezacordate cu puțin
+   una față de alta, ca să bată între ele, plus suflul de aer aspirat. */
+let turbinaScena7 = null;
+
+function pornesteTurbina() {
+  if (!audio || turbinaScena7) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.075, t + 1.6);
+  vol.connect(audio.destination);
+
+  const voci = [];
+  for (const f of [44, 45.7, 88, 132.3]) {
+    const o = audio.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f * 1.9, t + 5);
+    const g = audio.createGain();
+    g.gain.setValueAtTime(0.12, t);
+    o.connect(g).connect(vol);
+    o.start(t);
+    voci.push(o);
+  }
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'bandpass';
+  filtru.frequency.setValueAtTime(600, t);
+  filtru.frequency.exponentialRampToValueAtTime(2400, t + 5);
+  filtru.Q.setValueAtTime(2.4, t);
+  const gz = audio.createGain();
+  gz.gain.setValueAtTime(0.5, t);
+  sursa.connect(filtru).connect(gz).connect(vol);
+  sursa.start(t);
+
+  turbinaScena7 = { voci, sursa, vol };
+}
+
+function opresteTurbina() {
+  if (!turbinaScena7) return;
+  const u = turbinaScena7;
+  turbinaScena7 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    u.vol.gain.cancelScheduledValues(t);
+    u.vol.gain.setValueAtTime(Math.max(0.0001, u.vol.gain.value), t);
+    u.vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+    for (const o of u.voci) o.stop(t + 0.9);
+    u.sursa.stop(t + 0.9);
+  } catch (e) { /* dacă s-a oprit deja, n-avem ce face */ }
+}
+
+/* ============================================================================
+   SCENA A OPTA — SUNETELE VOPSELEI GRASE
+
+   Aici totul e umed și cleios. Un sunet cleios nu e un zgomot mai gros: e un
+   zgomot care **se lipește** — pornește sec, se umflă o clipă și se desprinde cu
+   întârziere, ca degetul dintr-o pastă. Frecvența lui cade în timp ce sună, ca și
+   cum materia s-ar îngroșa sub el.
+
+   La sfârșit, când vopseaua se diluează, se schimbă și materia sunetului: apă în
+   loc de pastă. Clipocitul are aceeași formă, dar invers — pornește moale, urcă
+   și se subțiază. */
+
+let atelierulScena8 = null;
+
+function pornesteAtelierUlei() {
+  if (!audio || atelierulScena8) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.04, t + 3);
+  vol.connect(audio.destination);
+
+  /* Aerul greu al unui atelier: nu tăcere, ci o apăsare joasă, ca într-o cameră
+     cu ferestrele închise și cu ulei de in pe masă. */
+  for (const f of [58, 87, 116]) {
+    const o = audio.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f, t);
+    const g = audio.createGain();
+    g.gain.setValueAtTime(0.09, t);
+    o.connect(g).connect(vol);
+    o.start(t);
+  }
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'lowpass';
+  filtru.frequency.setValueAtTime(240, t);
+  const gz = audio.createGain();
+  gz.gain.setValueAtTime(0.5, t);
+  sursa.connect(filtru).connect(gz).connect(vol);
+  sursa.start(t);
+
+  atelierulScena8 = { sursa, vol, urmatoareaPicatura: t + 3 };
+}
+
+/* Picăturile care cad din vopseaua groasă. Rar, neregulat — o picătură care cade
+   la fiecare două secunde fix e un robinet, nu o pânză. */
+function tinePicaturileDeUlei() {
+  if (!audio || !atelierulScena8) return;
+  const acum = audio.currentTime;
+  while (atelierulScena8.urmatoareaPicatura < acum + 2) {
+    const cand = atelierulScena8.urmatoareaPicatura;
+    nota(320 + Math.random() * 180, cand, 0.13, 0.035, 'sine', 90);
+    zgomot(cand, 0.05, 0.03, 800, 200);
+    atelierulScena8.urmatoareaPicatura = cand + 2.5 + Math.random() * 5;
+  }
+}
+
+function opresteAtelierUlei() {
+  if (!atelierulScena8) return;
+  const a = atelierulScena8;
+  atelierulScena8 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    a.vol.gain.cancelScheduledValues(t);
+    a.vol.gain.setValueAtTime(Math.max(0.0001, a.vol.gain.value), t);
+    a.vol.gain.exponentialRampToValueAtTime(0.0001, t + 1);
+    a.sursa.stop(t + 1.1);
+  } catch (e) { /* dacă s-a oprit deja, n-avem ce face */ }
+}
+
+/* Zgomotul cleios. `zgomot` obișnuit urcă în două sutimi de secundă și se
+   termină la fel de sec — de-aia sunetele făcute cu el ies **păcănituri**: tot
+   ce începe brusc și se oprește brusc se aude a lovitură, nu a lipici.
+
+   Ce face un sunet să pară cleios sunt trei lucruri, și niciunul nu e volumul:
+     - **atacul lent.** Vopseaua nu pocnește, se desprinde. O treime din durată
+       îi trebuie ca să ajungă la tărie.
+     - **rezonanța.** Un filtru cu Q mare sună a cavitate, a ceva care se umflă
+       și se lasă. Fără el, orice zgomot alb rămâne un sâsâit.
+     - **coborârea.** Frecvența cade în timp ce sună, ca și cum materia s-ar
+       îngroșa sub deget. */
+function zgomotCleios(cand, durata, volum, f0, f1) {
+  if (!audio) return;
+  if (!bufferZgomot) pregatesteZgomotul();
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'lowpass';
+  filtru.Q.setValueAtTime(9, cand);            // rezonant: sună a cavitate, nu a sâsâit
+  filtru.frequency.setValueAtTime(f0, cand);
+  filtru.frequency.exponentialRampToValueAtTime(Math.max(60, f1), cand + durata);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, cand);
+  vol.gain.exponentialRampToValueAtTime(volum, cand + durata * 0.34);
+  vol.gain.setValueAtTime(volum, cand + durata * 0.55);
+  vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
+
+  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.start(cand);
+  sursa.stop(cand + durata + 0.05);
+}
+
+/* „Squish" — degetul care intră în vopsea și se desprinde din ea. Trei bucăți:
+   intrarea moale, corpul gras care coboară, și desprinderea de la sfârșit — un
+   sunet scurt și mai înalt, care e chiar clipa în care pensula se ridică. Fără
+   desprindere, sunetul se termină în nimic și pare tăiat. */
+function sunetCleios() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const d = 0.26 + Math.random() * 0.1;
+  zgomotCleios(t, d, 0.13, 900 + Math.random() * 400, 150);
+  nota(190 + Math.random() * 60, t, d * 0.9, 0.05, 'sine', 62);
+  // desprinderea: o bulă scurtă, urcătoare
+  const td = t + d * 0.72;
+  nota(240 + Math.random() * 120, td, 0.1, 0.045, 'sine', 900);
+  zgomotCleios(td, 0.12, 0.05, 1800, 600);
+}
+
+/* „Slosh" — tușa lată, trasă prin pastă. Mai lungă, cu materia care se târăște
+   sub cuțit: două voci cleioase decalate, ca să nu se audă un început. */
+function sunetSlosh() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const d = 0.42 + Math.random() * 0.16;
+  zgomotCleios(t, d, 0.1, 700 + Math.random() * 300, 180);
+  zgomotCleios(t + 0.07, d * 0.8, 0.07, 1500, 400);
+  nota(130 + Math.random() * 50, t, d, 0.045, 'triangle', 55);
+  nota(300, t + d * 0.75, 0.13, 0.035, 'sine', 1100);
+}
+
+/* „Splat" — bulgărele de vopsea care cade și se turtește. Are un bufnet sub el:
+   fără greutate, orice sunet umed sună a bulă de săpun. */
+function sunetPlescait() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomotCleios(t, 0.2, 0.2, 2000, 130);
+  nota(88, t, 0.26, 0.12, 'sine', 42);
+  zgomotCleios(t + 0.11, 0.22, 0.07, 700, 200);
+}
+
+/* Apa care curge, la diluare. Aceeași formă ca sunetele cleioase, dar întoarsă:
+   pornește moale, urcă și se subțiază. */
+let apaScena8 = null;
+
+function pornesteClipocitul() {
+  if (!audio || apaScena8) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.06, t + 1.5);
+  vol.connect(audio.destination);
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'bandpass';
+  filtru.frequency.setValueAtTime(700, t);
+  filtru.frequency.exponentialRampToValueAtTime(2600, t + 4);
+  filtru.Q.setValueAtTime(1.6, t);
+  sursa.connect(filtru).connect(vol);
+  sursa.start(t);
+
+  apaScena8 = { sursa, vol, urmatorulClipocit: t + 0.3 };
+}
+
+/* Clipocitul: bule scurte, urcătoare, la răstimpuri neregulate. Și fâșâitul
+   pensulei moi pe hârtie spongioasă, care e tot un zgomot, dar lung și stins. */
+function tineClipocitul() {
+  if (!audio || !apaScena8) return;
+  const acum = audio.currentTime;
+  while (apaScena8.urmatorulClipocit < acum + 1.5) {
+    const cand = apaScena8.urmatorulClipocit;
+    const f = 500 + Math.random() * 900;
+    nota(f, cand, 0.09, 0.035, 'sine', f * 2.6);
+    if (Math.random() < 0.5) zgomot(cand + 0.05, 0.3, 0.03, 3000, 5200);
+    apaScena8.urmatorulClipocit = cand + 0.25 + Math.random() * 0.7;
+  }
+}
+
+function opresteClipocitul() {
+  if (!apaScena8) return;
+  const a = apaScena8;
+  apaScena8 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    a.vol.gain.cancelScheduledValues(t);
+    a.vol.gain.setValueAtTime(Math.max(0.0001, a.vol.gain.value), t);
+    a.vol.gain.exponentialRampToValueAtTime(0.0001, t + 1);
+    a.sursa.stop(t + 1.1);
+  } catch (e) { /* dacă s-a oprit deja, n-avem ce face */ }
+}

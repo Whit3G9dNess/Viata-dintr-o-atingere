@@ -198,7 +198,10 @@ function geomMuzeu() {
   const lobUreche = capY + urecheRY * 0.78;      // de unde atârnă cercelul
 
   // haina de pe piept: de sub bărbie până aproape de labe
-  const hainaW = corpW * 0.86, hainaH = talpa - corpH * 0.10 - (capY + capR * 1.02);
+  /* E o **vestă**, nu un palton: se termină pe burtă, nu la labe. Croită până
+     jos, capătul ei cădea acolo unde trupul se îngustează, iar tăietura la
+     elipsă i-o reteza drept — de-aia arăta a placă verde lipită pe el. */
+  const hainaW = corpW * 0.74, hainaH = talpa - corpH * 0.30 - (capY + capR * 1.02);
   const hainaX = cx - hainaW / 2, hainaY = capY + capR * 1.02;
 
   return {
@@ -863,6 +866,23 @@ function deseneazaBuzunar(g, chemare, acum) {
 function deseneazaHaina(g, deschidere) {
   const w = g.hainaW, h = g.hainaH, x0 = g.hainaX, y0 = g.hainaY;
 
+  /* Haina se taie la trupul lui. Trupul e o elipsă: se îngustează spre poale, iar
+     haina — un dreptunghi — nu se îngusta deloc. Colțurile ei de jos ieșeau în
+     afara burții cu o palmă bună, și de-aia arăta lipită pe el ca un abțibild,
+     nu îmbrăcată.
+
+     Dar tăietura **se lărgește odată cu deschiderea**. Închisă, vesta e mulată pe
+     el și se termină exact unde se termină custodele. Descheiată, poalele se dau
+     în lături și atârnă lângă trup, cum atârnă orice haină descheiată — iar dacă
+     le-am ține tot în silueta lui, s-ar reteza drept la marginea burții și ar
+     arăta ca două bucăți de tablă tăiate cu foarfeca. */
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(g.cx, g.corpY + g.corpH * 0.02 * deschidere,
+              g.corpW * 0.495 * (1 + deschidere * 0.95),
+              g.corpH * 0.515 * (1 + deschidere * 0.12), 0, 0, Math.PI * 2);
+  ctx.clip();
+
   // cămașa și papionul de sub haină — se văd în scobitura reverului cât e
   // închisă, și sunt acoperite de căptușeală când se desface
   ctx.fillStyle = '#f3ead5';
@@ -919,21 +939,40 @@ function deseneazaHaina(g, deschidere) {
     /* Poala se rotește puțin și se dă mult în lături. Rotația mare pare mai
        firească, dar duce tivul înapoi spre mijloc și acoperă tocmai buzunarele
        de jos — de-aia unghiul e mic și deplasarea mare. */
-    ctx.rotate(lat * deschidere * 0.2);
-    ctx.translate(lat * deschidere * w * 0.58, deschidere * h * 0.05);
+    ctx.rotate(lat * deschidere * 0.3);
+    ctx.translate(lat * deschidere * w * 0.44, deschidere * h * 0.04);
+    /* Descheiată, poala **atârnă**: nu mai stă întinsă pe piept, ci cade de pe
+       umăr. Se strânge puțin în lățime, fiindcă stofa nu mai e trasă peste
+       burtă, și se lungește puțin, fiindcă a rămas să atârne în voia ei. */
+    const d = Math.max(0, Math.min(1, deschidere));
+    ctx.scale(1 - d * 0.14, 1 + d * 0.07);
 
     const catifea = ctx.createLinearGradient(0, 0, i * w * 0.56, h);
     catifea.addColorStop(0, '#4a6e50');
     catifea.addColorStop(0.45, VERDE_CATIFEA);
     catifea.addColorStop(1, VERDE_UMBRA);
     ctx.fillStyle = catifea;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(i * w * 0.14, -h * 0.04, i * w * 0.30, h * 0.02);   // linia umărului
-    ctx.quadraticCurveTo(i * w * 0.46, h * 0.07, i * w * 0.53, h * 0.24);    // reverul coboară în V
-    ctx.lineTo(i * w * 0.56, h * 0.92);                                      // marginea din față
-    ctx.quadraticCurveTo(i * w * 0.32, h * 1.04, 0, h * 0.95);               // tivul rotunjit
-    ctx.closePath();
+    /* Croiala poalei. Închisă, marginea din față e aproape dreaptă: stofa e
+       întinsă pe piept. Descheiată, se bombează în afară și tivul se leagănă — o
+       stofă lăsată liberă nu se termină niciodată pe o linie dreaptă. Sunt
+       aceleași puncte, mișcate cu `d`. */
+    const traseulPoalei = function () {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(i * w * 0.14, -h * 0.04, i * w * 0.30, h * 0.02);   // linia umărului
+      ctx.quadraticCurveTo(i * w * 0.46, h * 0.07, i * w * 0.53, h * 0.24);    // reverul coboară în V
+      ctx.quadraticCurveTo(i * w * (0.53 + d * 0.16), h * 0.58,
+                           i * w * (0.56 + d * 0.05), h * (0.92 + d * 0.04));
+      /* Tivul urcă spre marginea din afară, cum urcă orice tiv pe un trup rotund:
+         mijlocul burții e mai aproape de tine, deci mai jos pe ecran. Tăiat
+         drept, vesta se termina pe o linie orizontală — semnul cel mai sigur că
+         un desen e lipit, nu îmbrăcat. */
+      ctx.quadraticCurveTo(i * w * (0.50 + d * 0.04), h * (0.86 + d * 0.06),
+                           i * w * (0.34 + d * 0.02), h * (0.99 + d * 0.02));
+      ctx.quadraticCurveTo(i * w * 0.16, h * (1.04 - d * 0.02), 0, h * 1.0);
+      ctx.closePath();
+    };
+    traseulPoalei();
     ctx.fill();
 
     // luciul catifelei, o dungă mai deschisă pe lungul poalei
@@ -949,13 +988,29 @@ function deseneazaHaina(g, deschidere) {
     ctx.restore();
 
     ctx.strokeStyle = VERDE_UMBRA; ctx.lineWidth = Math.max(1.5, w * 0.007);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(i * w * 0.14, -h * 0.04, i * w * 0.30, h * 0.02);
-    ctx.quadraticCurveTo(i * w * 0.46, h * 0.07, i * w * 0.53, h * 0.24);
-    ctx.lineTo(i * w * 0.56, h * 0.92);
-    ctx.quadraticCurveTo(i * w * 0.32, h * 1.04, 0, h * 0.95);
+    traseulPoalei();
     ctx.stroke();
+
+    /* Cutele care se adună pe poala descheiată. O stofă care atârnă se strânge
+       în falduri de la umăr în jos; fără ele, poala rămâne o suprafață plată —
+       adică o bucată de tablă vopsită în verde. */
+    if (d > 0.05) {
+      ctx.save();
+      traseulPoalei();
+      ctx.clip();
+      ctx.globalAlpha *= d * 0.5;
+      ctx.strokeStyle = VERDE_UMBRA;
+      ctx.lineWidth = Math.max(1, w * 0.012);
+      for (let k = 0; k < 4; k++) {
+        const q = 0.12 + k * 0.13;
+        ctx.beginPath();
+        ctx.moveTo(i * w * (0.10 + q * 0.5), h * 0.06);
+        ctx.quadraticCurveTo(i * w * (0.30 + q * 0.6), h * 0.5,
+                             i * w * (0.16 + q * 0.7), h * 0.98);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     // reverul întors, de mătase mai deschisă
     ctx.fillStyle = '#4e7455';
@@ -988,6 +1043,7 @@ function deseneazaHaina(g, deschidere) {
     }
     ctx.restore();
   }
+  ctx.restore();          // tăietura la trupul custodelui
 }
 
 /* Elefantul-muzeu: stă pe fund, cu fața la tine, și te privește. Tot ce era
@@ -1562,17 +1618,32 @@ function deseneazaScena3(t, acum) {
   }
   else if (s3.faza === 'scrisoare') {
     // scrisoarea oficială
-    const w = Math.min(W * 0.7, ecran(520)), h = Math.min(H * 0.5, ecran(320)), x = W * 0.5, y = H * 0.46;
+    const textNotificare = 'Stimate jucător, prin prezenta vă notificăm că este de ' +
+      'datoria dumneavoastră legală să trageți custodele de cercel.';
+    /* Foaia se croiește **după scris**, nu invers. Avea o înălțime fixă, iar de
+       când i-a plecat semnătura de la subsol îi rămânea o jumătate de pagină
+       goală — iar o hârtie oficială cu jumătate de pagină albă arată a formular
+       neterminat, nu a notificare.
+
+       Se măsoară deci întâi câte rânduri iese textul la lățimea dată, și abia pe
+       urmă se taie hârtia: titlu, text, și marginile de jur împrejur. */
+    const w = Math.min(W * 0.7, ecran(520));
+    const latScris = w - ecran(60);
+    const marimeText = Math.max(9, Math.round(ecran(19)));
+    ctx.font = scrisGeorgia(19);
+    const randuri = randuriIncapute(ctx, textNotificare, latScris);
+    const susText = ecran(52);
+    const h = Math.min(H * 0.62, susText + randuri.length * ecran(28) + ecran(34));
+    const x = W * 0.5, y = H * 0.46;
+
     ctx.save(); ctx.translate(x, y);
     ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
     ctx.fillStyle = '#f7f2e6'; ctx.fillRect(-w / 2, -h / 2, w, h);
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#b23a48'; ctx.font = scrisGeorgia(20, 'bold'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('NOTIFICARE OFICIALĂ', 0, -h / 2 + ecran(22));
-    textIncadrat('Stimate jucător, prin prezenta vă notificăm că este de datoria dumneavoastră legală să trageți custodele de cercel.',
-      0, -h / 2 + ecran(66), w - ecran(60), ecran(28), scrisGeorgia(19), '#2b2b2b');
-    ctx.textAlign = 'right'; ctx.fillStyle = '#555'; ctx.font = scrisGeorgia(15, 'italic');
-    ctx.fillText('— Direcțiunea Muzeului', w / 2 - ecran(30), h / 2 - ecran(40));
+    ctx.fillText('NOTIFICARE OFICIALĂ', 0, -h / 2 + ecran(20));
+    textIncadrat(textNotificare, 0, -h / 2 + susText, latScris, ecran(28),
+                 scrisGeorgia(19), '#2b2b2b');
     ctx.restore();
     textIncadrat('(atinge scrisoarea)', W * 0.5, y + h / 2 + ecran(16), W * 0.5, ecran(20), scrisGeorgia(15), '#666');
   }

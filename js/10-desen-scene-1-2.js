@@ -660,6 +660,11 @@ function deseneazaPetele() {
 // Cursorul luminos: cald și mic la mișcări lente, alb și mare la mișcări rapide
 function deseneazaCursorul() {
   if (cursor.x < -100) return;
+  /* O scenă poate să-și ia cursorul în primire — sala de gheață îl face cub. Ea
+     spune „m-am ocupat", și atunci luminița caldă de mai jos n-ar face decât
+     să-i pună o aură de foc unui bloc de gheață. */
+  if (typeof cursorulScenei7 === 'function' && cursorulScenei7()) return;
+  if (typeof cursorulScenei8 === 'function' && cursorulScenei8()) return;
   const calm = factorCalm();
   const raza = 4 + cursor.viteza * 5;
   const lumina = ctx.createRadialGradient(cursor.x, cursor.y, 0, cursor.x, cursor.y, raza * 3);

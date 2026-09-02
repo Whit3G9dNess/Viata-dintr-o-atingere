@@ -158,21 +158,28 @@ function scrieDefinitia(ctx, text, cx, y, lat, marime, culoare, titlu, ancora) {
   if (titlu) {
     ctx.font = `bold ${Math.round(marime * 1.15)}px Georgia`;
     ctx.fillStyle = culoare;
-    let tx = stx;
+    // se măsoară întâi, cu tot cu rărituri, ca să poată fi centrat
+    let latT = 0;
+    for (const litera of String(titlu).toUpperCase()) {
+      latT += ctx.measureText(litera).width + marime * 0.18;
+    }
+    latT -= marime * 0.18;
+    let tx = cx - latT / 2;
     for (const litera of String(titlu).toUpperCase()) {
       ctx.fillText(litera, tx, cy);
       tx += ctx.measureText(litera).width + marime * 0.18;
     }
     cy += inaltTitlu;
   }
-  /* Rândurile se întind de la o margine la alta, ca într-o carte: marginea din
-     dreapta zdrențuită face dintr-un text așezat pe fundal o listă, nu un
-     paragraf. Ultimul rând rămâne cum e — întins, ar avea două cuvinte răsfirate
-     pe toată lățimea. */
+  /* Rândurile stau centrate pe casetă, ca la fișele de sală: aceeași mână scrie
+     peste tot în jucăria asta, deci scrisul se așază la fel peste tot. Întinse
+     de la o margine la alta, cum erau, arătau a coloană de ziar — iar între
+     definițiile astea și un ziar nu e nicio asemănare. */
   ctx.font = `${marime}px Georgia`;
   ctx.fillStyle = culoare;
+  ctx.textAlign = 'center';
   for (let k = 0; k < randuri.length; k++) {
-    scrieIntins(ctx, randuri[k], stx, cy, lat, k === randuri.length - 1);
+    ctx.fillText(randuri[k], cx, cy);
     cy += marime * 1.42;
   }
   ctx.restore();

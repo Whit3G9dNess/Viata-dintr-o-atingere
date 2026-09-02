@@ -127,6 +127,37 @@ function cadru(t) {
       deseneazaMingea(minge.x, minge.y, minge.raza, minge.rotatie, minge.luminozitate, 1, minge.turtire);
     }
     deseneazaGradina(1, 0.82, 1.01);   // doar ce a crescut chiar la picioarele noastre
+
+    /* Îndemnul către baloane. Se scrie **sub balonul care așteaptă**, cu o
+       săgeată spre el, nu într-un colț al ecranului: un îndemn care spune
+       „atinge-le" fără să arate care nu ajută pe nimeni. Vezi
+       `indemnulBaloanelor` pentru de ce e nevoie de el. */
+    const balonUitat = indemnulBaloanelor(acum);
+    if (balonUitat) {
+      const bat = 0.6 + 0.4 * Math.sin(acum * 0.005);
+      const bx = balonUitat.x, by = balonUitat.y + balonUitat.raza * 1.5;
+      ctx.save();
+      ctx.strokeStyle = `rgba(40, 34, 26, ${0.35 + bat * 0.45})`;
+      ctx.lineWidth = Math.max(1.5, Math.min(W, H) * 0.004);
+      ctx.lineCap = 'round';
+      const cap = by + Math.min(W, H) * 0.035;
+      ctx.beginPath();
+      ctx.moveTo(bx, cap);
+      ctx.lineTo(bx, by + Math.min(W, H) * 0.008);
+      ctx.moveTo(bx - Math.min(W, H) * 0.012, by + Math.min(W, H) * 0.026);
+      ctx.lineTo(bx, by + Math.min(W, H) * 0.008);
+      ctx.lineTo(bx + Math.min(W, H) * 0.012, by + Math.min(W, H) * 0.026);
+      ctx.stroke();
+      ctx.restore();
+      /* Numai săgeata, fără niciun cuvânt. Scrisesem sub ea și ce are de făcut —
+         dar o jucărie care îți spune „atinge-le" te tratează ca pe un om care
+         n-a înțeles, iar toată scena de până aici s-a purtat cu tine altfel: n-a
+         scris nicăieri nici să atingi punctul, nici să prinzi balonul.
+
+         O săgeată care pulsează spune destul. Ea arată **unde**, iar ce se
+         întâmplă rămâne al tău de descoperit — care e, la urma urmei, singurul
+         lucru pe care jucăria asta îl are de dat. */
+    }
   }
   else if (stare === 'muzeu') {
     deseneazaScena3(t, acum);
@@ -140,6 +171,14 @@ function cadru(t) {
   else if (stare === 'foc') {
     actualizeazaFocul(acum);
     deseneazaScena6(t, acum);
+  }
+  else if (stare === 'gheata') {
+    actualizeazaGheata(acum);
+    deseneazaScena7(t, acum);
+  }
+  else if (stare === 'ulei') {
+    actualizeazaUleiul(acum);
+    deseneazaScena8(t, acum);
   }
 
   deseneazaCursorul();

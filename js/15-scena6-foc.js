@@ -1767,16 +1767,15 @@ function intraInFoc(acum) {
 }
 
 function iesiDinFoc(acum) {
-  /* Gaura arsă duce mai departe. Sala a șaptea încă nu e făcută, așa că deocamdată
-     te scoate înapoi la custode — dar drumul e croit, și când va fi, aici se
-     schimbă un singur rând. */
+  /* Gaura arsă duce în sala a șaptea. Drumul era croit de la bun început; aici
+     s-a schimbat un singur rând, cum scria.
+
+     Și trecerea are un rost, nu e doar o ușă: ieși dintr-o sală în care totul e
+     cald, gras și pictat cu cuțitul și intri într-una în care totul e rece, plat
+     și tăiat. Șocul termic e chiar prima lecție a sălii următoare, iar el se dă
+     în clipa asta, nu mai târziu. */
   opresteFocul();
-  s3.vizitat = true;
-  stare = 'muzeu';
-  faza3('usaDeschisa');
-  s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
-  actiune3(acum);
-  pornesteNatura(false);
+  intraInGheata(acum);
 }
 
 /* ---------- CE SE ÎNTÂMPLĂ LA ATINGERE ---------- */

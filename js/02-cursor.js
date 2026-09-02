@@ -6,8 +6,17 @@
 const cursor = {
   x: -9999, y: -9999,
   viteza: 0,                       // viteza netezită, în px/ms
-  ultimaMiscare: performance.now()
+  ultimaMiscare: performance.now(),
+  /* Dacă butonul e ținut apăsat chiar acum. Până la sala uleiului n-a trebuit
+     nimănui: peste tot se apăsa și se dădea drumul. Acolo se **trage** cu
+     pensula, iar o dâră trasă cu o sută de clicuri nu e o dâră, e o corvoadă. */
+  apasat: false
 };
+
+window.addEventListener('pointerdown', function () { cursor.apasat = true; });
+window.addEventListener('pointerup', function () { cursor.apasat = false; });
+window.addEventListener('pointercancel', function () { cursor.apasat = false; });
+window.addEventListener('blur', function () { cursor.apasat = false; });
 let pozitiaAnterioara = null;
 let timpulAnterior = 0;
 
@@ -25,9 +34,16 @@ window.addEventListener('pointermove', (e) => {
   timpulAnterior = acum;
   // fereastra e în pixeli de ecran, pânza poate fi mai mică: aducem degetul
   // în coordonatele în care desenăm
+  const dx = e.clientX * scalaPanzei - cursor.x;
   cursor.x = e.clientX * scalaPanzei;
   cursor.y = e.clientY * scalaPanzei;
   cursor.ultimaMiscare = acum;
+  /* Frecarea din sala de gheață se măsoară aici, pe mâna adevărată. Scena o
+     măsoară pe a ei, întârziată — dar cine scutură mouse-ul scutură repede, iar
+     degetul înghețat n-ar apuca niciodată să-l urmeze, deci n-ar simți nimic. */
+  if (typeof frecareaScenei7 === 'function') frecareaScenei7(dx);
+  /* Și mâna trasă cu butonul apăsat prin sala uleiului, care lasă dâră. */
+  if (typeof pensuleazaScena8 === 'function') pensuleazaScena8();
 });
 
 // Cât de „calm" e utilizatorul: 1 = contemplare, 0 = agitație

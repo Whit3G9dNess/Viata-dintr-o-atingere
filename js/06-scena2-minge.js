@@ -163,13 +163,44 @@ function balonulDeSub(x, y) {
 }
 
 // Atins, balonul se sparge moale și din el iese norul.
+/* Cate baloane a spart jucatorul de la inceputul jocului. Din cifra asta se
+   stie daca a inteles ce are de facut cu ele — si daca nu, i se spune. */
+let baloaneSparte = 0;
+
 function spargeBalonul(b) {
   const i = baloaneCuloare.indexOf(b);
   if (i === -1) return false;
   faNor(b);
   baloaneCuloare.splice(i, 1);
+  baloaneSparte++;
   if (audio) sunetBalonSpart();
   return true;
+}
+
+/* Indemnul catre baloane.
+
+   Elefantul soarbe petele si scoate culorile pe crestet, ca baloane care urca in
+   cer si asteapta un deget. Numai ca nimeni nu stie asta: baloanele plutesc
+   linistite intr-un colt de cer, iar jucatorul se uita la minge si la elefant,
+   care sunt mari si se misca. Sta uneori minute intregi fara sa banuiasca ca
+   jumatate din scena il asteapta.
+
+   De-aia, dupa ce primul balon a stat destul cat sa fie vazut si tot n-a fost
+   atins, i se spune. Nu de la bun inceput: intai trebuie sa apuce sa vada ca
+   elefantul face curatenie, altfel indemnul cade peste ceva ce nu s-a intamplat
+   inca. Si nu se mai spune dupa ce a spart primul — cine a inteles o data nu mai
+   are nevoie de indrumare. */
+const CAT_ASTEPTA_BALONUL = 7000;
+
+function indemnulBaloanelor(acum) {
+  if (baloaneSparte > 0) return null;
+  let celMaiVechi = null;
+  for (const b of baloaneCuloare) {
+    if (!b.pluteste || b.scapat) continue;
+    if (!celMaiVechi || b.nascut < celMaiVechi.nascut) celMaiVechi = b;
+  }
+  if (!celMaiVechi || acum - celMaiVechi.nascut < CAT_ASTEPTA_BALONUL) return null;
+  return celMaiVechi;
 }
 
 /* ---------- GRĂDINA ----------
