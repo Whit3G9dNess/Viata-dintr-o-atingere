@@ -442,6 +442,7 @@ return {
   geomSala8: typeof geomSala8 !== "undefined" ? geomSala8 : null,
   puneTusa: typeof puneTusa !== "undefined" ? puneTusa : null,
   USTENSILE: typeof USTENSILE !== "undefined" ? USTENSILE : null,
+  locurileUneltelor: typeof locurileUneltelor !== "undefined" ? locurileUneltelor : null,
   CERC_CROMATIC: typeof CERC_CROMATIC !== "undefined" ? CERC_CROMATIC : null,
   peTrusa: typeof peTrusa !== "undefined" ? peTrusa : null,
   peCerc: typeof peCerc !== "undefined" ? peCerc : null,
@@ -3817,11 +3818,20 @@ function ruleaza() {
   test("unealta si culoarea se aleg cu degetul", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     const g = inUlei(j);
-    // ultima unealta din trusa
-    j.cursor.x = g.trusaX + g.trusaLat * 0.94;
-    j.cursor.y = g.trusaY + g.trusaInalt * 0.5;
-    j.click8(j.ceas.t);
-    egal(j.s8.unealta, j.USTENSILE.length - 1, "unealta din capat nu se ia");
+    /* Uneltele nu mai stau intr-o caseta cu casute egale, ci raspandite peste
+       desen — deci nu se mai poate arata cu degetul „ultima din dreapta" dupa o
+       socoteala de dreptunghi. Se ia fiecare de la locul ei, care e singurul loc
+       unde chiar se afla. Si se iau **toate**, nu numai capatul: daca doua
+       ajung una peste alta, aici se vede. */
+    adevarat(typeof j.locurileUneltelor === "function", "lipsesc locurile uneltelor");
+    const locuri = j.locurileUneltelor();
+    egal(locuri.length, j.USTENSILE.length, "nu toate uneltele au un loc");
+    for (let k = 0; k < locuri.length; k++) {
+      j.cursor.x = locuri[k].x;
+      j.cursor.y = locuri[k].y;
+      j.click8(j.ceas.t);
+      egal(j.s8.unealta, k, "unealta " + k + " nu se ia de la locul ei");
+    }
     // o rază din cercul cromatic
     const inainte = j.s8.culoare;
     j.cursor.x = g.cercCx - g.cercR * 0.6;
