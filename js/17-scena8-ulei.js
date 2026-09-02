@@ -60,7 +60,7 @@ const HARTIE        = '#f6f2e8';
 const PIATRA_PERETE  = '#dcd4c2';
 const PIATRA_UMBRA   = '#c2b8a2';
 const PIATRA_LUMINA  = '#ece5d6';
-const PANOU_PERETE   = '#d3caB4'.replace('B','b');
+const PANOU_PERETE   = '#d3cab4';
 const FIRIDA_FUND    = '#a89c85';   // adâncul firidei, mai închis, ca albul să sară
 const PODEA_DALA     = '#cfc6b4';
 const PODEA_ROST     = '#b3a893';
@@ -75,12 +75,12 @@ const ALAMA_SALA     = '#c9a24a';
    trapa de sub podium tocmai într-acolo se coboară. */
 const TEXT_FISA_PIGMENTI =
   'Culorile pigmentare sunt formate din materie (pigmenți organici sau minerali ' +
-  'sintetizați/măcinați și amestecați cu un liant), având o prezență fizică ' +
+  'prelucrați și amestecați cu un liant), având o prezență fizică ' +
   'tangibilă. În schimb, culorile spectrale (lumina) sunt unde electromagnetice ' +
   'percepute de ochi.\n' +
   'Pigmenții au nevoie de un liant pentru a fi aplicați. În funcție de acesta, ' +
   'culorile se împart în culori pe bază de apă (acuarelă, tempera, guașă, acrilic) ' +
-  'sau pe bază de ulei (pictură în ulei).\n' +
+  'sau pe bază de ulei.\n' +
   'Vopseaua poate fi aplicată pe suport (pânză, hârtie, lemn etc.) cu pensula, cu ' +
   'cuțitul de paletă, prin tamponare, prin stropire sau prin presare.';
 
@@ -105,18 +105,24 @@ const TEXT_FISA_PIGMENTI =
 
    `pasta` spune cât material lasă: pensula ascuțită trage puțin, cuțitul
    îngroașă. `relief` spune cât de tare se vede creasta stratului. */
+/* Cinci, și atât: **subțire ascuțită, groasă ascuțită, subțire pătrată, groasă
+   pătrată, cuțit de paletă**. Erau șase, cu două cuțite — dar al doilea cuțit nu
+   aducea nimic: două lopeți de pastă se deosebesc numai prin lățime, iar lățimea
+   o dă oricum mărimea tușei. O trusă în care două unelte fac același lucru te
+   pune să alegi degeaba.
+
+   Perechile ascuțit/pătrat, în schimb, se justifică singure: subțirea trage o
+   linie, groasa acoperă o suprafață. Aceeași formă de pată, altă cantitate. */
 const USTENSILE = [
-  { nume: 'pensulă rotundă mică',  forma: 'ascutit', lung: 1.7, gros: 0.26,
-    fire: 1, pasta: 1, relief: 0.55, cutit: false },
-  { nume: 'pensulă rotundă mare',  forma: 'ascutit', lung: 2.1, gros: 0.46,
-    fire: 2, pasta: 1, relief: 0.7,  cutit: false },
-  { nume: 'pensulă pătrată îngustă', forma: 'patrat', lung: 1.15, gros: 0.55,
-    fire: 4, pasta: 1, relief: 0.85, cutit: false },
-  { nume: 'pensulă pătrată lată',  forma: 'patrat', lung: 1.05, gros: 1.05,
-    fire: 7, pasta: 1, relief: 0.9,  cutit: false },
-  { nume: 'cuțit de paletă ascuțit', forma: 'cutit', lung: 1.5, gros: 0.72,
-    fire: 0, pasta: 3, relief: 1.5,  cutit: true },
-  { nume: 'cuțit de paletă lat',   forma: 'cutit', lung: 1.25, gros: 1.35,
+  { nume: 'pensulă subțire cu vârf ascuțit', forma: 'ascutit', lung: 1.8, gros: 0.22,
+    fire: 1, pasta: 1, relief: 0.5,  cutit: false },
+  { nume: 'pensulă groasă cu vârf ascuțit',  forma: 'ascutit', lung: 2.0, gros: 0.62,
+    fire: 3, pasta: 1, relief: 0.75, cutit: false },
+  { nume: 'pensulă subțire cu vârf pătrat',  forma: 'patrat',  lung: 1.20, gros: 0.36,
+    fire: 3, pasta: 1, relief: 0.8,  cutit: false },
+  { nume: 'pensulă groasă cu vârf pătrat',   forma: 'patrat',  lung: 1.05, gros: 1.10,
+    fire: 7, pasta: 1, relief: 0.95, cutit: false },
+  { nume: 'cuțit de paletă',                 forma: 'cutit',   lung: 1.4, gros: 1.0,
     fire: 0, pasta: 4, relief: 1.7,  cutit: true }
 ];
 
@@ -141,6 +147,32 @@ const s8 = {
 };
 
 /* ---------- MĂSURILE SĂLII ---------- */
+/* Cât e de lată firida din fundul sălii. Se ține într-un singur loc fiindcă din
+   ea ies și arcada, și locul celor două coloane, și tăietura pentru pastă — trei
+   lucruri care trebuie să spună aceeași măsură.
+
+   E ceva mai îngustă decât ar cere ochiul: cu firida largă, coloana din dreapta
+   ajungea sub fișa de sală și se pierdea cu totul. O intrare flancată de o
+   singură coloană nu e flancată. */
+function latimeaFiridei() { return Math.min(W * 0.235, H * 0.38); }
+
+/* Unde stau cele două coloane care flanchează intrarea din fundul sălii.
+
+   Era una singură, pusă alături de firidă, care începea de sub cornișă și se
+   oprea în lambriu — adică o coloană care nu ține nimic și nu se sprijină pe
+   nimic. O coloană e un lucru care **duce o greutate până în pământ**: are bază,
+   fus și capitel, și merge de la podea până la ce sprijină. Două, de-o parte și
+   de alta a intrării, spun și de ce sunt acolo: ele încadrează ușa. */
+function coloaneleIntrarii() {
+  const fw = latimeaFiridei();
+  const lat = Math.min(W * 0.042, fw * 0.20);
+  return {
+    lat,
+    stanga: W * 0.5 - fw / 2 - lat * 0.85,
+    dreapta: W * 0.5 + fw / 2 + lat * 0.85
+  };
+}
+
 function geomSala8() {
   const S = Math.min(W, H);
   const podea = H * 0.62;                  // unde peretele din fund atinge podeaua
@@ -163,7 +195,10 @@ function geomSala8() {
      clopot, nu o haină. O mantie pusă pe manechin e **mai înaltă decât lată**,
      oricât s-ar revărsa poalele: asta e prima măsură după care ochiul o
      recunoaște, înaintea oricărei broderii. */
-  const pelLat = podiumRx * 0.58;
+  /* Mai mare decât înainte. Rochia e exponatul: ea trebuie să umple firida, nu
+     să stea sfioasă în mijlocul ei. Iar cu cât e mai mare, cu atât despărțiturile
+     ei — corsaj, mâneci, jupă — sunt suprafețe pe care chiar ai loc să pictezi. */
+  const pelLat = podiumRx * 0.72;
   const pelSus = H * 0.235;
   const pelJos = podiumCy + podiumRy * 0.05;
 
@@ -251,6 +286,101 @@ function creion(c, gros, culoare) {
   c.lineCap = 'round';
 }
 
+/* ---------- PASTA GROASĂ A SĂLII ----------
+
+   Sala nu e vopsită cu suprafețe netede, ci **pictată în ulei, cu pastă groasă**:
+   fiecare bucată de perete, de podea, de tavan e o îngrămădire de lespezi de
+   vopsea puse cu cuțitul, una peste alta.
+
+   Ce face pasta să fie pastă nu e culoarea, ci **muchia**: fiecare tușă are o
+   creastă care prinde lumina pe latura de sus și o umbră pe cea de jos. Asta o
+   ridică de pe pânză. O suprafață întinsă uniform, oricât de frumos colorată,
+   rămâne o suprafață; o sută de lespezi cu creastă și umbră se ridică din pânză
+   și cer să fie atinse.
+
+   Iar rostul aici e limpede: sala e pictată în pastă, pelerina din mijloc e
+   pânză goală. Ochiul vede cu ce s-a lucrat peste tot în cameră și înțelege, fără
+   niciun cuvânt, ce are de făcut cu lucrul rămas alb. */
+
+/* O lespede de pastă: corpul, creasta luminată de sus, umbra de jos, și câteva
+   dâre subțiri lăsate de muchia cuțitului. */
+function lespedeDePasta(c, x, y, lung, gros, unghi, culoare, zar) {
+  const L = Math.max(1.2, lung / 2), G = Math.max(0.8, gros / 2);
+  const z = function (i) { return samanta(zar * 7.3 + i * 3.1); };
+
+  c.save();
+  c.translate(x, y);
+  c.rotate(unghi);
+
+  /* Conturul: un patrulater cu capete tăiate strâmb, ca lama cuțitului când
+     ridică vopseaua. Capetele drepte ar da niște cărămizi. */
+  const traseu = function () {
+    c.beginPath();
+    c.moveTo(-L * (0.94 + z(0) * 0.14), -G * (0.72 + z(1) * 0.4));
+    c.lineTo(L * (0.90 + z(2) * 0.2), -G * (0.94 + z(3) * 0.22));
+    c.lineTo(L * (1.02 + z(4) * 0.1), G * (0.55 + z(5) * 0.45));
+    c.lineTo(-L * (0.86 + z(6) * 0.22), G * (0.90 + z(7) * 0.26));
+    c.closePath();
+  };
+
+  traseu();
+  c.fillStyle = culoare;
+  c.fill();
+
+  c.save();
+  traseu();
+  c.clip();
+  // creasta: același contur mutat în jos, trasat gros — rămâne numai muchia de sus
+  c.save();
+  c.translate(0, G * 0.62);
+  traseu();
+  c.restore();
+  /* Creasta e blândă. Cu ea tare, fiecare tușă se desprindea de vecina ei și
+     toată sala se făcea o grămadă de moloz colorat. Pe pasta adevărată, lumina
+     de pe muchie e o dungă subțire, nu o jumătate albă. */
+  c.strokeStyle = amesteca(culoare, '#ffffff', 0.30);
+  c.lineWidth = G * 0.34;
+  c.stroke();
+  // umbra: același truc, mutat în sus
+  c.save();
+  c.translate(0, -G * 0.66);
+  traseu();
+  c.restore();
+  c.strokeStyle = amesteca(culoare, '#241c12', 0.22);
+  c.lineWidth = G * 0.28;
+  c.stroke();
+
+  /* Dârele lăsate de muchie, de-a lungul tușei. Ele sunt ce se vede pe pasta
+     trasă cu cuțitul lat: linii paralele, foarte fine, care urmează mișcarea. */
+  c.lineWidth = Math.max(0.5, G * 0.13);
+  for (let k = -1; k <= 1; k++) {
+    const d = k * G * 0.42 + (z(8 + k) - 0.5) * G * 0.2;
+    c.strokeStyle = k < 0 ? amesteca(culoare, '#ffffff', 0.18)
+                          : amesteca(culoare, '#241c12', 0.14);
+    c.beginPath();
+    c.moveTo(-L * 0.86, d);
+    c.quadraticCurveTo(0, d + (z(11 + k) - 0.5) * G * 0.3, L * 0.9, d);
+    c.stroke();
+  }
+  c.restore();
+  c.restore();
+}
+
+/* Un câmp de lespezi peste o zonă: le împrăștie, le dă direcția zonei și le ia
+   culoarea dintr-o paletă. Aceeași unealtă face și peretele, și podeaua, și
+   tavanul — se schimbă doar direcția și culorile. */
+function campDePasta(c, x, y, w, h, cate, unghi, imprastiere, lung, gros, paleta, start) {
+  for (let k = 0; k < cate; k++) {
+    const a = samanta(start + k * 3.1), b = samanta(start + k * 7.7);
+    const u = samanta(start + k * 5.3);
+    lespedeDePasta(c, x + a * w, y + b * h,
+                   lung * (0.55 + u * 0.9), gros * (0.7 + a * 0.7),
+                   unghi + (u - 0.5) * imprastiere,
+                   paleta[Math.floor(b * paleta.length) % paleta.length],
+                   start + k);
+  }
+}
+
 function pictezaSalaUlei(c) {
   const g = geomSala8();
   const gr = Math.max(1, g.S * 0.0022);
@@ -273,8 +403,188 @@ function pictezaSalaUlei(c) {
      capitel, aplice, cordoane. */
   peretiiSalii(c, g, gr);
   podiumulCuFunii(c, g, gr);
+  pastaPesteSala(c, g, gr);
   pelerinaInLinie(c, g, gr);
   fisaDeSala8(c, g, gr);
+}
+
+/* Stratul gros, pus peste sala deja colorată. Culorile plate de dedesubt rămân
+   ca fond — ele dau lumina generală a camerei — iar peste ele vin lespezile, cu
+   direcția fiecărei zone: orizontale pe perete, fugind spre punctul de fugă pe
+   podea și pe tavan, verticale pe coloană, urmând bolta în firidă.
+
+   Direcția e tot ce ține forma. Împrăștiate la întâmplare peste toată sala,
+   lespezile ar fi făcut o zloată colorată; urmând fiecare planul pe care stă,
+   ele **construiesc** camera, așa cum construiesc floarea în tabloul cu
+   floarea-soarelui: fiecare petală e o lespede pusă pe direcția petalei. */
+function pastaPesteSala(c, g, gr) {
+  const sus = g.cornisa + H * 0.026;
+  const lambriu = g.podea - H * 0.055;
+  const S = g.S;
+
+  // ---- tavanul: lespezi care fug spre fundul sălii ----
+  c.save();
+  c.beginPath();
+  c.rect(-W * 0.2, -H * 0.05, W * 1.4, g.cornisa + H * 0.05);
+  c.clip();
+  /* Tavanul cere mâna cea mai ușoară din toată sala. Cu lespezi multe și albe se
+     făcea o zăpadă în care nu se mai vedea nici luminatorul, nici grinzile — iar
+     tavanul e tocmai partea la care nu trebuie să te uiți: el dă lumina, atât.
+     Puține, potolite, și toate pe direcția fugii. */
+  campDePasta(c, -W * 0.1, -H * 0.04, W * 1.2, g.cornisa + H * 0.04, 150,
+              0, 1.1, S * 0.055, S * 0.0075,
+              ['#e4ebef', '#dde5eb', '#e9eef1', '#d8e0e6'], 900);
+  c.restore();
+
+  // ---- peretele: lespezi lungi, culcate ----
+  c.save();
+  c.beginPath();
+  c.rect(0, g.cornisa, W, lambriu - g.cornisa);
+  c.clip();
+  campDePasta(c, -W * 0.03, g.cornisa - H * 0.01, W * 1.06, lambriu - g.cornisa + H * 0.02,
+              560, -0.05, 0.35, S * 0.062, S * 0.0095,
+              [PIATRA_PERETE, PIATRA_LUMINA, '#e2dac8', '#d5ccb8', '#e9e2d1'], 1200);
+  c.restore();
+
+  // ---- firida: lespezi care urmează bolta, mai închise ----
+  const fx = W * 0.5, fw = latimeaFiridei();
+  const fSus = sus + H * 0.045;
+  c.save();
+  c.beginPath();
+  c.moveTo(fx - fw / 2, g.podea);
+  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
+  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
+  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
+  c.lineTo(fx + fw / 2, g.podea);
+  c.closePath();
+  c.clip();
+  campDePasta(c, fx - fw * 0.55, fSus - H * 0.01, fw * 1.1, g.podea - fSus + H * 0.02,
+              280, 1.5708, 0.7, S * 0.05, S * 0.0085,
+              [FIRIDA_FUND, '#a1947e', '#ac9f88', '#948872'], 1500);
+  c.restore();
+
+  // ---- lambriul: o bandă de lespezi înguste, culcate ----
+  c.save();
+  c.beginPath();
+  c.rect(0, lambriu, W, g.podea - lambriu);
+  c.clip();
+  campDePasta(c, -W * 0.02, lambriu - H * 0.004, W * 1.04, g.podea - lambriu + H * 0.008,
+              200, 0, 0.2, S * 0.058, S * 0.0075,
+              [PIATRA_SOCLU, '#9a8e79', '#847a68', '#a99d86'], 1700);
+  c.restore();
+
+  // ---- podeaua: lespezi care fug spre punctul de fugă ----
+  c.save();
+  c.beginPath();
+  c.rect(0, g.podea, W, H - g.podea);
+  c.clip();
+  for (let k = 0; k < 520; k++) {
+    const a = samanta(1900 + k * 3.1), b = samanta(1960 + k * 7.7);
+    const x = W * (a * 1.2 - 0.1), y = intre(g.podea, H * 1.02, Math.pow(b, 1.5));
+    // cu cât e mai în față, cu atât lespedea e mai mare
+    const departare = (y - g.podea) / Math.max(1, H - g.podea);
+    const unghi = Math.atan2(H * 1.3 - y, W * 0.5 - x) + Math.PI / 2;
+    lespedeDePasta(c, x, y,
+                   S * (0.035 + departare * 0.055), S * (0.006 + departare * 0.010),
+                   unghi + (a - 0.5) * 0.35,
+                   ['#d6cdba', '#cdc4b0', '#dfd8c6', '#c6bda9'][k % 4],
+                   1900 + k);
+  }
+  c.restore();
+
+  // ---- podiumul: lespezi care urmează rotundul lui ----
+  c.save();
+  c.beginPath();
+  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
+  c.rect(g.podiumCx - g.podiumRx, g.podiumCy, g.podiumRx * 2, H * 0.05);
+  c.clip();
+  for (let k = 0; k < 240; k++) {
+    const a = samanta(2200 + k * 3.7), b = samanta(2260 + k * 5.9);
+    const ang = a * Math.PI * 2, raza = Math.sqrt(b);
+    const x = g.podiumCx + Math.cos(ang) * g.podiumRx * raza;
+    const y = g.podiumCy + Math.sin(ang) * g.podiumRy * raza + (b > 0.9 ? H * 0.02 : 0);
+    lespedeDePasta(c, x, y, S * 0.032, S * 0.006, ang + Math.PI / 2,
+                   ['#a19682', '#948a78', '#a99e89', '#877d6c'][k % 4], 2200 + k);
+  }
+  c.restore();
+
+  // ---- coloanele: lespezi verticale, ca fusul să rămână rotund ----
+  const col = coloaneleIntrarii();
+  let sam = 2400;
+  for (const cxc of [col.stanga, col.dreapta]) {
+    c.save();
+    c.beginPath();
+    c.rect(cxc - col.lat * 0.75, g.cornisa, col.lat * 1.5, g.podea - g.cornisa);
+    c.clip();
+    campDePasta(c, cxc - col.lat * 0.75, g.cornisa, col.lat * 1.5, g.podea - g.cornisa,
+                150, 1.5708, 0.14, S * 0.040, S * 0.0060,
+                [PIATRA_LUMINA, PIATRA_PERETE, '#b5aa95', '#f0e9da'], sam);
+    c.restore();
+    sam += 400;
+  }
+
+  contururileSalii(c, g, gr);
+
+  /* Coloanele și aplicele, peste pastă: ele sunt lucruri **în** cameră, nu
+     zugrăveala ei. Pasta e peretele; ele stau în fața lui. */
+  coloanaCorintica(c, col.stanga, g.cornisa, g.podea, col.lat, gr);
+  coloanaCorintica(c, col.dreapta, g.cornisa, g.podea, col.lat, gr);
+  apliceleDePerete(c, g, gr);
+}
+
+/* Conturul sălii, tras din nou peste pastă. Fără el, lespezile îngroapă
+   arhitectura: rămâne o zloată frumoasă în care nu se mai vede unde se termină
+   peretele și unde începe podeaua.
+
+   Așa lucrează și pictorii din fotografii: pasta e groasă, dar desenul de
+   dedesubt se mai vede pe alocuri, iar acolo unde nu se vede, marginile dintre
+   două culori îl țin locului. Aici facem amândouă. */
+function contururileSalii(c, g, gr) {
+  // luminatorul, tras din nou peste pastă, ca să nu se piardă în ea
+  tavanulCuLuminator(c, g, gr, true);
+
+  const sus = g.cornisa + H * 0.026;
+  const lambriu = g.podea - H * 0.055;
+  const fx = W * 0.5, fw = latimeaFiridei();
+  const fSus = sus + H * 0.045;
+
+  c.save();
+  c.globalAlpha = 0.55;
+  creion(c, gr * 1.4);
+  c.beginPath();
+  c.moveTo(0, g.cornisa); c.lineTo(W, g.cornisa);
+  c.moveTo(0, lambriu);   c.lineTo(W, lambriu);
+  c.moveTo(0, g.podea);   c.lineTo(W, g.podea);
+  c.stroke();
+
+  // arcada firidei
+  creion(c, gr * 1.5);
+  c.beginPath();
+  c.moveTo(fx - fw / 2, g.podea);
+  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
+  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
+  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
+  c.lineTo(fx + fw / 2, g.podea);
+  c.stroke();
+
+  // muchiile celor două coloane
+  const col = coloaneleIntrarii();
+  creion(c, gr * 1.1);
+  for (const cxc of [col.stanga, col.dreapta]) {
+    c.beginPath();
+    c.moveTo(cxc - col.lat * 0.50, g.podea - col.lat * 0.46);
+    c.lineTo(cxc - col.lat * 0.40, g.cornisa + col.lat * 1.30);
+    c.moveTo(cxc + col.lat * 0.50, g.podea - col.lat * 0.46);
+    c.lineTo(cxc + col.lat * 0.40, g.cornisa + col.lat * 1.30);
+    c.stroke();
+  }
+
+  // conturul podiumului
+  creion(c, gr * 1.3);
+  c.beginPath();
+  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
+  c.stroke();
+  c.restore();
 }
 
 /* Sala, în linie: tavanul cu luminator, peretele din fund cu firidă, panouri,
@@ -286,7 +596,6 @@ function pictezaSalaUlei(c) {
 function peretiiSalii(c, g, gr) {
   tavanulCuLuminator(c, g, gr);
   peretulDinFund(c, g, gr);
-  apliceleDePerete(c, g, gr);
   podeaDeDale(c, g, gr);
 }
 
@@ -297,7 +606,9 @@ function peretiiSalii(c, g, gr) {
    ieșită din cadru, și cea din fund, strânsă. Tot ce e între ele se interpolează
    — grinzile, ochiurile de sticlă, casetele de pe margini. Desenate una câte una,
    după ochi, ar fi ieșit un tavan care nu se închide nicăieri. */
-function tavanulCuLuminator(c, g, gr) {
+/* `numaiLinii` cere doar desenul, fără culorile de dedesubt: așa se poate trage
+   luminatorul a doua oară, peste pastă, fără să acopere pasta cu tăblia lui. */
+function tavanulCuLuminator(c, g, gr, numaiLinii) {
   const yFata = -H * 0.03, yFund = g.cornisa;
   const fata0 = -W * 0.16, fata1 = W * 1.16;      // marginea din față, lată
   const fund0 = W * 0.10,  fund1 = W * 0.90;      // marginea din fund, strânsă
@@ -306,7 +617,11 @@ function tavanulCuLuminator(c, g, gr) {
   function x(u, v) { return intre(intre(fata0, fata1, u), intre(fund0, fund1, u), v); }
   function y(v) { return intre(yFata, yFund, v); }
 
+  if (numaiLinii) c.save();
+  if (numaiLinii) c.globalAlpha = 0.62;
+
   // tăblia tavanului, mai rece decât peretele
+  if (!numaiLinii) {
   c.fillStyle = TAVAN_GRINDA;
   c.beginPath();
   c.moveTo(fata0, y(0)); c.lineTo(fata1, y(0));
@@ -327,6 +642,7 @@ function tavanulCuLuminator(c, g, gr) {
   c.lineTo(x(0.22, 0.88), y(0.88));
   c.closePath();
   c.fill();
+  }
 
   // grinzile care fug spre fund
   creion(c, gr * 1.1);
@@ -383,6 +699,7 @@ function tavanulCuLuminator(c, g, gr) {
     c.moveTo(0, g.cornisa + dy); c.lineTo(W, g.cornisa + dy);
     c.stroke();
   }
+  if (numaiLinii) c.restore();
 }
 
 /* Peretele din fund: firida cu pelerina în mijloc, panouri înalte de-o parte și
@@ -409,7 +726,7 @@ function peretulDinFund(c, g, gr) {
   /* Firida: o arcadă adâncă în perete, în care stă exponatul. Ea spune „aici e
      lucrarea" fără nicio săgeată — un obiect așezat într-o firidă e, prin însuși
      locul lui, un obiect arătat. */
-  const fx = W * 0.5, fw = Math.min(W * 0.30, H * 0.46);
+  const fx = W * 0.5, fw = latimeaFiridei();
   const fSus = sus + H * 0.045;
 
   /* Adâncul firidei, umplut cu o piatră mai închisă. El e fondul pe care stă
@@ -454,9 +771,8 @@ function peretulDinFund(c, g, gr) {
     panouDeStuc(c, px - plat / 2, sus + H * 0.05, plat, lambriu - sus - H * 0.10, gr);
   }
 
-  /* Coloana stă la stânga fișei de sală, nu sub ea: sus în dreapta e panoul cu
-     text, iar un capitel desenat pe sub el nu se vede, doar încarcă. */
-  coloanaCorintica(c, W * 0.635, sus, lambriu, W * 0.038, gr);
+  /* Coloanele nu se desenează aici, ci la urmă, peste pastă. Puse acum, lespezile
+     de vopsea le-ar îngropa — iar o coloană îngropată nu mai ține nimic. */
 
   /* Ușa din dreapta: nu duce nicăieri și n-are voie să ducă. E acolo fiindcă o
      sală fără nicio ieșire nu e o sală, e o cutie. */
@@ -492,128 +808,208 @@ function panouDeStuc(c, x, y, w, h, gr) {
   c.stroke();
 }
 
-/* Coloana cu capitel corintic. Capitelul nu se desenează frunză cu frunză: din
-   depărtare, ce se vede dintr-un corint sunt volutele de la colțuri și două
-   rânduri de acantă — trei arce și opt cârlige. Restul e literatură. */
-function coloanaCorintica(c, cx, sus, jos, lat, gr) {
-  const capSus = sus + H * 0.02, capJos = capSus + lat * 1.15;
+/* O coloană corintică întreagă: **bază, fus, capitel** — de la podea până sub
+   cornișă. Fiecare parte are un rost: baza împrăștie greutatea pe pardoseală,
+   fusul o duce, capitelul o preia de la grindă. O coloană căreia îi lipsește una
+   din trei nu e o coloană, e o dungă verticală pe perete.
 
-  // fusul, din aceeași piatră ca peretele, dar rotund: deci luminat pe o parte
-  const rotund = c.createLinearGradient(cx - lat * 0.5, 0, cx + lat * 0.5, 0);
+   Fusul se umflă puțin pe la mijloc — *entasis*. Grecii l-au făcut fiindcă un fus
+   drept, privit de jos, pare scobit la mijloc. Se vede foarte puțin, dar fără el
+   coloana arată a țeavă. */
+function coloanaCorintica(c, cx, cornisa, podea, lat, gr) {
+  const capJos = cornisa + lat * 1.30;
+  const bazaSus = podea - lat * 0.46;
+  const razaSus = lat * 0.40, razaJos = lat * 0.50;
+
+  /* Cât e de gros fusul la înălțimea `t` (0 sus, 1 jos), cu umflătura de la
+     mijloc pusă peste subțierea de sus în jos. */
+  const grosime = function (t) {
+    return intre(razaSus, razaJos, t) + Math.sin(t * Math.PI) * lat * 0.035;
+  };
+
+  // fusul, rotund: luminat pe stânga, în umbră pe dreapta
+  const rotund = c.createLinearGradient(cx - razaJos, 0, cx + razaJos, 0);
   rotund.addColorStop(0, PIATRA_UMBRA);
-  rotund.addColorStop(0.35, PIATRA_LUMINA);
-  rotund.addColorStop(1, '#a89d88');
+  rotund.addColorStop(0.30, PIATRA_LUMINA);
+  rotund.addColorStop(0.62, PIATRA_PERETE);
+  rotund.addColorStop(1, '#9d9280');
   c.fillStyle = rotund;
   c.beginPath();
-  c.moveTo(cx - lat * 0.42, capJos);
-  c.lineTo(cx - lat * 0.46, jos);
-  c.lineTo(cx + lat * 0.46, jos);
-  c.lineTo(cx + lat * 0.42, capJos);
+  const PASI = 18;
+  for (let k = 0; k <= PASI; k++) {
+    const t = k / PASI, y = intre(capJos, bazaSus, t);
+    if (k === 0) c.moveTo(cx - grosime(t), y); else c.lineTo(cx - grosime(t), y);
+  }
+  for (let k = PASI; k >= 0; k--) {
+    const t = k / PASI, y = intre(capJos, bazaSus, t);
+    c.lineTo(cx + grosime(t), y);
+  }
   c.closePath();
   c.fill();
-  c.fillStyle = PIATRA_LUMINA;
-  c.beginPath();
-  c.moveTo(cx - lat * 0.78, capSus);
-  c.lineTo(cx + lat * 0.78, capSus);
-  c.lineTo(cx + lat * 0.42, capJos);
-  c.lineTo(cx - lat * 0.42, capJos);
-  c.closePath();
-  c.fill();
-
-  // fusul, cu caneluri
-  creion(c, gr * 1.3);
-  c.beginPath();
-  c.moveTo(cx - lat * 0.42, capJos); c.lineTo(cx - lat * 0.46, jos);
-  c.moveTo(cx + lat * 0.42, capJos); c.lineTo(cx + lat * 0.46, jos);
+  creion(c, gr * 1.1);
   c.stroke();
-  creion(c, gr * 0.6, LINIE_SUBTIRE);
-  for (const q of [-0.22, 0, 0.22]) {
+
+  // canelurile: patru dungi care urmează umflătura fusului
+  creion(c, gr * 0.55, 'rgba(120, 110, 92, 0.55)');
+  for (const q of [-0.55, -0.20, 0.20, 0.55]) {
     c.beginPath();
-    c.moveTo(cx + lat * q, capJos + H * 0.01); c.lineTo(cx + lat * q, jos);
+    for (let k = 0; k <= PASI; k++) {
+      const t = k / PASI, y = intre(capJos, bazaSus, t);
+      const x = cx + grosime(t) * q;
+      if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
     c.stroke();
   }
 
-  // abacul de deasupra capitelului, ușor scobit pe laturi
-  creion(c, gr * 1.3);
-  c.beginPath();
-  c.moveTo(cx - lat * 0.78, capSus);
-  c.quadraticCurveTo(cx, capSus + lat * 0.09, cx + lat * 0.78, capSus);
-  c.lineTo(cx + lat * 0.78, capSus + lat * 0.13);
-  c.quadraticCurveTo(cx, capSus + lat * 0.22, cx - lat * 0.78, capSus + lat * 0.13);
-  c.closePath();
-  c.stroke();
-
-  // coșul capitelului
-  c.beginPath();
-  c.moveTo(cx - lat * 0.70, capSus + lat * 0.15);
-  c.quadraticCurveTo(cx - lat * 0.40, capJos - lat * 0.05, cx - lat * 0.42, capJos);
-  c.lineTo(cx + lat * 0.42, capJos);
-  c.quadraticCurveTo(cx + lat * 0.40, capJos - lat * 0.05, cx + lat * 0.70, capSus + lat * 0.15);
-  c.stroke();
-
-  /* Volutele din colțuri și două frunze de acantă. Atât — un capitel corintic
-     desenat frunză cu frunză, la mărimea la care se vede aici, se face un ghem
-     de linii. De departe, dintr-un corint se citesc două cârlige sus și un
-     evantai jos. */
-  creion(c, gr * 0.75);
-  for (const lt of [-1, 1]) {
-    c.beginPath();
-    c.moveTo(cx + lt * lat * 0.62, capSus + lat * 0.22);
-    c.quadraticCurveTo(cx + lt * lat * 0.56, capSus + lat * 0.48,
-                       cx + lt * lat * 0.34, capSus + lat * 0.42);
-    c.stroke();
-    c.beginPath();
-    c.moveTo(cx + lt * lat * 0.06, capJos - lat * 0.04);
-    c.quadraticCurveTo(cx + lt * lat * 0.34, capJos - lat * 0.32,
-                       cx + lt * lat * 0.30, capSus + lat * 0.56);
-    c.stroke();
-  }
+  bazaColoanei(c, cx, bazaSus, podea, lat, gr);
+  capitelCorintic(c, cx, cornisa, capJos, lat, gr);
 }
 
-/* Aplicele de perete: două lămpi în formă de clopot, de-o parte și de alta a
-   firidei. Sunt mărunte, dar fără ele peretele n-are scară — nu știi dacă
-   firida e cât o ușă sau cât o casă. */
-function apliceleDePerete(c, g, gr) {
-  const y = g.cornisa + H * 0.20;
-  for (const cx of [W * 0.325, W * 0.582]) {
-    const r = Math.min(W * 0.022, H * 0.035);
-    creion(c, gr * 1.1);
-    // brațul prins în perete
+/* Baza: un tor rotunjit pe o plintă pătrată. Plinta e ce atinge pardoseala, și
+   tocmai ea lipsea — o coloană care se termină în aer, deasupra podelei, plutește
+   oricât de bine ar fi desenat restul. */
+function bazaColoanei(c, cx, sus, podea, lat, gr) {
+  const piatra = c.createLinearGradient(cx - lat * 0.7, 0, cx + lat * 0.7, 0);
+  piatra.addColorStop(0, PIATRA_UMBRA);
+  piatra.addColorStop(0.32, PIATRA_LUMINA);
+  piatra.addColorStop(1, '#968b79');
+  c.fillStyle = piatra;
+
+  // torul
+  c.beginPath();
+  c.moveTo(cx - lat * 0.50, sus);
+  c.quadraticCurveTo(cx - lat * 0.70, sus + lat * 0.14, cx - lat * 0.62, sus + lat * 0.28);
+  c.lineTo(cx + lat * 0.62, sus + lat * 0.28);
+  c.quadraticCurveTo(cx + lat * 0.70, sus + lat * 0.14, cx + lat * 0.50, sus);
+  c.closePath();
+  c.fill();
+  creion(c, gr);
+  c.stroke();
+
+  // plinta, care stă pe pardoseală
+  c.fillStyle = piatra;
+  c.beginPath();
+  c.rect(cx - lat * 0.72, sus + lat * 0.28, lat * 1.44, podea - sus - lat * 0.28);
+  c.fill();
+  creion(c, gr * 1.1);
+  c.stroke();
+}
+
+/* Capitelul. Un corint desenat frunză cu frunză, la mărimea la care se vede
+   aici, se face un ghem de linii — de departe, dintr-un corint se citesc coșul,
+   două rânduri de acantă și volutele din colțuri. Atât punem. */
+function capitelCorintic(c, cx, sus, jos, lat, gr) {
+  const piatra = c.createLinearGradient(cx - lat * 0.8, 0, cx + lat * 0.8, 0);
+  piatra.addColorStop(0, PIATRA_UMBRA);
+  piatra.addColorStop(0.30, PIATRA_LUMINA);
+  piatra.addColorStop(1, '#9d9280');
+
+  // coșul capitelului, care se lărgește în sus
+  c.fillStyle = piatra;
+  c.beginPath();
+  c.moveTo(cx - lat * 0.42, jos);
+  c.quadraticCurveTo(cx - lat * 0.46, sus + lat * 0.55, cx - lat * 0.72, sus + lat * 0.26);
+  c.lineTo(cx + lat * 0.72, sus + lat * 0.26);
+  c.quadraticCurveTo(cx + lat * 0.46, sus + lat * 0.55, cx + lat * 0.42, jos);
+  c.closePath();
+  c.fill();
+  creion(c, gr);
+  c.stroke();
+
+  // abacul: placa de deasupra, scobită pe laturi
+  c.fillStyle = piatra;
+  c.beginPath();
+  c.moveTo(cx - lat * 0.82, sus);
+  c.quadraticCurveTo(cx, sus + lat * 0.10, cx + lat * 0.82, sus);
+  c.lineTo(cx + lat * 0.82, sus + lat * 0.26);
+  c.quadraticCurveTo(cx, sus + lat * 0.34, cx - lat * 0.82, sus + lat * 0.26);
+  c.closePath();
+  c.fill();
+  creion(c, gr * 1.2);
+  c.stroke();
+
+  // volutele din colțuri și frunzele de acantă
+  creion(c, gr * 0.75, 'rgba(110, 100, 82, 0.8)');
+  for (const lt of [-1, 1]) {
     c.beginPath();
-    c.moveTo(cx, y - r * 1.5); c.lineTo(cx, y - r * 0.35);
+    c.moveTo(cx + lt * lat * 0.66, sus + lat * 0.30);
+    c.quadraticCurveTo(cx + lt * lat * 0.58, sus + lat * 0.62,
+                       cx + lt * lat * 0.34, sus + lat * 0.52);
     c.stroke();
-    /* Lumina care iese din aplică. Ea e ce face dintr-o lampă desenată o lampă
-       aprinsă — și tot ea spune că în sală e cald. */
-    const luminaAplicei = c.createRadialGradient(cx, y + r * 0.4, 0, cx, y + r * 0.4, r * 4.5);
-    luminaAplicei.addColorStop(0, 'rgba(255, 232, 170, 0.42)');
-    luminaAplicei.addColorStop(1, 'rgba(255, 232, 170, 0)');
-    c.fillStyle = luminaAplicei;
     c.beginPath();
-    c.arc(cx, y + r * 0.4, r * 4.5, 0, Math.PI * 2);
+    c.moveTo(cx + lt * lat * 0.08, jos - lat * 0.05);
+    c.quadraticCurveTo(cx + lt * lat * 0.40, jos - lat * 0.42,
+                       cx + lt * lat * 0.30, sus + lat * 0.68);
+    c.stroke();
+  }
+  // frunza din mijloc
+  c.beginPath();
+  c.moveTo(cx, jos - lat * 0.04);
+  c.quadraticCurveTo(cx - lat * 0.10, sus + lat * 0.80, cx, sus + lat * 0.58);
+  c.quadraticCurveTo(cx + lat * 0.10, sus + lat * 0.80, cx, jos - lat * 0.04);
+  c.stroke();
+}
+
+/* Aplicele de perete. Erau două clopote cu o dungă deasupra, atârnate în aer —
+   arătau a ciuperci puse în cui. O aplică adevărată are trei lucruri: o **talpă**
+   prinsă de perete, un **braț** care iese din ea, și **globul** de sticlă în
+   care arde lumina. Cel din urmă e singurul care trebuie să strălucească.
+
+   Se desenează la sfârșit, peste pastă: lumina lor cade **pe** vopsea, nu sub ea. */
+function apliceleDePerete(c, g, gr) {
+  const y = g.cornisa + H * 0.185;
+  for (const cx of [W * 0.325, W * 0.582]) {
+    const r = Math.min(W * 0.019, H * 0.030);
+
+    // haloul cald de pe perete
+    const halo = c.createRadialGradient(cx, y + r * 0.9, 0, cx, y + r * 0.9, r * 6);
+    halo.addColorStop(0, 'rgba(255, 226, 158, 0.34)');
+    halo.addColorStop(0.45, 'rgba(255, 214, 130, 0.12)');
+    halo.addColorStop(1, 'rgba(255, 214, 130, 0)');
+    c.fillStyle = halo;
+    c.beginPath();
+    c.arc(cx, y + r * 0.9, r * 6, 0, Math.PI * 2);
     c.fill();
 
-    // clopotul, de alamă
-    const alama = c.createLinearGradient(cx - r, 0, cx + r, 0);
-    alama.addColorStop(0, '#f0d68a');
+    // talpa prinsă de perete
+    const alama = c.createLinearGradient(cx - r * 0.5, 0, cx + r * 0.5, 0);
+    alama.addColorStop(0, '#f2dc9e');
     alama.addColorStop(0.4, ALAMA_SALA);
-    alama.addColorStop(1, '#8a6a25');
+    alama.addColorStop(1, '#7d5f1f');
     c.fillStyle = alama;
     c.beginPath();
-    c.moveTo(cx - r, y + r * 0.75);
-    c.quadraticCurveTo(cx - r * 0.9, y - r * 0.55, cx, y - r * 0.55);
-    c.quadraticCurveTo(cx + r * 0.9, y - r * 0.55, cx + r, y + r * 0.75);
-    c.closePath();
+    c.ellipse(cx, y - r * 1.5, r * 0.42, r * 0.62, 0, 0, Math.PI * 2);
     c.fill();
-    creion(c, gr * 1.1);
+
+    // brațul, o curbă subțire care coboară spre glob
+    c.strokeStyle = ALAMA_SALA;
+    c.lineWidth = Math.max(1.2, r * 0.16);
+    c.lineCap = 'round';
     c.beginPath();
-    c.moveTo(cx - r, y + r * 0.75);
-    c.quadraticCurveTo(cx - r * 0.9, y - r * 0.55, cx, y - r * 0.55);
-    c.quadraticCurveTo(cx + r * 0.9, y - r * 0.55, cx + r, y + r * 0.75);
+    c.moveTo(cx, y - r * 1.4);
+    c.quadraticCurveTo(cx + r * 0.30, y - r * 0.9, cx, y - r * 0.34);
     c.stroke();
-    creion(c, gr * 0.8, LINIE_SUBTIRE);
+
+    /* Globul: o bilă de sticlă lăptoasă, luminată dinăuntru. Lumina se face
+       dintr-un gradient care pornește din partea de sus a bilei, nu din mijloc —
+       becul stă acolo, iar sticla de dedesubt e mai plină. */
+    const sticla = c.createRadialGradient(cx - r * 0.25, y - r * 0.25, r * 0.05,
+                                          cx, y + r * 0.1, r * 1.15);
+    sticla.addColorStop(0, '#fffbe8');
+    sticla.addColorStop(0.45, '#ffeeba');
+    sticla.addColorStop(1, '#e8c477');
+    c.fillStyle = sticla;
     c.beginPath();
-    c.ellipse(cx, y + r * 0.75, r, r * 0.22, 0, 0, Math.PI * 2);
+    c.arc(cx, y + r * 0.15, r, 0, Math.PI * 2);
+    c.fill();
+    creion(c, gr * 0.8, 'rgba(140, 108, 40, 0.55)');
     c.stroke();
+
+    // gulerașul de alamă de deasupra globului
+    c.fillStyle = alama;
+    c.beginPath();
+    c.ellipse(cx, y - r * 0.72, r * 0.34, r * 0.16, 0, 0, Math.PI * 2);
+    c.fill();
   }
 }
 
@@ -666,7 +1062,6 @@ function podiumulCuFunii(c, g, gr) {
   c.closePath();
   c.fill();
   const blat = c.createLinearGradient(0, g.podiumCy - g.podiumRy, 0, g.podiumCy + g.podiumRy);
-  blat.addColorStop(0, '#a1968237'.slice(0, 7));
   blat.addColorStop(0, '#a19682');
   blat.addColorStop(1, '#8b8170');
   c.fillStyle = blat;
@@ -688,11 +1083,10 @@ function podiumulCuFunii(c, g, gr) {
   c.ellipse(g.podiumCx, g.podiumCy + h2, g.podiumRx, g.podiumRy, 0, 0, Math.PI);
   c.stroke();
 
-  creion(c, gr);
-  c.beginPath();
-  c.rect(g.podiumCx - g.podiumRx * 0.24, g.podiumCy + h2 * 0.3,
-         g.podiumRx * 0.48, h2 * 0.55);
-  c.stroke();
+  /* Aici era o etichetă de muzeu, un dreptunghi gol pe fața podiumului. A ieșit:
+     gol, nu spunea nimic, iar scris ar fi spus ce vrem tocmai să nu spunem —
+     lucrarea de pe podium **nu are încă nume**, fiindcă n-a făcut-o încă nimeni.
+     Tu urmează s-o faci. */
 
   /* Aici stăteau patru stâlpi cu cordon, de jur împrejurul podiumului. I-am
      scos: în fața pelerinei n-au loc. Trena se revarsă tocmai peste locul lor,
@@ -706,23 +1100,48 @@ function podiumulCuFunii(c, g, gr) {
 /* ---------- PELERINA, ÎN LINIE ---------- */
 /* Conturul pelerinei. Se ține într-un singur loc, fiindcă e nevoie de el în
    trei: la desen, la tăiat, și la socotit care ochiuri ale rețelei cad pe ea. */
-/* Croiala pelerinei, scrisă o singură dată: pentru fiecare înălțime, cât e de
-   lată. Din tabelul ăsta ies **și** conturul desenat, **și** socoteala
-   acoperirii — două lucruri care trebuie să spună același adevăr. Scrise de două
-   ori, s-ar despărți la prima schimbare: ai fi colorat o pelerină și ai fi
-   acoperit alta.
+/* ---------- EXPONATUL: O ROCHIE DE RENAȘTERE ----------
 
-   Ce spun cifrele, citite de sus în jos: gâtul manechinului, gluga care se
-   revarsă peste umeri și e cel mai lat lucru de sus, o strângere sub umeri, și
-   apoi căderea care se lățește până la poale.
+   Pe manechin a stat o vreme o mantie de ceremonie. N-a mers, și merită spus de
+   ce, fiindcă e o lecție de desen, nu un capriciu:
 
-   Strângerea de sub umeri e tot ce deosebește o mantie de un abajur. Fără ea,
-   lățimea crește de sus până jos fără să se oprească nicăieri — și orice contur
-   care face asta se citește ca un clopot, oricâte broderii i-ai pune pe el. */
+   **o mantie n-are talie.** Conturul ei se lărgește de sus până jos fără să se
+   oprească nicăieri, iar orice contur care face asta se citește ca un clopot —
+   oricâte broderii, medalioane și ceaprazuri i-ai pune pe el. Am încercat de trei
+   ori: cu glugă, cu trenă, cu bordură lată. De fiecare dată, de la doi pași,
+   rămânea un abajur bogat ornamentat.
+
+   O rochie de Renaștere are exact lucrul care lipsea: **o strângere**. Corsaj
+   strâmt, talie ascuțită, și de acolo fusta care se deschide conic. Silueta se
+   recunoaște înainte să apuci să te uiți la detalii — iar aici tocmai asta
+   trebuie, fiindcă exponatul stă în mijlocul sălii și se vede de la intrare.
+
+   Și mai are un folos, care ține de joc: rochia vine **cu despărțituri
+   firești** — corsaj, mâneci bufante, mâneci strâmte, stomacher, fustă,
+   jupa dinăuntru care se vede prin deschizătura din față. Fiecare e o suprafață
+   închisă în care poți pune altă culoare. Suprafețele astea sunt tocmai ce face
+   colorarea să merite; o pată mare și netedă nu-ți dă nimic de hotărât.
+
+   (Numele din cod a rămas `pelerina` — el înseamnă acum „veșmântul de pe
+   manechin", oricare ar fi el. E numele pe care îl știu și testele, și rețeaua
+   care socotește acoperirea.) */
+
+/* Croiala, scrisă o singură dată: pentru fiecare înălțime, cât e de lată. Din
+   tabelul ăsta ies **și** conturul desenat, **și** socoteala acoperirii — două
+   lucruri care trebuie să spună același adevăr. Scrise de două ori, s-ar
+   despărți la prima schimbare: ai fi colorat o rochie și ai fi acoperit alta.
+
+   Citit de sus în jos: gâtul, umerii, mânecile bufante — cel mai lat lucru de
+   sus —, strângerea de sub ele, talia (locul cel mai îngust din tot desenul), și
+   fusta care se deschide până la poale. */
 const PROFIL_PELERINEI = [
-  [0.000, 0.10], [0.028, 0.16], [0.058, 0.46], [0.080, 0.62],
-  [0.115, 0.66], [0.190, 0.62], [0.340, 0.66], [0.520, 0.74],
-  [0.700, 0.84], [0.860, 0.94], [0.960, 1.00], [1.000, 1.00]
+  [0.000, 0.070], [0.040, 0.095],
+  [0.065, 0.340], [0.095, 0.520],                   // umerii, cu aripioarele
+  [0.160, 0.625], [0.245, 0.595],                   // mâneca-balon, până la cot
+  [0.320, 0.400], [0.390, 0.215],                   // se strânge spre încheietură
+  [0.430, 0.150],                                   // talia — locul cel mai îngust
+  [0.505, 0.350], [0.605, 0.560], [0.720, 0.750],
+  [0.845, 0.900], [0.950, 0.980], [1.000, 1.000]
 ];
 
 function latimeaPelerinei(v) {
@@ -737,41 +1156,41 @@ function latimeaPelerinei(v) {
   return PROFIL_PELERINEI[PROFIL_PELERINEI.length - 1][1];
 }
 
-/* Trena. O mantie de ceremonie nu cade la fel de o parte și de alta: ea are o
-   coadă lungă, care se revarsă într-o singură parte și se așază pe podium.
-
-   De-aia partea stângă capătă un adaos care crește numai de la brâu în jos.
-   Fără el, pelerina e simetrică — și o mantie simetrică, oricât de brodată, se
-   citește ca o rochie pusă pe umeraș. */
+/* Trena. Fusta se revarsă puțin mai mult într-o parte, ca o rochie așezată pe
+   manechin de o mână care a aranjat-o. Simetrică perfect, arată a desen tehnic. */
 function adaosulTrenei(v) {
-  if (v <= 0.70) return 0;
-  const q = (v - 0.70) / 0.30;
-  return Math.pow(q, 1.7) * 0.62;
+  if (v <= 0.72) return 0;
+  const q = (v - 0.72) / 0.28;
+  return Math.pow(q, 1.8) * 0.30;
 }
 
 function latimeaStanga(v) { return latimeaPelerinei(v) + adaosulTrenei(v); }
-function latimeaDreapta(v) { return latimeaPelerinei(v) + adaosulTrenei(v) * 0.14; }
+function latimeaDreapta(v) { return latimeaPelerinei(v) + adaosulTrenei(v) * 0.35; }
+
+/* Talia. Ea e cheia întregii siluete: deasupra ei totul se strânge, dedesubt
+   totul se deschide. În portretele de epocă vârful corsajului coboară chiar sub
+   talie, într-un V lung — și tocmai V-ul ăla face ca fusta să pară de două ori
+   mai largă decât e. */
+const TALIA = 0.430;
 
 function traseulPelerinei(c) {
   const g = geomSala8();
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const PASI = 34;
+  const PASI = 40;
   c.beginPath();
-  // latura din stânga, de sus în jos, cu tot cu trenă
   for (let k = 0; k <= PASI; k++) {
     const v = k / PASI;
     const x = cx - latimeaStanga(v) * w, y = sus + v * h;
     if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
   }
-  /* Poalele: un val, ca o baltă de stofă. O mantie lăsată pe jos nu se termină
+  /* Poalele: un val, ca o fustă lungă lăsată pe podium. O rochie nu se termină
      pe o linie trasă cu compasul. */
   const st = -latimeaStanga(1), dr = latimeaDreapta(1);
   for (let k = 0; k <= PASI; k++) {
     const q = k / PASI;
-    const x = cx + intre(st, dr, q) * w;
-    c.lineTo(x, sus + h * (1 + 0.03 * Math.sin(q * Math.PI * 2.6)));
+    c.lineTo(cx + intre(st, dr, q) * w,
+             sus + h * (1 + 0.026 * Math.sin(q * Math.PI * 2.4)));
   }
-  // și înapoi în sus, pe dreapta
   for (let k = PASI; k >= 0; k--) {
     const v = k / PASI;
     c.lineTo(cx + latimeaDreapta(v) * w, sus + v * h);
@@ -779,25 +1198,17 @@ function traseulPelerinei(c) {
   c.closePath();
 }
 
-/* Mantia de pe podium, desenată numai cu conturul: gâtul manechinului, gluga
-   revărsată, deschizătura din față cu cele două benzi brodate, ceaprazurile cu
-   ciucuri pe piept, medalioanele, bordura de la poale și trena.
-
-   E singurul lucru din sală făcut cu grijă de miniaturist — restul e schiță. Ea
-   trebuie să ceară să fie colorată, iar un desen care cere culoare e unul în
-   care se vede cât s-a lucrat la contur. */
 function pelerinaInLinie(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, jos = g.pelJos, w = g.pelLat, h = g.pelInalt;
-  const umarY = sus + h * 0.125, umarX = latimeaPelerinei(0.125) * w;
 
   gatulManechinului(c, g, gr);
 
-  /* Pelerina se umple cu alb înainte de orice linie. Ea e **singurul lucru
+  /* Rochia se umple cu alb înainte de orice linie. Ea e **singurul lucru
      nepictat din toată sala**, iar asta trebuie să se vadă dintr-o privire: o
-     pânză albă într-o cameră colorată nu are nevoie de nicio săgeată ca să
-     spună „eu sunt de făcut".
+     pânză albă într-o cameră pictată nu are nevoie de nicio săgeată ca să spună
+     „eu sunt de făcut".
 
-     Albul nu e curat, ci ușor gălbui, cu o umbră spre poale: o pânză de in
+     Albul nu e curat, ci ușor gălbui, cu o umbră spre poale: pânză de in
      amorsată, nu o gaură în ecran. */
   const panza = c.createLinearGradient(0, sus, 0, jos);
   panza.addColorStop(0, '#fffdf7');
@@ -811,314 +1222,375 @@ function pelerinaInLinie(c, g, gr) {
   traseulPelerinei(c);
   c.stroke();
 
-  glugaPelerinei(c, g, gr, umarX, umarY);
-  deschizaturaDinFata(c, g, gr, umarY);
-  ceaprazurileDePiept(c, g, gr, umarY);
-  medalioanePeMantie(c, g, gr);
-  borduraPoalelor(c, g, gr);
-  cuteleStofei(c, g, gr, umarY);
+  fustaCuDeschizatura(c, g, gr);
+  corsajulSiDecolteul(c, g, gr);
+  manecileBufante(c, g, gr);
+  braulCuPietre(c, g, gr);
+  gulerulGhioc(c, g, gr);
 }
 
-/* Gâtul manechinului: un stâlp scurt care iese din glugă. El e tot ce spune că
-   pelerina e **îmbrăcată pe ceva**, nu atârnată într-un cui. */
+/* Gulerul-ghioc — *ruff*-ul. E lucrul care spune „Renaștere" înaintea oricărui
+   altuia: o roată de pânză scrobită, călcată în cute în formă de opt, care stă
+   în jurul gâtului ca o farfurie.
+
+   Se desenează **la urmă**, peste tot restul: el stă în fața umerilor, iar dacă
+   l-aș pune înainte, cusătura umărului i-ar trece peste cute. */
+function gulerulGhioc(c, g, gr) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const cy = sus + h * 0.012;
+  const rx = w * 0.235, ry = h * 0.042;
+
+  // roata gulerului: două elipse, una în alta
+  const panza = c.createRadialGradient(cx, cy - ry * 0.3, ry * 0.2, cx, cy, rx);
+  panza.addColorStop(0, '#ffffff');
+  panza.addColorStop(1, '#efe8d8');
+  c.fillStyle = panza;
+  c.beginPath();
+  c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  c.fill();
+  creion(c, gr * 1.35);
+  c.stroke();
+  creion(c, gr * 0.9, LINIE_SUBTIRE);
+  c.beginPath();
+  c.ellipse(cx, cy, rx * 0.34, ry * 0.42, 0, 0, Math.PI * 2);
+  c.stroke();
+
+  /* Cutele: fiecare e un „opt" culcat, care pleacă de la gât spre margine. Trase
+     drept, ca spițele unei roți, gulerul arată a floarea-soarelui; îndoite, arată
+     a pânză călcată. */
+  creion(c, gr * 0.7, LINIE_SUBTIRE);
+  const CUTE = 26;
+  for (let k = 0; k < CUTE; k++) {
+    const a = (k / CUTE) * Math.PI * 2;
+    const x0 = cx + Math.cos(a) * rx * 0.34, y0 = cy + Math.sin(a) * ry * 0.42;
+    const x1 = cx + Math.cos(a) * rx, y1 = cy + Math.sin(a) * ry;
+    const ax = Math.cos(a + 0.22), ay = Math.sin(a + 0.22);
+    c.beginPath();
+    c.moveTo(x0, y0);
+    c.quadraticCurveTo(cx + ax * rx * 0.78, cy + ay * ry * 0.78, x1, y1);
+    c.stroke();
+  }
+  // marginea zimțată, din vârfurile cutelor
+  creion(c, gr * 0.85);
+  c.beginPath();
+  for (let k = 0; k <= CUTE; k++) {
+    const a = (k / CUTE) * Math.PI * 2;
+    const r = 1 + (k % 2 ? 0.045 : 0);
+    const x = cx + Math.cos(a) * rx * r, y = cy + Math.sin(a) * ry * r;
+    if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+  }
+  c.stroke();
+}
+
+/* Gâtul manechinului: un stâlp scurt care iese din decolteu. El e tot ce spune
+   că rochia e **îmbrăcată pe ceva**, nu atârnată într-un cui. */
 function gatulManechinului(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const lat = w * 0.085, inalt = h * 0.052;
-  creion(c, gr * 1.3);
+  const lat = w * 0.10, inalt = h * 0.06;
+  const lemn = c.createLinearGradient(cx - lat, 0, cx + lat, 0);
+  lemn.addColorStop(0, '#e8dcc4');
+  lemn.addColorStop(0.35, '#d8c8a8');
+  lemn.addColorStop(1, '#a89478');
+  c.fillStyle = lemn;
   c.beginPath();
-  c.moveTo(cx - lat * 0.78, sus - inalt);
-  c.lineTo(cx - lat, sus + h * 0.02);
-  c.lineTo(cx + lat, sus + h * 0.02);
-  c.lineTo(cx + lat * 0.78, sus - inalt);
-  c.closePath();
-  c.stroke();
-  creion(c, gr * 0.8, LINIE_SUBTIRE);
-  c.beginPath();
-  c.ellipse(cx, sus - inalt, lat * 0.78, lat * 0.22, 0, 0, Math.PI * 2);
-  c.stroke();
-}
-
-/* Gluga: masa care se revarsă peste umeri, cu marginea ei răsfrântă. Se
-   desenează ca un scut lat, cu o cută adâncă la mijloc — acolo unde gluga se
-   îndoaie peste ceafă. */
-/* Gluga. Nu o bonetă lipită peste umeri, ci o **pungă de stofă lăsată pe
-   spate**: se ridică mai sus decât gâtul, se rotunjește în spatele lui și se
-   varsă peste umeri, iar pe dinăuntru i se vede căptușeala.
-
-   Prima variantă o desenase ca pe o dungă curbă peste umeri, la aceeași
-   înălțime cu gulerul — și atunci silueta se citea drept clopot cu capac.
-   Gluga trebuie să **iasă din contur în sus**: asta e ce spune, dintr-o
-   privire, că lucrul de pe manechin e o mantie cu glugă. */
-function glugaPelerinei(c, g, gr, umarX, umarY) {
-  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const varf = sus - h * 0.075;                 // vârful glugii, deasupra gâtului
-  const jos = sus + h * 0.135;                  // unde se varsă peste piept
-  const lat = w * 0.52;
-
-  // masa glugii, văzută din față: se ridică în spatele gâtului
-  creion(c, gr * 1.4);
-  c.beginPath();
-  c.moveTo(cx - lat, jos);
-  c.quadraticCurveTo(cx - lat * 1.06, varf + h * 0.03, cx - lat * 0.44, varf);
-  c.quadraticCurveTo(cx, varf - h * 0.028, cx + lat * 0.44, varf);
-  c.quadraticCurveTo(cx + lat * 1.06, varf + h * 0.03, cx + lat, jos);
-  c.stroke();
-
-  /* Deschizătura glugii: un oval întors, prin care se vede căptușeala. Fără el,
-     gluga e un sac; cu el, e o glugă lăsată pe spate. */
-  creion(c, gr * 1.1);
-  c.beginPath();
-  c.moveTo(cx - lat * 0.62, jos - h * 0.012);
-  c.quadraticCurveTo(cx - lat * 0.66, varf + h * 0.055, cx, varf + h * 0.042);
-  c.quadraticCurveTo(cx + lat * 0.66, varf + h * 0.055, cx + lat * 0.62, jos - h * 0.012);
-  c.stroke();
-  creion(c, gr * 0.7, LINIE_SUBTIRE);
-  c.beginPath();
-  c.moveTo(cx - lat * 0.50, jos - h * 0.020);
-  c.quadraticCurveTo(cx - lat * 0.54, varf + h * 0.078, cx, varf + h * 0.066);
-  c.quadraticCurveTo(cx + lat * 0.54, varf + h * 0.078, cx + lat * 0.50, jos - h * 0.020);
-  c.stroke();
-
-  // marginea de jos, revărsată peste umeri
-  creion(c, gr * 1.25);
-  c.beginPath();
-  c.moveTo(cx - umarX * 0.99, umarY);
-  c.quadraticCurveTo(cx - umarX * 0.60, jos + h * 0.030, cx, jos + h * 0.014);
-  c.quadraticCurveTo(cx + umarX * 0.60, jos + h * 0.030, cx + umarX * 0.99, umarY);
-  c.stroke();
-
-  // cutele care coboară din glugă pe umeri
-  creion(c, gr * 0.8, LINIE_SUBTIRE);
-  for (const q of [-0.66, -0.34, 0.34, 0.66]) {
-    c.beginPath();
-    c.moveTo(cx + lat * q * 0.9, jos - h * 0.01);
-    c.quadraticCurveTo(cx + umarX * q * 0.86, jos + h * 0.03,
-                       cx + umarX * q * 0.96, umarY + h * 0.012);
-    c.stroke();
-  }
-}
-
-/* Deschizătura din față: pelerina se desface pe mijloc, iar pe cele două
-   margini coboară benzile brodate — orfreiele. Ele sunt partea cea mai bogată a
-   unei mantii de ceremonie, și tot ele împart suprafața în fâșii: fâșiile sunt
-   tocmai ce face colorarea să merite, fiindcă îți dau unde să schimbi culoarea. */
-function deschizaturaDinFata(c, g, gr, umarY) {
-  desfaFata(c, g, gr, umarY);
-}
-
-/* Deschizătura din față, ca pe mantia adevărată: la mijloc se vede **căptușeala**
-   — o fâșie deschisă care coboară de sub glugă până la poale — iar de-o parte și
-   de alta a ei stau **două benzi late de broderie**, pline de vrejuri.
-
-   Prima variantă le făcuse două dungi subțiri lângă mijloc. Pe mantia adevărată
-   ele sunt late cât o palmă și țin toată înălțimea: sunt partea cea mai bogată a
-   veșmântului, și tot ele împart suprafața în fâșii — fâșiile fiind tocmai ce
-   face colorarea să merite, fiindcă îți dau unde să schimbi culoarea. */
-function desfaFata(c, g, gr, umarY) {
-  const cx = g.pelCx, jos = g.pelJos, w = g.pelLat, h = g.pelInalt;
-  const sus = g.pelSus + h * 0.145;
-  const josDesch = jos - h * 0.085;
-
-  /* Cât e de lată deschizătura la înălțimea `t`: strâmtă sub glugă, lată la
-     poale — mantia se desface pe măsură ce cade. */
-  const desch = function (t) { return w * intre(0.055, 0.235, Math.pow(t, 1.25)); };
-  const banda = function (t) { return w * intre(0.075, 0.135, t); };
-
-  // căptușeala din mijloc, mai deschisă decât restul
-  c.save();
-  c.fillStyle = '#fffdf6';
-  c.beginPath();
-  for (let k = 0; k <= 24; k++) {
-    const t = k / 24, y = intre(sus, josDesch, t);
-    if (k === 0) c.moveTo(cx - desch(t), y); else c.lineTo(cx - desch(t), y);
-  }
-  for (let k = 24; k >= 0; k--) {
-    const t = k / 24, y = intre(sus, josDesch, t);
-    c.lineTo(cx + desch(t), y);
-  }
+  c.moveTo(cx - lat * 0.74, sus - inalt);
+  c.lineTo(cx - lat, sus + h * 0.025);
+  c.lineTo(cx + lat, sus + h * 0.025);
+  c.lineTo(cx + lat * 0.74, sus - inalt);
   c.closePath();
   c.fill();
-  c.restore();
   creion(c, gr * 1.2);
-  for (const lat of [-1, 1]) {
+  c.stroke();
+  creion(c, gr * 0.8, LINIE_SUBTIRE);
+  c.beginPath();
+  c.ellipse(cx, sus - inalt, lat * 0.74, lat * 0.22, 0, 0, Math.PI * 2);
+  c.stroke();
+}
+
+/* Corsajul: decolteul pătrat de sus, cămașa care se vede peste el, și stomacherul
+   — pana brodată din față, care coboară în vârf ascuțit până sub talie.
+
+   Vârful ăsta e semnul cel mai tare al siluetei de Renaștere: el trage ochiul în
+   jos și face talia să pară și mai subțire decât e. */
+function corsajulSiDecolteul(c, g, gr) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const decolteu = sus + h * 0.062;
+  const talie = sus + TALIA * h;
+  /* Vârful corsajului coboară **sub** talie, într-un V lung. În portrete el ajunge
+     cu o palmă mai jos decât brâul — de-aia fusta pare că pleacă de mai jos și,
+     odată cu asta, mai largă. */
+  const varf = talie + h * 0.085;
+
+  // cămașa de in care se vede peste decolteu, cu creț mărunt
+  creion(c, gr * 1.15);
+  c.beginPath();
+  c.moveTo(cx - w * 0.185, decolteu);
+  c.quadraticCurveTo(cx, decolteu - h * 0.020, cx + w * 0.185, decolteu);
+  c.stroke();
+  creion(c, gr * 0.6, LINIE_SUBTIRE);
+  for (let k = 0; k < 9; k++) {
+    const t = (k + 0.5) / 9;
+    const x = intre(cx - w * 0.175, cx + w * 0.175, t);
+    const y = decolteu - h * 0.018 * Math.sin(t * Math.PI);
     c.beginPath();
-    for (let k = 0; k <= 24; k++) {
-      const t = k / 24, y = intre(sus, josDesch, t);
-      if (k === 0) c.moveTo(cx + lat * desch(t), y); else c.lineTo(cx + lat * desch(t), y);
-    }
+    c.moveTo(x, y); c.lineTo(x, y + h * 0.020);
     c.stroke();
   }
 
-  // marginea dinafară a celor două benzi late de broderie
+  // decolteul pătrat al rochiei
   creion(c, gr * 1.3);
+  c.beginPath();
+  c.moveTo(cx - w * 0.20, decolteu + h * 0.028);
+  c.lineTo(cx - w * 0.155, decolteu + h * 0.050);
+  c.lineTo(cx + w * 0.155, decolteu + h * 0.050);
+  c.lineTo(cx + w * 0.20, decolteu + h * 0.028);
+  c.stroke();
+
+  /* Stomacherul: pana din față, cu marginile ei și cu un caroiaj de fir de aur.
+     Caroiajul e tot ce trebuie ca să se citească „brodat" — dincolo de asta,
+     ochiul nu mai numără. */
+  creion(c, gr * 1.25);
+  c.beginPath();
+  c.moveTo(cx - w * 0.140, decolteu + h * 0.050);
+  c.quadraticCurveTo(cx - w * 0.115, talie - h * 0.05, cx - w * 0.075, talie);
+  c.lineTo(cx, varf);
+  c.lineTo(cx + w * 0.075, talie);
+  c.quadraticCurveTo(cx + w * 0.115, talie - h * 0.05, cx + w * 0.140, decolteu + h * 0.050);
+  c.stroke();
+
+  /* Șirul de pietre de pe mijlocul stomacherului. În toate portretele coboară un
+     lanț de nestemate exact pe linia asta — el trage ochiul spre vârful V-ului,
+     adică spre locul unde silueta se strânge cel mai tare. */
+  creion(c, gr * 0.7, LINIE_SUBTIRE);
+  for (let k = 0; k < 6; k++) {
+    const t = (k + 0.5) / 6;
+    const y = intre(decolteu + h * 0.075, varf - h * 0.012, t);
+    const r = w * (0.026 - t * 0.008);
+    c.beginPath();
+    c.moveTo(cx, y - r); c.lineTo(cx + r * 0.7, y);
+    c.lineTo(cx, y + r); c.lineTo(cx - r * 0.7, y);
+    c.closePath();
+    c.stroke();
+  }
+
+  creion(c, gr * 0.5, LINIE_SUBTIRE);
+  for (let k = 1; k < 7; k++) {
+    const t = k / 7;
+    const l = intre(w * 0.140, w * 0.075, t), y = intre(decolteu + h * 0.050, talie, t);
+    c.beginPath();
+    c.moveTo(cx - l, y); c.lineTo(cx + l, y);
+    c.stroke();
+  }
+
+  // cusăturile corsajului, de la subsuoară spre talie
+  creion(c, gr * 0.8, LINIE_SUBTIRE);
+  for (const lat of [-1, 1]) {
+    c.beginPath();
+    c.moveTo(cx + lat * w * 0.245, sus + h * 0.215);
+    c.quadraticCurveTo(cx + lat * w * 0.215, sus + h * 0.30,
+                       cx + lat * w * 0.185, talie);
+    c.stroke();
+  }
+}
+
+/* Mânecile. În portretele de epocă ele nu sunt o bufantă mică la umăr, ci
+   **baloane întregi**, de la umăr până la încheietură: se umflă la cot și se
+   strâng brusc într-o manșetă mică. Peste ele merg benzi cusute, de sus în jos,
+   ca niște cercuri de butoi — de-acolo vine ritmul care face mâneca bogată.
+
+   La umăr stă *aripioara*: un sul căptușit, în formă de semilună, care ascunde
+   cusătura. Fără el, mâneca pare lipită de corsaj. */
+function manecileBufante(c, g, gr) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const umar = sus + h * 0.085;
+  const incheietura = sus + h * 0.385;
+
+  for (const lat of [-1, 1]) {
+    // cusătura care desparte mâneca de corsaj
+    creion(c, gr * 1.3);
+    c.beginPath();
+    c.moveTo(cx + lat * w * 0.150, sus + h * 0.070);
+    c.quadraticCurveTo(cx + lat * w * 0.142, sus + h * 0.24,
+                       cx + lat * w * 0.165, sus + h * 0.36);
+    c.stroke();
+
+    /* Benzile de pe mânecă: șase cercuri care urmează umflătura. Fiecare e mai
+       lată acolo unde mâneca e mai groasă, fiindcă merge de jur împrejurul ei. */
+    creion(c, gr * 0.8, LINIE_SUBTIRE);
+    for (let k = 1; k <= 6; k++) {
+      const t = k / 7;
+      const v = intre(0.085, 0.385, t);
+      const dinauntru = w * intre(0.148, 0.165, t);
+      const dinafara = latimeaPelerinei(v) * w;
+      const y = sus + v * h;
+      c.beginPath();
+      c.moveTo(cx + lat * dinauntru, y);
+      c.quadraticCurveTo(cx + lat * (dinauntru + dinafara) * 0.5, y + h * 0.016,
+                         cx + lat * dinafara * 0.985, y - h * 0.004);
+      c.stroke();
+    }
+
+    // aripioara de la umăr: un sul în formă de semilună
+    creion(c, gr * 1.15);
+    c.beginPath();
+    c.moveTo(cx + lat * w * 0.135, sus + h * 0.052);
+    c.quadraticCurveTo(cx + lat * w * 0.430, sus + h * 0.026,
+                       cx + lat * w * 0.500, umar + h * 0.030);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(cx + lat * w * 0.135, sus + h * 0.052);
+    c.quadraticCurveTo(cx + lat * w * 0.380, sus + h * 0.090,
+                       cx + lat * w * 0.500, umar + h * 0.030);
+    c.stroke();
+    creion(c, gr * 0.6, LINIE_SUBTIRE);
+    for (let k = 1; k < 5; k++) {
+      const t = k / 5;
+      c.beginPath();
+      c.moveTo(cx + lat * intre(w * 0.150, w * 0.470, t), sus + h * intre(0.046, 0.030, t));
+      c.lineTo(cx + lat * intre(w * 0.155, w * 0.465, t), sus + h * intre(0.086, 0.076, t));
+      c.stroke();
+    }
+
+    // manșeta mică de la încheietură, cu dantela ei
+    creion(c, gr * 1.15);
+    c.beginPath();
+    c.moveTo(cx + lat * w * 0.170, incheietura - h * 0.015);
+    c.quadraticCurveTo(cx + lat * w * 0.235, incheietura + h * 0.010,
+                       cx + lat * w * 0.195, incheietura + h * 0.030);
+    c.stroke();
+    creion(c, gr * 0.6, LINIE_SUBTIRE);
+    for (let k = 0; k < 5; k++) {
+      const t = (k + 0.5) / 5;
+      const x = cx + lat * intre(w * 0.178, w * 0.205, t);
+      const y = intre(incheietura - h * 0.008, incheietura + h * 0.028, t);
+      c.beginPath();
+      c.arc(x, y, w * 0.014, 0, Math.PI);
+      c.stroke();
+    }
+  }
+}
+
+/* Fusta: deschizătura în V din față, prin care se vede jupa brodată, și cutele
+   care pleacă din talie și se răsfiră spre poale. */
+function fustaCuDeschizatura(c, g, gr) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const talie = sus + TALIA * h;
+  const jos = sus + h;
+
+  /* Deschizătura: două margini care pleacă de la talie și se depărtează până la
+     poale. Ce rămâne între ele e jupa — altă țesătură, deci alt loc de pus altă
+     culoare. */
+  /* Deschizătura fustei e un V larg, nu o crăpătură. În portrete rochia se
+     desface de la talie până jos și lasă la vedere **jupa** — altă țesătură, cu
+     alt desen. Ea e a doua suprafață mare pe care ai unde pune altă culoare. */
+  const margine = function (t) { return w * intre(0.03, 0.62, Math.pow(t, 1.05)); };
+  creion(c, gr * 1.35);
   for (const lat of [-1, 1]) {
     c.beginPath();
     for (let k = 0; k <= 24; k++) {
-      const t = k / 24, y = intre(sus, josDesch, t);
-      const x = cx + lat * (desch(t) + banda(t));
+      const t = k / 24, y = intre(talie + h * 0.02, jos - h * 0.012, t);
+      const x = cx + lat * margine(t);
       if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
     }
     c.stroke();
   }
 
-  /* Vrejurile dinăuntrul benzilor: cârcei care se răsucesc de-a lungul lor, cu
-     câte o floare la fiecare cotitură. Așa arată o broderie cu fir de aur de la
-     doi pași — nu ca un lanț de romburi trase la riglă. */
+  /* Broderia jupei: romburi cu câte o floare, ca la brocarturile de epocă. Se
+     desenează des, fiindcă asta se vede dintr-o jupă bogată. */
   creion(c, gr * 0.6, LINIE_SUBTIRE);
-  for (const lat of [-1, 1]) {
-    for (let k = 0; k < 9; k++) {
-      const t = (k + 0.5) / 9;
-      const y = intre(sus, josDesch, t);
-      const mij = cx + lat * (desch(t) + banda(t) * 0.5);
-      const b = banda(t) * 0.5;
-      const inaltOchi = (josDesch - sus) / 9 * 0.46;
+  for (let r = 0; r < 5; r++) {
+    const t = (r + 0.6) / 5.6;
+    const y = intre(talie + h * 0.03, jos - h * 0.02, t);
+    const lat = margine(t) * 0.82;
+    const cate = 1 + r;
+    for (let k = 0; k < cate; k++) {
+      const x = cx + (cate === 1 ? 0 : intre(-lat, lat, k / (cate - 1)) * 0.8);
+      const rr = w * 0.030;
       c.beginPath();
-      c.moveTo(mij - b * 0.7, y + inaltOchi);
-      c.quadraticCurveTo(mij - b * 0.95, y, mij, y - inaltOchi);
-      c.quadraticCurveTo(mij + b * 0.95, y, mij + b * 0.7, y + inaltOchi);
+      c.moveTo(x, y - rr); c.lineTo(x + rr * 0.62, y);
+      c.lineTo(x, y + rr); c.lineTo(x - rr * 0.62, y);
+      c.closePath();
       c.stroke();
       c.beginPath();
-      c.arc(mij, y + inaltOchi * 0.35, b * 0.26, 0, Math.PI * 2);
+      c.arc(x, y, rr * 0.22, 0, Math.PI * 2);
       c.stroke();
     }
   }
-}
 
-/* Ceaprazurile de pe piept: rânduri de găitan prinse de la o bandă la alta, cu
-   câte un ciucure la fiecare capăt. Ele sunt semnul cel mai tare al unei mantii
-   de ceremonie — fără ele, orice cădere de stofă e o pelerină de ploaie. */
-function ceaprazurileDePiept(c, g, gr, umarY) {
-  const cx = g.pelCx, w = g.pelLat, h = g.pelInalt;
-  /* Pe mantia adevărată ceaprazurile nu trec peste piept dintr-o parte în alta:
-     sunt **două șiruri**, câte unul pe fiecare jumătate, alături de benzile
-     brodate, cu ciucurele atârnând spre afară. Trase de la un umăr la altul, ar
-     închide deschizătura — și atunci mantia n-ar mai putea fi îmbrăcată. */
-  const sus = g.pelSus + h * 0.185;
-  const RANDURI = 5;
-  for (const lat of [-1, 1]) {
-    for (let k = 0; k < RANDURI; k++) {
-      const t = k / (RANDURI - 1);
-      const y = sus + t * h * 0.125;
-      const dinauntru = w * intre(0.125, 0.185, t);
-      const dinafara = w * intre(0.30, 0.375, t);
-      creion(c, gr * 1.15);
-      c.beginPath();
-      c.moveTo(cx + lat * dinauntru, y);
-      c.quadraticCurveTo(cx + lat * (dinauntru + dinafara) * 0.5, y + h * 0.008,
-                         cx + lat * dinafara, y - h * 0.004);
-      c.stroke();
-      // ciucurele de la capătul dinafară
-      creion(c, gr * 0.8, LINIE_SUBTIRE);
-      c.beginPath();
-      c.moveTo(cx + lat * dinafara, y - h * 0.004);
-      c.lineTo(cx + lat * dinafara, y + h * 0.024);
-      c.stroke();
-      c.beginPath();
-      c.ellipse(cx + lat * dinafara, y + h * 0.030, w * 0.020, h * 0.014, 0, 0, Math.PI * 2);
-      c.stroke();
-      creion(c, gr * 0.5, LINIE_SUBTIRE);
-      for (const q of [-0.5, 0, 0.5]) {
-        c.beginPath();
-        c.moveTo(cx + lat * dinafara + w * 0.020 * q, y + h * 0.026);
-        c.lineTo(cx + lat * dinafara + w * 0.024 * q, y + h * 0.044);
-        c.stroke();
-      }
-    }
-  }
-}
-
-/* Medalioanele brodate, împrăștiate pe umeri și pe cădere — nu înșirate pe o
-   singură linie. Pe mantiile de încoronare ele stau răzleț, ca stelele pe un
-   cer: dacă le pui la rând, se citesc ca nasturii unei haine. */
-function medalioanePeMantie(c, g, gr) {
-  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const LOCURI = [
-    [-0.40, 0.235], [0.40, 0.235],
-    [-0.315, 0.395], [0.335, 0.415],
-    [-0.475, 0.545], [0.470, 0.560],
-    [-0.385, 0.700], [0.400, 0.715],
-    [-0.640, 0.820], [0.560, 0.845]
-  ];
-  for (const [fx, fy] of LOCURI) {
-    const x = cx + fx * w, y = sus + fy * h;
-    const r = w * 0.058;
-    creion(c, gr * 1.05);
-    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke();
-    creion(c, gr * 0.65, LINIE_SUBTIRE);
-    c.beginPath(); c.arc(x, y, r * 0.52, 0, Math.PI * 2); c.stroke();
-    // crucea dinăuntru, cu brațe egale
+  /* Cutele fustei: pleacă din talie și se răsfiră. Ele sunt ce spune că fusta e
+     din stofă grea, nu dintr-un carton conic. */
+  creion(c, gr * 0.85, LINIE_SUBTIRE);
+  for (let k = 0; k < 12; k++) {
+    const t = (k + 0.5) / 12;
+    const de = (t - 0.5) * 2;
+    const laTalie = de * latimeaPelerinei(TALIA) * 0.86;
+    const laPoale = de < 0 ? de * latimeaStanga(0.97) * 0.90
+                           : de * latimeaDreapta(0.97) * 0.90;
+    // cutele nu intră peste jupă: se opresc la marginea deschizăturii
+    if (Math.abs(laPoale) * w < margine(0.9)) continue;
     c.beginPath();
-    c.moveTo(x - r * 0.52, y); c.lineTo(x + r * 0.52, y);
-    c.moveTo(x, y - r * 0.52); c.lineTo(x, y + r * 0.52);
-    c.stroke();
-    // razele dintre cercuri
-    c.beginPath();
-    for (let q = 0; q < 8; q++) {
-      const a = (q / 8) * Math.PI * 2 + Math.PI / 8;
-      c.moveTo(x + Math.cos(a) * r * 0.56, y + Math.sin(a) * r * 0.56);
-      c.lineTo(x + Math.cos(a) * r * 0.94, y + Math.sin(a) * r * 0.94);
-    }
+    c.moveTo(cx + laTalie * w, talie + h * 0.015);
+    c.quadraticCurveTo(cx + intre(laTalie, laPoale, 0.45) * w, sus + h * 0.72,
+                       cx + laPoale * w, sus + h * 0.97);
     c.stroke();
   }
-}
 
-/* Bordura de la poale: o bandă lată care urmează marginea de jos a mantiei, cu
-   un motiv care se repetă. Ea închide desenul — o mantie care se termină pe o
-   linie goală arată tăiată cu foarfeca, nu croită. */
-function borduraPoalelor(c, g, gr) {
-  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const PASI = 40;
+  // bordura de la poale
+  creion(c, gr * 1.05);
   const st = -latimeaStanga(1), dr = latimeaDreapta(1);
-
-  // marginea de sus a bordurii, mai înăuntru cu o palmă
-  creion(c, gr * 1.1);
   c.beginPath();
-  for (let k = 0; k <= PASI; k++) {
-    const q = k / PASI;
-    const x = cx + intre(st * 0.965, dr * 0.955, q) * w;
-    const y = sus + h * (1 + 0.03 * Math.sin(q * Math.PI * 2.6)) - h * 0.115;
+  for (let k = 0; k <= 36; k++) {
+    const q = k / 36;
+    const x = cx + intre(st * 0.955, dr * 0.955, q) * w;
+    const y = sus + h * (1 + 0.026 * Math.sin(q * Math.PI * 2.4)) - h * 0.055;
     if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
   }
   c.stroke();
-
-  // motivul: cârlige legate între ele, ca meandrul grecesc simplificat
-  creion(c, gr * 0.6, LINIE_SUBTIRE);
-  for (let k = 0; k < 26; k++) {
-    const q = (k + 0.5) / 26;
-    const x = cx + intre(st * 0.965, dr * 0.955, q) * w;
-    const y = sus + h * (1 + 0.03 * Math.sin(q * Math.PI * 2.6)) - h * 0.058;
-    /* Motivul bordurii: o palmetă între două cârlige, repetată. La bordura lată
-       a mantiei adevărate se vede un vrej continuu, nu niște cârlige răzlețe. */
-    const r = w * 0.034;
-    c.beginPath();
-    c.moveTo(x - r, y + r * 0.62);
-    c.quadraticCurveTo(x - r * 0.5, y - r * 0.7, x, y - r * 0.2);
-    c.quadraticCurveTo(x + r * 0.5, y - r * 0.7, x + r, y + r * 0.62);
-    c.stroke();
-    c.beginPath();
-    c.arc(x, y + r * 0.30, r * 0.22, 0, Math.PI * 2);
-    c.stroke();
-  }
 }
 
-/* Cutele stofei: pleacă de sub glugă și se răsfiră spre poale, urmând căderea.
-   Se opresc înainte de bordură, nu o taie — o cută care iese din stofă e o
-   zgârietură. */
-function cuteleStofei(c, g, gr, umarY) {
+/* Brâul de la talie: o cingătoare cu pietre, din care atârnă un lanț subțire.
+   E singurul lucru din desen care nu ține de croială — și tocmai de-aia se vede:
+   ochiul se odihnește pe el și, odată oprit acolo, măsoară talia. */
+function braulCuPietre(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  creion(c, gr * 0.85, LINIE_SUBTIRE);
-  for (let k = 0; k < 11; k++) {
-    const t = (k + 0.5) / 11;
-    const de = (t - 0.5) * 2;                       // -1 stânga, 1 dreapta
-    const vSus = 0.20, vJos = 0.90;
-    const latSus = de * latimeaPelerinei(vSus) * 0.80;
-    // cutele din stânga se duc odată cu trena, deci ajung mai departe
-    const latJos = de < 0 ? de * latimeaStanga(vJos) * 0.86
-                          : de * latimeaDreapta(vJos) * 0.86;
+  const talie = sus + TALIA * h;
+  const lat = latimeaPelerinei(TALIA) * w;
+
+  creion(c, gr * 1.3);
+  c.beginPath();
+  c.moveTo(cx - lat, talie - h * 0.008);
+  c.quadraticCurveTo(cx, talie + h * 0.018, cx + lat, talie - h * 0.008);
+  c.stroke();
+  c.beginPath();
+  c.moveTo(cx - lat, talie + h * 0.020);
+  c.quadraticCurveTo(cx, talie + h * 0.046, cx + lat, talie + h * 0.020);
+  c.stroke();
+
+  // pietrele
+  creion(c, gr * 0.7, LINIE_SUBTIRE);
+  for (let k = 0; k < 7; k++) {
+    const t = (k + 0.5) / 7;
+    const x = intre(cx - lat * 0.86, cx + lat * 0.86, t);
+    const y = talie + h * 0.010 + Math.sin(t * Math.PI) * h * 0.014;
     c.beginPath();
-    c.moveTo(cx + latSus * w, sus + vSus * h);
-    c.quadraticCurveTo(cx + intre(latSus, latJos, 0.45) * w, sus + 0.60 * h,
-                       cx + latJos * w, sus + vJos * h);
+    c.moveTo(x, y - h * 0.010); c.lineTo(x + w * 0.022, y);
+    c.lineTo(x, y + h * 0.010); c.lineTo(x - w * 0.022, y);
+    c.closePath();
+    c.stroke();
+  }
+
+  // lanțul care atârnă din brâu peste fustă
+  creion(c, gr * 0.6, LINIE_SUBTIRE);
+  c.beginPath();
+  c.moveTo(cx + w * 0.03, talie + h * 0.040);
+  c.quadraticCurveTo(cx + w * 0.075, talie + h * 0.13, cx + w * 0.045, talie + h * 0.215);
+  c.stroke();
+  for (let k = 1; k <= 5; k++) {
+    const t = k / 5;
+    const x = intre(cx + w * 0.03, cx + w * 0.045, t) + Math.sin(t * Math.PI) * w * 0.028;
+    const y = intre(talie + h * 0.040, talie + h * 0.215, t);
+    c.beginPath();
+    c.arc(x, y, w * 0.012, 0, Math.PI * 2);
     c.stroke();
   }
 }
@@ -1243,14 +1715,13 @@ function locurileUneltelor() {
   const pas = Math.min(W * 0.040, S * 0.076);
   const inalt = Math.min(H * 0.20, S * 0.32);
   const locuri = [];
+  /* Drepte și la aceeași înălțime, nu răsfirate în evantai. Erau înclinate, ca
+     niște unelte lăsate pe masă — dar ele **nu fac parte din sală**: sunt un
+     strat deasupra ei, lucrurile din mâna ta. Un lucru din decor stă cum a
+     căzut; un lucru din mâna ta stă drept și la locul lui, ca să-l găsești fără
+     să-l cauți. */
   for (let k = 0; k < USTENSILE.length; k++) {
-    const t = k / (USTENSILE.length - 1);
-    locuri.push({
-      x: x0 + k * pas,
-      y: y0 + Math.sin(t * Math.PI) * H * 0.016,
-      unghi: (t - 0.5) * 0.42,
-      inalt: inalt * (0.94 + Math.sin(t * Math.PI) * 0.1)
-    });
+    locuri.push({ x: x0 + k * pas, y: y0, unghi: 0, inalt });
   }
   return locuri;
 }
@@ -1266,8 +1737,7 @@ function deseneazaTrusa(acum) {
     const L = locuri[k];
     const aleasa = s8.unealta === k;
     ctx.save();
-    ctx.translate(L.x, L.y + (aleasa ? -H * 0.022 : 0));
-    ctx.rotate(L.unghi + (aleasa ? -L.unghi * 0.6 : 0));
+    ctx.translate(L.x, L.y + (aleasa ? -H * 0.028 : 0));
 
     /* Cea aleasă se ridică, se îndreaptă și primește sub ea o pată din culoarea
        cu care lucrezi acum. Nu un chenar: o urmă de vopsea, adică chiar lucrul
@@ -1283,13 +1753,17 @@ function deseneazaTrusa(acum) {
                      0.06, cul, USTENSILE[k].forma, USTENSILE[k].relief);
       ctx.restore();
     }
-    // umbra ei pe hârtie, ca să stea deasupra desenului, nu în el
+    /* Umbra nu mai cade pe podea, ci **în spatele uneltei**, ca la un lucru
+       ținut deasupra imaginii. O umbră pe podea le-ar lipi de sală, exact ce nu
+       trebuie: ele plutesc peste ea. */
     ctx.save();
-    ctx.globalAlpha = 0.16;
+    ctx.globalAlpha = 0.22;
+    ctx.shadowColor = 'rgba(40, 32, 22, 0.55)';
+    ctx.shadowBlur = L.inalt * 0.10;
+    ctx.shadowOffsetX = L.inalt * 0.035;
+    ctx.shadowOffsetY = L.inalt * 0.045;
     ctx.fillStyle = '#3a3228';
-    ctx.beginPath();
-    ctx.ellipse(L.inalt * 0.05, L.inalt * 0.5, L.inalt * 0.10, L.inalt * 0.035, 0.2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(-L.inalt * 0.05, -L.inalt * 0.48, L.inalt * 0.10, L.inalt * 0.96);
     ctx.restore();
 
     deseneazaUnealta(ctx, k, 0, 0, L.inalt, gr);
@@ -1347,7 +1821,7 @@ function indemnulScenei8(g, locuri) {
   ctx.fillText('Spațiul este pânza ta.', x + lat * 0.5, y + inalt * 0.38);
   ctx.font = `italic ${Math.round(marimeMare * 0.80)}px Georgia`;
   ctx.fillStyle = '#5e3a16';
-  ctx.fillText('Lasă-ți amprenta. Personalizează spațiul.',
+  ctx.fillText('Lasă-ți amprenta. Personalizează exponatul.',
                x + lat * 0.5, y + inalt * 0.70);
   ctx.restore();
 }
