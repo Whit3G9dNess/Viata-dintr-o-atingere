@@ -199,7 +199,10 @@ function geomSala8() {
      să stea sfioasă în mijlocul ei. Iar cu cât e mai mare, cu atât despărțiturile
      ei — corsaj, mâneci, jupă — sunt suprafețe pe care chiar ai loc să pictezi. */
   const pelLat = podiumRx * 0.72;
-  const pelSus = H * 0.235;
+  /* Rochia începe mai jos decât înainte: deasupra ei trebuie să încapă **capul
+     manechinului**. El e lucrul care spune, dintr-o privire, că veșmântul e
+     îmbrăcat pe ceva — iar un știft de lemn, cât aveam, nu spune nimic. */
+  const pelSus = H * 0.315;
   const pelJos = podiumCy + podiumRy * 0.05;
 
   const trusaLat = Math.min(W * 0.215, S * 0.42);
@@ -381,679 +384,173 @@ function campDePasta(c, x, y, w, h, cate, unghi, imprastiere, lung, gros, paleta
   }
 }
 
+/* ---------- SALA, ÎN CHEIE MODERNĂ ----------
+
+   Sala a fost o vreme o pinacotecă clasică: cornișă, panouri de stuc, coloane
+   corintice, aplice de alamă, și totul acoperit cu pastă groasă de ulei. Pasta
+   n-a mers — de aproape se citea a moloz, iar arhitectura se îneca sub ea.
+
+   Ce a rămas e altceva, și e mai bun pentru ce are scena de făcut: **un spațiu de
+   expunere contemporan**. Fond de culoare plină, un disc mare în spatele
+   exponatului, podea închisă cu oglindire, un con de lumină care cade de sus.
+   Fără textură, fără ornament: forme mari și culoare curată.
+
+   De ce e mai bun: costumul e alb și e singurul lucru nepictat din cameră. Ca
+   să se vadă, are nevoie de **contrast, nu de companie**. O sală bogată în
+   detalii îl concurează; o sală din două-trei pete mari de culoare îl împinge în
+   față. Muzeele de costum fac exact asta, și nu din modă — din necesitate.
+
+   Culorile fondului sunt reci și adânci: indigo, teal. Albul pus pe rece pare și
+   mai alb, iar galbenul, roșul și portocaliul pe care le va aduce jucătorul vor
+   sări cu atât mai tare cu cât fondul e mai depărtat de ele pe roata culorilor. */
+const FOND_SUS      = '#1b2740';
+const FOND_JOS      = '#20404f';
+const DISC_CALD     = '#e0703c';
+const DISC_INTERIOR = '#f2a154';
+const PODEA_MODERN  = '#141b24';
+const PODIUM_MODERN = '#e9e4d8';
+const LUMINA_CON    = 'rgba(255, 244, 214, ';
+
 function pictezaSalaUlei(c) {
   const g = geomSala8();
   const gr = Math.max(1, g.S * 0.0022);
 
-  /* Peretele, de sus până la podea: piatră caldă, mai luminată în mijloc, unde
-     cade lumina din luminator, și mai închisă spre colțuri. Lumina care se
-     termină e tot ce trebuie ca o suprafață plată să pară o cameră. */
-  const zid = c.createRadialGradient(W * 0.5, g.podea * 0.55, g.S * 0.1,
-                                     W * 0.5, g.podea * 0.55, Math.max(W, H) * 0.72);
-  zid.addColorStop(0, PIATRA_LUMINA);
-  zid.addColorStop(0.45, PIATRA_PERETE);
-  zid.addColorStop(1, PIATRA_UMBRA);
-  c.fillStyle = zid;
-  c.fillRect(0, 0, W, H);
-
-  /* Fără vitrine pe laturi. Stăteau acolo ca să spună „ești într-un muzeu", dar
-     colțul din stânga e al trusei de ustensile și cel din dreapta al fișei de
-     sală — iar o vitrină pe jumătate acoperită de o cutie cu pensule nu mai
-     spune nimic, doar încarcă. Sala o spune și singură: luminator, coloană cu
-     capitel, aplice, cordoane. */
-  peretiiSalii(c, g, gr);
+  fondulSalii(c, g);
+  disculDinSpate(c, g);
+  conulDeLumina(c, g);
+  podeaModerna(c, g);
   podiumulCuFunii(c, g, gr);
-  pastaPesteSala(c, g, gr);
   pelerinaInLinie(c, g, gr);
   fisaDeSala8(c, g, gr);
 }
 
-/* Stratul gros, pus peste sala deja colorată. Culorile plate de dedesubt rămân
-   ca fond — ele dau lumina generală a camerei — iar peste ele vin lespezile, cu
-   direcția fiecărei zone: orizontale pe perete, fugind spre punctul de fugă pe
-   podea și pe tavan, verticale pe coloană, urmând bolta în firidă.
+/* Fondul: o singură pată mare, de la indigo la teal. Nu are nicio linie — un
+   spațiu modern nu se desenează, se colorează. */
+function fondulSalii(c, g) {
+  const cer = c.createLinearGradient(0, 0, W * 0.25, H);
+  cer.addColorStop(0, FOND_SUS);
+  cer.addColorStop(0.55, '#1d3348');
+  cer.addColorStop(1, FOND_JOS);
+  c.fillStyle = cer;
+  c.fillRect(0, 0, W, H);
+}
 
-   Direcția e tot ce ține forma. Împrăștiate la întâmplare peste toată sala,
-   lespezile ar fi făcut o zloată colorată; urmând fiecare planul pe care stă,
-   ele **construiesc** camera, așa cum construiesc floarea în tabloul cu
-   floarea-soarelui: fiecare petală e o lespede pusă pe direcția petalei. */
-function pastaPesteSala(c, g, gr) {
-  const sus = g.cornisa + H * 0.026;
-  const lambriu = g.podea - H * 0.055;
-  const S = g.S;
+/* Discul cald din spatele exponatului. E cel mai simplu lucru din sală și cel
+   care lucrează cel mai mult: rotund pe fond drept, cald pe rece, mare cât
+   trebuie ca să cuprindă rochia. Din el rochia albă iese ca dintr-o fereastră.
 
-  // ---- tavanul: lespezi care fug spre fundul sălii ----
-  c.save();
+   Are un halou în jur, ca discurile pictate să nu pară decupate cu foarfeca. */
+function disculDinSpate(c, g) {
+  const cx = g.pelCx, cy = g.pelSus + g.pelInalt * 0.42;
+  const r = Math.min(W * 0.30, H * 0.42);
+
+  const halou = c.createRadialGradient(cx, cy, r * 0.9, cx, cy, r * 1.55);
+  halou.addColorStop(0, 'rgba(224, 112, 60, 0.34)');
+  halou.addColorStop(1, 'rgba(224, 112, 60, 0)');
+  c.fillStyle = halou;
   c.beginPath();
-  c.rect(-W * 0.2, -H * 0.05, W * 1.4, g.cornisa + H * 0.05);
-  c.clip();
-  /* Tavanul cere mâna cea mai ușoară din toată sala. Cu lespezi multe și albe se
-     făcea o zăpadă în care nu se mai vedea nici luminatorul, nici grinzile — iar
-     tavanul e tocmai partea la care nu trebuie să te uiți: el dă lumina, atât.
-     Puține, potolite, și toate pe direcția fugii. */
-  campDePasta(c, -W * 0.1, -H * 0.04, W * 1.2, g.cornisa + H * 0.04, 150,
-              0, 1.1, S * 0.055, S * 0.0075,
-              ['#e4ebef', '#dde5eb', '#e9eef1', '#d8e0e6'], 900);
-  c.restore();
+  c.arc(cx, cy, r * 1.55, 0, Math.PI * 2);
+  c.fill();
 
-  // ---- peretele: lespezi lungi, culcate ----
-  c.save();
+  const disc = c.createRadialGradient(cx - r * 0.25, cy - r * 0.30, r * 0.05, cx, cy, r);
+  disc.addColorStop(0, DISC_INTERIOR);
+  disc.addColorStop(0.65, DISC_CALD);
+  disc.addColorStop(1, '#b8532a');
+  c.fillStyle = disc;
   c.beginPath();
-  c.rect(0, g.cornisa, W, lambriu - g.cornisa);
-  c.clip();
-  campDePasta(c, -W * 0.03, g.cornisa - H * 0.01, W * 1.06, lambriu - g.cornisa + H * 0.02,
-              560, -0.05, 0.35, S * 0.062, S * 0.0095,
-              [PIATRA_PERETE, PIATRA_LUMINA, '#e2dac8', '#d5ccb8', '#e9e2d1'], 1200);
-  c.restore();
+  c.arc(cx, cy, r, 0, Math.PI * 2);
+  c.fill();
 
-  // ---- firida: lespezi care urmează bolta, mai închise ----
-  const fx = W * 0.5, fw = latimeaFiridei();
-  const fSus = sus + H * 0.045;
-  c.save();
+  /* Un inel subțire, mai deschis, puțin în interior: singurul ornament din toată
+     sala. Un disc gol e o pată; un disc cu un inel e un obiect. */
+  c.strokeStyle = 'rgba(255, 226, 186, 0.5)';
+  c.lineWidth = Math.max(1.5, r * 0.012);
   c.beginPath();
-  c.moveTo(fx - fw / 2, g.podea);
-  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
-  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
-  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
-  c.lineTo(fx + fw / 2, g.podea);
+  c.arc(cx, cy, r * 0.90, 0, Math.PI * 2);
+  c.stroke();
+}
+
+/* Conul de lumină care cade de sus pe exponat. El leagă tavanul de podium și
+   spune de unde vine lumina — fără el, discul plutește și rochia n-are motiv
+   să fie luminată. */
+function conulDeLumina(c, g) {
+  const cx = g.pelCx;
+  const sus = c.createLinearGradient(0, 0, 0, g.podiumCy);
+  sus.addColorStop(0, LUMINA_CON + '0.22)');
+  sus.addColorStop(0.7, LUMINA_CON + '0.07)');
+  sus.addColorStop(1, LUMINA_CON + '0)');
+  c.fillStyle = sus;
+  c.beginPath();
+  c.moveTo(cx - W * 0.055, 0);
+  c.lineTo(cx + W * 0.055, 0);
+  c.lineTo(cx + W * 0.30, g.podiumCy + H * 0.02);
+  c.lineTo(cx - W * 0.30, g.podiumCy + H * 0.02);
   c.closePath();
-  c.clip();
-  campDePasta(c, fx - fw * 0.55, fSus - H * 0.01, fw * 1.1, g.podea - fSus + H * 0.02,
-              280, 1.5708, 0.7, S * 0.05, S * 0.0085,
-              [FIRIDA_FUND, '#a1947e', '#ac9f88', '#948872'], 1500);
-  c.restore();
+  c.fill();
 
-  // ---- lambriul: o bandă de lespezi înguste, culcate ----
-  c.save();
+  // proiectorul din tavan, o siluetă mică și neagră
+  c.fillStyle = '#0d1218';
+  c.fillRect(cx - W * 0.020, 0, W * 0.040, H * 0.030);
   c.beginPath();
-  c.rect(0, lambriu, W, g.podea - lambriu);
-  c.clip();
-  campDePasta(c, -W * 0.02, lambriu - H * 0.004, W * 1.04, g.podea - lambriu + H * 0.008,
-              200, 0, 0.2, S * 0.058, S * 0.0075,
-              [PIATRA_SOCLU, '#9a8e79', '#847a68', '#a99d86'], 1700);
-  c.restore();
+  c.moveTo(cx - W * 0.028, H * 0.030);
+  c.lineTo(cx + W * 0.028, H * 0.030);
+  c.lineTo(cx + W * 0.018, H * 0.052);
+  c.lineTo(cx - W * 0.018, H * 0.052);
+  c.closePath();
+  c.fill();
+}
 
-  // ---- podeaua: lespezi care fug spre punctul de fugă ----
+/* Podeaua: închisă, lucioasă, cu oglindirea discului și a podiumului. Oglindirea
+   e ce face dintr-o bandă închisă o **podea** — și tot ea dublează culoarea
+   caldă, adică o duce jos, sub exponat, unde altfel n-ar ajunge. */
+function podeaModerna(c, g) {
+  c.fillStyle = PODEA_MODERN;
+  c.fillRect(0, g.podea, W, H - g.podea);
+
+  // oglindirea discului, întinsă și estompată
   c.save();
   c.beginPath();
   c.rect(0, g.podea, W, H - g.podea);
   c.clip();
-  for (let k = 0; k < 520; k++) {
-    const a = samanta(1900 + k * 3.1), b = samanta(1960 + k * 7.7);
-    const x = W * (a * 1.2 - 0.1), y = intre(g.podea, H * 1.02, Math.pow(b, 1.5));
-    // cu cât e mai în față, cu atât lespedea e mai mare
-    const departare = (y - g.podea) / Math.max(1, H - g.podea);
-    const unghi = Math.atan2(H * 1.3 - y, W * 0.5 - x) + Math.PI / 2;
-    lespedeDePasta(c, x, y,
-                   S * (0.035 + departare * 0.055), S * (0.006 + departare * 0.010),
-                   unghi + (a - 0.5) * 0.35,
-                   ['#d6cdba', '#cdc4b0', '#dfd8c6', '#c6bda9'][k % 4],
-                   1900 + k);
-  }
-  c.restore();
-
-  // ---- podiumul: lespezi care urmează rotundul lui ----
-  c.save();
+  const cx = g.pelCx;
+  const r = Math.min(W * 0.30, H * 0.42);
+  const oglinda = c.createLinearGradient(0, g.podea, 0, H);
+  oglinda.addColorStop(0, 'rgba(224, 112, 60, 0.30)');
+  oglinda.addColorStop(0.55, 'rgba(224, 112, 60, 0.08)');
+  oglinda.addColorStop(1, 'rgba(224, 112, 60, 0)');
+  c.fillStyle = oglinda;
   c.beginPath();
-  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
-  c.rect(g.podiumCx - g.podiumRx, g.podiumCy, g.podiumRx * 2, H * 0.05);
-  c.clip();
-  for (let k = 0; k < 240; k++) {
-    const a = samanta(2200 + k * 3.7), b = samanta(2260 + k * 5.9);
-    const ang = a * Math.PI * 2, raza = Math.sqrt(b);
-    const x = g.podiumCx + Math.cos(ang) * g.podiumRx * raza;
-    const y = g.podiumCy + Math.sin(ang) * g.podiumRy * raza + (b > 0.9 ? H * 0.02 : 0);
-    lespedeDePasta(c, x, y, S * 0.032, S * 0.006, ang + Math.PI / 2,
-                   ['#a19682', '#948a78', '#a99e89', '#877d6c'][k % 4], 2200 + k);
-  }
-  c.restore();
+  c.ellipse(cx, g.podea, r * 0.95, (H - g.podea) * 0.85, 0, 0, Math.PI * 2);
+  c.fill();
 
-  // ---- coloanele: lespezi verticale, ca fusul să rămână rotund ----
-  const col = coloaneleIntrarii();
-  let sam = 2400;
-  for (const cxc of [col.stanga, col.dreapta]) {
-    c.save();
-    c.beginPath();
-    c.rect(cxc - col.lat * 0.75, g.cornisa, col.lat * 1.5, g.podea - g.cornisa);
-    c.clip();
-    campDePasta(c, cxc - col.lat * 0.75, g.cornisa, col.lat * 1.5, g.podea - g.cornisa,
-                150, 1.5708, 0.14, S * 0.040, S * 0.0060,
-                [PIATRA_LUMINA, PIATRA_PERETE, '#b5aa95', '#f0e9da'], sam);
-    c.restore();
-    sam += 400;
-  }
-
-  contururileSalii(c, g, gr);
-
-  /* Coloanele și aplicele, peste pastă: ele sunt lucruri **în** cameră, nu
-     zugrăveala ei. Pasta e peretele; ele stau în fața lui. */
-  coloanaCorintica(c, col.stanga, g.cornisa, g.podea, col.lat, gr);
-  coloanaCorintica(c, col.dreapta, g.cornisa, g.podea, col.lat, gr);
-  apliceleDePerete(c, g, gr);
-}
-
-/* Conturul sălii, tras din nou peste pastă. Fără el, lespezile îngroapă
-   arhitectura: rămâne o zloată frumoasă în care nu se mai vede unde se termină
-   peretele și unde începe podeaua.
-
-   Așa lucrează și pictorii din fotografii: pasta e groasă, dar desenul de
-   dedesubt se mai vede pe alocuri, iar acolo unde nu se vede, marginile dintre
-   două culori îl țin locului. Aici facem amândouă. */
-function contururileSalii(c, g, gr) {
-  // luminatorul, tras din nou peste pastă, ca să nu se piardă în ea
-  tavanulCuLuminator(c, g, gr, true);
-
-  const sus = g.cornisa + H * 0.026;
-  const lambriu = g.podea - H * 0.055;
-  const fx = W * 0.5, fw = latimeaFiridei();
-  const fSus = sus + H * 0.045;
-
-  c.save();
-  c.globalAlpha = 0.55;
-  creion(c, gr * 1.4);
+  // linia de îmbinare dintre perete și podea, singura linie din sală
+  c.strokeStyle = 'rgba(255, 255, 255, 0.10)';
+  c.lineWidth = Math.max(1, g.S * 0.003);
   c.beginPath();
-  c.moveTo(0, g.cornisa); c.lineTo(W, g.cornisa);
-  c.moveTo(0, lambriu);   c.lineTo(W, lambriu);
-  c.moveTo(0, g.podea);   c.lineTo(W, g.podea);
-  c.stroke();
-
-  // arcada firidei
-  creion(c, gr * 1.5);
-  c.beginPath();
-  c.moveTo(fx - fw / 2, g.podea);
-  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
-  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
-  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
-  c.lineTo(fx + fw / 2, g.podea);
-  c.stroke();
-
-  // muchiile celor două coloane
-  const col = coloaneleIntrarii();
-  creion(c, gr * 1.1);
-  for (const cxc of [col.stanga, col.dreapta]) {
-    c.beginPath();
-    c.moveTo(cxc - col.lat * 0.50, g.podea - col.lat * 0.46);
-    c.lineTo(cxc - col.lat * 0.40, g.cornisa + col.lat * 1.30);
-    c.moveTo(cxc + col.lat * 0.50, g.podea - col.lat * 0.46);
-    c.lineTo(cxc + col.lat * 0.40, g.cornisa + col.lat * 1.30);
-    c.stroke();
-  }
-
-  // conturul podiumului
-  creion(c, gr * 1.3);
-  c.beginPath();
-  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
+  c.moveTo(0, g.podea); c.lineTo(W, g.podea);
   c.stroke();
   c.restore();
 }
 
-/* Sala, în linie: tavanul cu luminator, peretele din fund cu firidă, panouri,
-   coloană cu capitel corintic și o ușă în dreapta; aplicele; podeaua cu dale.
-
-   Totul e desenat numai cu creionul, fără nicio umplere — sala e o coală
-   nepictată, și tocmai de-aia jucătorul simte că are voie să pună culoare pe ea.
-   O sală deja colorată n-ar cere nimic nimănui. */
-function peretiiSalii(c, g, gr) {
-  tavanulCuLuminator(c, g, gr);
-  peretulDinFund(c, g, gr);
-  podeaDeDale(c, g, gr);
-}
-
-/* Tavanul. Un luminator mare de sticlă în mijloc, prins într-o ramă de grinzi
-   care fug spre fundul sălii.
-
-   Perspectiva se face din două linii: marginea din față a tavanului, largă și
-   ieșită din cadru, și cea din fund, strânsă. Tot ce e între ele se interpolează
-   — grinzile, ochiurile de sticlă, casetele de pe margini. Desenate una câte una,
-   după ochi, ar fi ieșit un tavan care nu se închide nicăieri. */
-/* `numaiLinii` cere doar desenul, fără culorile de dedesubt: așa se poate trage
-   luminatorul a doua oară, peste pastă, fără să acopere pasta cu tăblia lui. */
-function tavanulCuLuminator(c, g, gr, numaiLinii) {
-  const yFata = -H * 0.03, yFund = g.cornisa;
-  const fata0 = -W * 0.16, fata1 = W * 1.16;      // marginea din față, lată
-  const fund0 = W * 0.10,  fund1 = W * 0.90;      // marginea din fund, strânsă
-
-  // unde cade coloana `u` (0..1) la o adâncime `v` (0 = față, 1 = fund)
-  function x(u, v) { return intre(intre(fata0, fata1, u), intre(fund0, fund1, u), v); }
-  function y(v) { return intre(yFata, yFund, v); }
-
-  if (numaiLinii) c.save();
-  if (numaiLinii) c.globalAlpha = 0.62;
-
-  // tăblia tavanului, mai rece decât peretele
-  if (!numaiLinii) {
-  c.fillStyle = TAVAN_GRINDA;
-  c.beginPath();
-  c.moveTo(fata0, y(0)); c.lineTo(fata1, y(0));
-  c.lineTo(fund1, y(1)); c.lineTo(fund0, y(1));
-  c.closePath();
-  c.fill();
-
-  /* Sticla luminatorului: lumina zilei, rece, care cade în mijlocul sălii. E
-     singurul rece din toată camera — de-aia se simte ca lumină, nu ca vopsea. */
-  const sticla = c.createLinearGradient(0, y(0), 0, y(1));
-  sticla.addColorStop(0, '#f4f9fb');
-  sticla.addColorStop(1, TAVAN_STICLA);
-  c.fillStyle = sticla;
-  c.beginPath();
-  c.moveTo(x(0.22, 0.06), y(0.06));
-  c.lineTo(x(0.78, 0.06), y(0.06));
-  c.lineTo(x(0.78, 0.88), y(0.88));
-  c.lineTo(x(0.22, 0.88), y(0.88));
-  c.closePath();
-  c.fill();
-  }
-
-  // grinzile care fug spre fund
-  creion(c, gr * 1.1);
-  for (const u of [0.06, 0.22, 0.78, 0.94]) {
-    c.beginPath();
-    c.moveTo(x(u, 0), y(0));
-    c.lineTo(x(u, 1), y(1));
-    c.stroke();
-  }
-  // traversele
-  for (const v of [0.30, 0.62, 0.86]) {
-    c.beginPath();
-    c.moveTo(x(0.02, v), y(v));
-    c.lineTo(x(0.98, v), y(v));
-    c.stroke();
-  }
-
-  /* Luminatorul: dreptunghiul dintre grinzile din mijloc, împărțit în ochiuri de
-     sticlă. Ochiurile se strâng spre fund odată cu tot tavanul — de-aia se scot
-     din aceleași două funcții, nu dintr-o grilă dreaptă. */
-  creion(c, gr * 1.4);
-  c.beginPath();
-  c.moveTo(x(0.22, 0.06), y(0.06));
-  c.lineTo(x(0.78, 0.06), y(0.06));
-  c.lineTo(x(0.78, 0.88), y(0.88));
-  c.lineTo(x(0.22, 0.88), y(0.88));
-  c.closePath();
-  c.stroke();
-
-  creion(c, gr * 0.7, LINIE_SUBTIRE);
-  for (let k = 1; k < 7; k++) {
-    const u = intre(0.22, 0.78, k / 7);
-    c.beginPath();
-    c.moveTo(x(u, 0.06), y(0.06));
-    c.lineTo(x(u, 0.88), y(0.88));
-    c.stroke();
-  }
-  for (let k = 1; k < 5; k++) {
-    const v = intre(0.06, 0.88, Math.pow(k / 5, 1.25));
-    c.beginPath();
-    c.moveTo(x(0.22, v), y(v));
-    c.lineTo(x(0.78, v), y(v));
-    c.stroke();
-  }
-
-  // cornișa: trei brâuri paralele, ca la orice sală cu stuc
-  creion(c, gr * 1.5);
-  c.beginPath();
-  c.moveTo(0, g.cornisa); c.lineTo(W, g.cornisa);
-  c.stroke();
-  creion(c, gr * 0.9);
-  for (const dy of [H * 0.012, H * 0.024]) {
-    c.beginPath();
-    c.moveTo(0, g.cornisa + dy); c.lineTo(W, g.cornisa + dy);
-    c.stroke();
-  }
-  if (numaiLinii) c.restore();
-}
-
-/* Peretele din fund: firida cu pelerina în mijloc, panouri înalte de-o parte și
-   de alta, o coloană cu capitel corintic la dreapta firidei, o ușă în capătul
-   din dreapta, și lambriul care leagă totul jos. */
-function peretulDinFund(c, g, gr) {
-  const sus = g.cornisa + H * 0.026, jos = g.podea;
-  const lambriu = jos - H * 0.055;
-
-  creion(c, gr * 1.6);
-  c.beginPath();
-  c.moveTo(0, jos); c.lineTo(W, jos);
-  c.stroke();
-  // lambriul de jos, o bandă de piatră mai închisă
-  c.fillStyle = PIATRA_SOCLU;
-  c.fillRect(0, lambriu, W, jos - lambriu);
-  c.fillStyle = 'rgba(255, 250, 236, 0.35)';
-  c.fillRect(0, lambriu, W, (jos - lambriu) * 0.16);
-  creion(c, gr * 1.1);
-  c.beginPath();
-  c.moveTo(0, lambriu); c.lineTo(W, lambriu);
-  c.stroke();
-
-  /* Firida: o arcadă adâncă în perete, în care stă exponatul. Ea spune „aici e
-     lucrarea" fără nicio săgeată — un obiect așezat într-o firidă e, prin însuși
-     locul lui, un obiect arătat. */
-  const fx = W * 0.5, fw = latimeaFiridei();
-  const fSus = sus + H * 0.045;
-
-  /* Adâncul firidei, umplut cu o piatră mai închisă. El e fondul pe care stă
-     pelerina albă — iar un alb pus pe alb nu se vede. */
-  const adanc = c.createLinearGradient(0, fSus, 0, jos);
-  adanc.addColorStop(0, '#8f8371');
-  adanc.addColorStop(0.55, FIRIDA_FUND);
-  adanc.addColorStop(1, '#9d917b');
-  c.fillStyle = adanc;
-  c.beginPath();
-  c.moveTo(fx - fw / 2, jos);
-  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
-  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
-  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
-  c.lineTo(fx + fw / 2, jos);
-  c.closePath();
-  c.fill();
-
-  creion(c, gr * 1.5);
-  c.beginPath();
-  c.moveTo(fx - fw / 2, jos);
-  c.lineTo(fx - fw / 2, fSus + fw * 0.46);
-  c.quadraticCurveTo(fx - fw / 2, fSus, fx, fSus);
-  c.quadraticCurveTo(fx + fw / 2, fSus, fx + fw / 2, fSus + fw * 0.46);
-  c.lineTo(fx + fw / 2, jos);
-  c.stroke();
-  // conturul dinăuntru, care dă grosimea zidului
-  creion(c, gr * 0.8, LINIE_SUBTIRE);
-  c.beginPath();
-  c.moveTo(fx - fw * 0.43, jos);
-  c.lineTo(fx - fw * 0.43, fSus + fw * 0.44);
-  c.quadraticCurveTo(fx - fw * 0.43, fSus + fw * 0.05, fx, fSus + fw * 0.05);
-  c.quadraticCurveTo(fx + fw * 0.43, fSus + fw * 0.05, fx + fw * 0.43, fSus + fw * 0.44);
-  c.lineTo(fx + fw * 0.43, jos);
-  c.stroke();
-
-  /* Panourile de perete: dreptunghiuri înalte cu ramă dublă, ca lambriurile de
-     stuc din orice pinacotecă. Două în stânga firidei, unul în dreapta — în
-     dreapta, restul peretelui e al fișei de sală. */
-  for (const [px, plat] of [[W * 0.085, W * 0.12], [W * 0.245, W * 0.115],
-                            [W * 0.905, W * 0.10]]) {
-    panouDeStuc(c, px - plat / 2, sus + H * 0.05, plat, lambriu - sus - H * 0.10, gr);
-  }
-
-  /* Coloanele nu se desenează aici, ci la urmă, peste pastă. Puse acum, lespezile
-     de vopsea le-ar îngropa — iar o coloană îngropată nu mai ține nimic. */
-
-  /* Ușa din dreapta: nu duce nicăieri și n-are voie să ducă. E acolo fiindcă o
-     sală fără nicio ieșire nu e o sală, e o cutie. */
-  const ux = W * 0.98, ulat = W * 0.075, uSus = sus + H * 0.10;
-  creion(c, gr * 1.3);
-  c.beginPath();
-  c.rect(ux - ulat, uSus, ulat * 1.4, jos - uSus);
-  c.stroke();
-  creion(c, gr * 0.8, LINIE_SUBTIRE);
-  c.beginPath();
-  c.rect(ux - ulat * 0.86, uSus + H * 0.014, ulat * 1.28, jos - uSus - H * 0.014);
-  c.stroke();
-}
-
-/* Un panou de stuc: rama pe dinafară, o a doua ramă mai subțire înăuntru, și
-   colțurile tăiate. Două linii concentrice sunt tot ce trebuie — un panou plin
-   de ornamente ar cere să fie privit, iar el are treabă să stea în spate. */
-function panouDeStuc(c, x, y, w, h, gr) {
-  if (w <= 0 || h <= 0) return;
-  // câmpul panoului, cu o umbră de sus în jos, ca la stucul adevărat
-  const camp = c.createLinearGradient(x, y, x + w * 0.5, y + h);
-  camp.addColorStop(0, PIATRA_LUMINA);
-  camp.addColorStop(1, PANOU_PERETE);
-  c.fillStyle = camp;
-  c.fillRect(x, y, w, h);
-  creion(c, gr * 1.1);
-  c.beginPath();
-  c.rect(x, y, w, h);
-  c.stroke();
-  creion(c, gr * 0.7, LINIE_SUBTIRE);
-  c.beginPath();
-  c.rect(x + w * 0.09, y + w * 0.09, w * 0.82, h - w * 0.18);
-  c.stroke();
-}
-
-/* O coloană corintică întreagă: **bază, fus, capitel** — de la podea până sub
-   cornișă. Fiecare parte are un rost: baza împrăștie greutatea pe pardoseală,
-   fusul o duce, capitelul o preia de la grindă. O coloană căreia îi lipsește una
-   din trei nu e o coloană, e o dungă verticală pe perete.
-
-   Fusul se umflă puțin pe la mijloc — *entasis*. Grecii l-au făcut fiindcă un fus
-   drept, privit de jos, pare scobit la mijloc. Se vede foarte puțin, dar fără el
-   coloana arată a țeavă. */
-function coloanaCorintica(c, cx, cornisa, podea, lat, gr) {
-  const capJos = cornisa + lat * 1.30;
-  const bazaSus = podea - lat * 0.46;
-  const razaSus = lat * 0.40, razaJos = lat * 0.50;
-
-  /* Cât e de gros fusul la înălțimea `t` (0 sus, 1 jos), cu umflătura de la
-     mijloc pusă peste subțierea de sus în jos. */
-  const grosime = function (t) {
-    return intre(razaSus, razaJos, t) + Math.sin(t * Math.PI) * lat * 0.035;
-  };
-
-  // fusul, rotund: luminat pe stânga, în umbră pe dreapta
-  const rotund = c.createLinearGradient(cx - razaJos, 0, cx + razaJos, 0);
-  rotund.addColorStop(0, PIATRA_UMBRA);
-  rotund.addColorStop(0.30, PIATRA_LUMINA);
-  rotund.addColorStop(0.62, PIATRA_PERETE);
-  rotund.addColorStop(1, '#9d9280');
-  c.fillStyle = rotund;
-  c.beginPath();
-  const PASI = 18;
-  for (let k = 0; k <= PASI; k++) {
-    const t = k / PASI, y = intre(capJos, bazaSus, t);
-    if (k === 0) c.moveTo(cx - grosime(t), y); else c.lineTo(cx - grosime(t), y);
-  }
-  for (let k = PASI; k >= 0; k--) {
-    const t = k / PASI, y = intre(capJos, bazaSus, t);
-    c.lineTo(cx + grosime(t), y);
-  }
-  c.closePath();
-  c.fill();
-  creion(c, gr * 1.1);
-  c.stroke();
-
-  // canelurile: patru dungi care urmează umflătura fusului
-  creion(c, gr * 0.55, 'rgba(120, 110, 92, 0.55)');
-  for (const q of [-0.55, -0.20, 0.20, 0.55]) {
-    c.beginPath();
-    for (let k = 0; k <= PASI; k++) {
-      const t = k / PASI, y = intre(capJos, bazaSus, t);
-      const x = cx + grosime(t) * q;
-      if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
-    }
-    c.stroke();
-  }
-
-  bazaColoanei(c, cx, bazaSus, podea, lat, gr);
-  capitelCorintic(c, cx, cornisa, capJos, lat, gr);
-}
-
-/* Baza: un tor rotunjit pe o plintă pătrată. Plinta e ce atinge pardoseala, și
-   tocmai ea lipsea — o coloană care se termină în aer, deasupra podelei, plutește
-   oricât de bine ar fi desenat restul. */
-function bazaColoanei(c, cx, sus, podea, lat, gr) {
-  const piatra = c.createLinearGradient(cx - lat * 0.7, 0, cx + lat * 0.7, 0);
-  piatra.addColorStop(0, PIATRA_UMBRA);
-  piatra.addColorStop(0.32, PIATRA_LUMINA);
-  piatra.addColorStop(1, '#968b79');
-  c.fillStyle = piatra;
-
-  // torul
-  c.beginPath();
-  c.moveTo(cx - lat * 0.50, sus);
-  c.quadraticCurveTo(cx - lat * 0.70, sus + lat * 0.14, cx - lat * 0.62, sus + lat * 0.28);
-  c.lineTo(cx + lat * 0.62, sus + lat * 0.28);
-  c.quadraticCurveTo(cx + lat * 0.70, sus + lat * 0.14, cx + lat * 0.50, sus);
-  c.closePath();
-  c.fill();
-  creion(c, gr);
-  c.stroke();
-
-  // plinta, care stă pe pardoseală
-  c.fillStyle = piatra;
-  c.beginPath();
-  c.rect(cx - lat * 0.72, sus + lat * 0.28, lat * 1.44, podea - sus - lat * 0.28);
-  c.fill();
-  creion(c, gr * 1.1);
-  c.stroke();
-}
-
-/* Capitelul. Un corint desenat frunză cu frunză, la mărimea la care se vede
-   aici, se face un ghem de linii — de departe, dintr-un corint se citesc coșul,
-   două rânduri de acantă și volutele din colțuri. Atât punem. */
-function capitelCorintic(c, cx, sus, jos, lat, gr) {
-  const piatra = c.createLinearGradient(cx - lat * 0.8, 0, cx + lat * 0.8, 0);
-  piatra.addColorStop(0, PIATRA_UMBRA);
-  piatra.addColorStop(0.30, PIATRA_LUMINA);
-  piatra.addColorStop(1, '#9d9280');
-
-  // coșul capitelului, care se lărgește în sus
-  c.fillStyle = piatra;
-  c.beginPath();
-  c.moveTo(cx - lat * 0.42, jos);
-  c.quadraticCurveTo(cx - lat * 0.46, sus + lat * 0.55, cx - lat * 0.72, sus + lat * 0.26);
-  c.lineTo(cx + lat * 0.72, sus + lat * 0.26);
-  c.quadraticCurveTo(cx + lat * 0.46, sus + lat * 0.55, cx + lat * 0.42, jos);
-  c.closePath();
-  c.fill();
-  creion(c, gr);
-  c.stroke();
-
-  // abacul: placa de deasupra, scobită pe laturi
-  c.fillStyle = piatra;
-  c.beginPath();
-  c.moveTo(cx - lat * 0.82, sus);
-  c.quadraticCurveTo(cx, sus + lat * 0.10, cx + lat * 0.82, sus);
-  c.lineTo(cx + lat * 0.82, sus + lat * 0.26);
-  c.quadraticCurveTo(cx, sus + lat * 0.34, cx - lat * 0.82, sus + lat * 0.26);
-  c.closePath();
-  c.fill();
-  creion(c, gr * 1.2);
-  c.stroke();
-
-  // volutele din colțuri și frunzele de acantă
-  creion(c, gr * 0.75, 'rgba(110, 100, 82, 0.8)');
-  for (const lt of [-1, 1]) {
-    c.beginPath();
-    c.moveTo(cx + lt * lat * 0.66, sus + lat * 0.30);
-    c.quadraticCurveTo(cx + lt * lat * 0.58, sus + lat * 0.62,
-                       cx + lt * lat * 0.34, sus + lat * 0.52);
-    c.stroke();
-    c.beginPath();
-    c.moveTo(cx + lt * lat * 0.08, jos - lat * 0.05);
-    c.quadraticCurveTo(cx + lt * lat * 0.40, jos - lat * 0.42,
-                       cx + lt * lat * 0.30, sus + lat * 0.68);
-    c.stroke();
-  }
-  // frunza din mijloc
-  c.beginPath();
-  c.moveTo(cx, jos - lat * 0.04);
-  c.quadraticCurveTo(cx - lat * 0.10, sus + lat * 0.80, cx, sus + lat * 0.58);
-  c.quadraticCurveTo(cx + lat * 0.10, sus + lat * 0.80, cx, jos - lat * 0.04);
-  c.stroke();
-}
-
-/* Aplicele de perete. Erau două clopote cu o dungă deasupra, atârnate în aer —
-   arătau a ciuperci puse în cui. O aplică adevărată are trei lucruri: o **talpă**
-   prinsă de perete, un **braț** care iese din ea, și **globul** de sticlă în
-   care arde lumina. Cel din urmă e singurul care trebuie să strălucească.
-
-   Se desenează la sfârșit, peste pastă: lumina lor cade **pe** vopsea, nu sub ea. */
-function apliceleDePerete(c, g, gr) {
-  const y = g.cornisa + H * 0.185;
-  for (const cx of [W * 0.325, W * 0.582]) {
-    const r = Math.min(W * 0.019, H * 0.030);
-
-    // haloul cald de pe perete
-    const halo = c.createRadialGradient(cx, y + r * 0.9, 0, cx, y + r * 0.9, r * 6);
-    halo.addColorStop(0, 'rgba(255, 226, 158, 0.34)');
-    halo.addColorStop(0.45, 'rgba(255, 214, 130, 0.12)');
-    halo.addColorStop(1, 'rgba(255, 214, 130, 0)');
-    c.fillStyle = halo;
-    c.beginPath();
-    c.arc(cx, y + r * 0.9, r * 6, 0, Math.PI * 2);
-    c.fill();
-
-    // talpa prinsă de perete
-    const alama = c.createLinearGradient(cx - r * 0.5, 0, cx + r * 0.5, 0);
-    alama.addColorStop(0, '#f2dc9e');
-    alama.addColorStop(0.4, ALAMA_SALA);
-    alama.addColorStop(1, '#7d5f1f');
-    c.fillStyle = alama;
-    c.beginPath();
-    c.ellipse(cx, y - r * 1.5, r * 0.42, r * 0.62, 0, 0, Math.PI * 2);
-    c.fill();
-
-    // brațul, o curbă subțire care coboară spre glob
-    c.strokeStyle = ALAMA_SALA;
-    c.lineWidth = Math.max(1.2, r * 0.16);
-    c.lineCap = 'round';
-    c.beginPath();
-    c.moveTo(cx, y - r * 1.4);
-    c.quadraticCurveTo(cx + r * 0.30, y - r * 0.9, cx, y - r * 0.34);
-    c.stroke();
-
-    /* Globul: o bilă de sticlă lăptoasă, luminată dinăuntru. Lumina se face
-       dintr-un gradient care pornește din partea de sus a bilei, nu din mijloc —
-       becul stă acolo, iar sticla de dedesubt e mai plină. */
-    const sticla = c.createRadialGradient(cx - r * 0.25, y - r * 0.25, r * 0.05,
-                                          cx, y + r * 0.1, r * 1.15);
-    sticla.addColorStop(0, '#fffbe8');
-    sticla.addColorStop(0.45, '#ffeeba');
-    sticla.addColorStop(1, '#e8c477');
-    c.fillStyle = sticla;
-    c.beginPath();
-    c.arc(cx, y + r * 0.15, r, 0, Math.PI * 2);
-    c.fill();
-    creion(c, gr * 0.8, 'rgba(140, 108, 40, 0.55)');
-    c.stroke();
-
-    // gulerașul de alamă de deasupra globului
-    c.fillStyle = alama;
-    c.beginPath();
-    c.ellipse(cx, y - r * 0.72, r * 0.34, r * 0.16, 0, 0, Math.PI * 2);
-    c.fill();
-  }
-}
-
-/* Podeaua: dale pătrate care fug spre punctul de fugă. Puține și subțiri — o
-   podea desenată apăsat trage ochiul în jos, iar aici ochiul are treabă la
-   mijloc. */
-function podeaDeDale(c, g, gr) {
-  /* Dalele de piatră, cu lumina din luminator căzută pe ele. Podeaua e mai
-     închisă decât peretele: altfel camera plutește. */
-  const dale = c.createLinearGradient(0, g.podea, 0, H);
-  dale.addColorStop(0, PODEA_ROST);
-  dale.addColorStop(0.35, PODEA_DALA);
-  dale.addColorStop(1, '#b9af9c');
-  c.fillStyle = dale;
-  c.fillRect(0, g.podea, W, H - g.podea);
-  const balta = c.createRadialGradient(W * 0.5, g.podea + H * 0.10, 0,
-                                       W * 0.5, g.podea + H * 0.10, Math.max(W, H) * 0.45);
-  balta.addColorStop(0, 'rgba(255, 252, 240, 0.40)');
-  balta.addColorStop(1, 'rgba(255, 252, 240, 0)');
-  c.fillStyle = balta;
-  c.fillRect(0, g.podea, W, H - g.podea);
-
-  creion(c, gr * 0.7, LINIE_SUBTIRE);
-  for (let k = -8; k <= 8; k++) {
-    c.beginPath();
-    c.moveTo(W * 0.5 + k * W * 0.066, g.podea);
-    c.lineTo(W * 0.5 + k * W * 0.30, H * 1.04);
-    c.stroke();
-  }
-  for (let k = 1; k <= 6; k++) {
-    const y = intre(g.podea, H * 1.04, Math.pow(k / 6, 1.8));
-    c.beginPath();
-    c.moveTo(0, y); c.lineTo(W, y);
-    c.stroke();
-  }
-}
-
-/* Podiumul rotund, cu funii de catifea pe stâlpi și cu plăcuța de sală în față. */
+/* Podiumul: un cilindru scund, deschis la culoare, care ridică exponatul din
+   întunericul podelei. Deschis dinadins — rochia albă are nevoie de ceva pe care
+   să stea fără să se piardă. */
 function podiumulCuFunii(c, g, gr) {
-  const h2 = H * 0.045;
+  const h2 = H * 0.042;
 
-  /* Podiumul: o piatră închisă, lustruită. Închis dinadins — pelerina albă stă
-     pe el, iar o treaptă deschisă i-ar mânca poalele. */
-  c.fillStyle = '#6d6353';
+  // umbra de sub podium, care îl așază pe podea
+  c.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  c.beginPath();
+  c.ellipse(g.podiumCx, g.podiumCy + h2 * 1.25, g.podiumRx * 1.12, g.podiumRy * 1.1,
+            0, 0, Math.PI * 2);
+  c.fill();
+
+  // fața cilindrului
+  const fata = c.createLinearGradient(g.podiumCx - g.podiumRx, 0, g.podiumCx + g.podiumRx, 0);
+  fata.addColorStop(0, '#a9a293');
+  fata.addColorStop(0.35, '#d2ccbe');
+  fata.addColorStop(1, '#8e887b');
+  c.fillStyle = fata;
   c.beginPath();
   c.moveTo(g.podiumCx - g.podiumRx, g.podiumCy);
   c.lineTo(g.podiumCx - g.podiumRx, g.podiumCy + h2);
@@ -1061,40 +558,15 @@ function podiumulCuFunii(c, g, gr) {
   c.lineTo(g.podiumCx + g.podiumRx, g.podiumCy);
   c.closePath();
   c.fill();
+
+  // blatul
   const blat = c.createLinearGradient(0, g.podiumCy - g.podiumRy, 0, g.podiumCy + g.podiumRy);
-  blat.addColorStop(0, '#a19682');
-  blat.addColorStop(1, '#8b8170');
+  blat.addColorStop(0, PODIUM_MODERN);
+  blat.addColorStop(1, '#c7c1b3');
   c.fillStyle = blat;
   c.beginPath();
   c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
   c.fill();
-
-  creion(c, gr * 1.4);
-  c.beginPath();
-  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx, g.podiumRy, 0, 0, Math.PI * 2);
-  c.stroke();
-  c.beginPath();
-  c.moveTo(g.podiumCx - g.podiumRx, g.podiumCy);
-  c.lineTo(g.podiumCx - g.podiumRx, g.podiumCy + h2);
-  c.moveTo(g.podiumCx + g.podiumRx, g.podiumCy);
-  c.lineTo(g.podiumCx + g.podiumRx, g.podiumCy + h2);
-  c.stroke();
-  c.beginPath();
-  c.ellipse(g.podiumCx, g.podiumCy + h2, g.podiumRx, g.podiumRy, 0, 0, Math.PI);
-  c.stroke();
-
-  /* Aici era o etichetă de muzeu, un dreptunghi gol pe fața podiumului. A ieșit:
-     gol, nu spunea nimic, iar scris ar fi spus ce vrem tocmai să nu spunem —
-     lucrarea de pe podium **nu are încă nume**, fiindcă n-a făcut-o încă nimeni.
-     Tu urmează s-o faci. */
-
-  /* Aici stăteau patru stâlpi cu cordon, de jur împrejurul podiumului. I-am
-     scos: în fața pelerinei n-au loc. Trena se revarsă tocmai peste locul lor,
-     iar un cordon tras peste lucrarea pe care ai de gând s-o pictezi nu mai e
-     un semn de muzeu, e un gard între tine și treaba ta.
-
-     Și nici nu lipsesc: firida, podiumul și fișa de sală spun destul de limpede
-     că ești într-un muzeu. */
 }
 
 /* ---------- PELERINA, ÎN LINIE ---------- */
@@ -1232,90 +704,128 @@ function pelerinaInLinie(c, g, gr) {
   corsajulSiDecolteul(c, g, gr);
   manecileBufante(c, g, gr);
   braulCuPietre(c, g, gr);
-  gulerulGhioc(c, g, gr);
-  /* Umărul manechinului, deasupra gulerului. E singurul lucru care se vede din
-     ce e **dedesubt** — și tocmai el spune că rochia e îmbrăcată, nu atârnată. */
   capatulManechinului(c, g, gr);
 }
 
-/* Vârful manechinului: gâtul de lemn și butonul lui, ieșind din guler. Un
-   manechin de muzeu n-are cap; are un știft. */
+/* ---------- MANECHINUL ----------
+
+   Un cap-ou alb, fără față, pe un gât subțire, cu umerii rotunzi ieșind din
+   decolteu. Așa arată manechinele din muzeele de costum: nu au trăsături,
+   fiindcă nu ele sunt de privit, dar au **cap** — și tocmai capul face ca tot ce
+   e sub el să se citească drept haină.
+
+   Aveam un știft de lemn cu un buton deasupra. Din el nu se înțelegea nimic:
+   rochia părea atârnată într-un cui. Un cap și doi umeri, chiar și fără față,
+   pun un om acolo — iar din clipa aia rochia are un dedesubt.
+
+   Manechinul stă **în afara** conturului rochiei, deci nu intră în socoteala
+   acoperirii: nu-l pictezi, nici din greșeală. E de porțelan alb, iar rochia e
+   pânză albă — se deosebesc prin ton: porțelanul e mai rece și mai lucios, cu o
+   sclipire ascuțită; pânza e caldă și mată. */
 function capatulManechinului(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const lat = w * 0.062, inalt = h * 0.075;
-  const lemn = c.createLinearGradient(cx - lat, 0, cx + lat, 0);
-  lemn.addColorStop(0, '#f0e6ce');
-  lemn.addColorStop(0.32, '#dcc9a4');
-  lemn.addColorStop(1, '#a89478');
-  c.fillStyle = lemn;
+  const gatJos = sus + h * 0.055;
+  const gatSus = sus - h * 0.105;
+  const rCap = w * 0.155;
+  const capCy = gatSus - rCap * 0.86;
+
+  const portelan = function (x0, y0, x1, y1) {
+    const grd = c.createLinearGradient(x0, y0, x1, y1);
+    grd.addColorStop(0, '#ffffff');
+    grd.addColorStop(0.42, '#f2f0ec');
+    grd.addColorStop(1, '#c9c5bd');
+    return grd;
+  };
+
+  /* Umerii: două movile rotunde care ies din decolteu. Ele sunt jumătatea de sus
+     a trupului, și fără ele gâtul crește direct din rochie ca o tulpină. */
+  c.fillStyle = portelan(cx - w * 0.30, sus, cx + w * 0.26, gatJos + h * 0.05);
   c.beginPath();
-  c.moveTo(cx - lat * 0.80, sus - inalt);
-  c.lineTo(cx - lat, sus + h * 0.020);
-  c.lineTo(cx + lat, sus + h * 0.020);
-  c.lineTo(cx + lat * 0.80, sus - inalt);
+  c.moveTo(cx - w * 0.235, sus + h * 0.075);
+  c.quadraticCurveTo(cx - w * 0.215, sus + h * 0.005, cx - w * 0.105, gatJos - h * 0.020);
+  c.lineTo(cx + w * 0.105, gatJos - h * 0.020);
+  c.quadraticCurveTo(cx + w * 0.215, sus + h * 0.005, cx + w * 0.235, sus + h * 0.075);
   c.closePath();
-  c.fill();
-  creion(c, gr * 1.2);
-  c.stroke();
-  // butonul rotund din vârf
-  c.fillStyle = lemn;
-  c.beginPath();
-  c.ellipse(cx, sus - inalt, lat * 0.86, lat * 0.42, 0, 0, Math.PI * 2);
   c.fill();
   creion(c, gr * 1.1);
   c.stroke();
+
+  // gâtul
+  c.fillStyle = portelan(cx - w * 0.075, 0, cx + w * 0.075, 0);
+  c.beginPath();
+  c.moveTo(cx - w * 0.070, gatJos);
+  c.quadraticCurveTo(cx - w * 0.062, gatSus + h * 0.03, cx - w * 0.055, gatSus);
+  c.lineTo(cx + w * 0.055, gatSus);
+  c.quadraticCurveTo(cx + w * 0.062, gatSus + h * 0.03, cx + w * 0.070, gatJos);
+  c.closePath();
+  c.fill();
+  creion(c, gr * 1.1);
+  c.stroke();
+  // umbra gâtului pe piept, care îl desprinde de umeri
+  const subGat = c.createLinearGradient(0, gatJos - h * 0.03, 0, gatJos + h * 0.01);
+  subGat.addColorStop(0, 'rgba(120, 112, 100, 0)');
+  subGat.addColorStop(1, 'rgba(120, 112, 100, 0.35)');
+  c.fillStyle = subGat;
+  c.fillRect(cx - w * 0.075, gatJos - h * 0.03, w * 0.15, h * 0.04);
+
+  /* Capul: un ou întors, mai lat sus decât jos, fără nicio trăsătură. Netezimea
+     lui e chiar rostul: un manechin cu față ar deveni un personaj, iar aici
+     personajul ești tu. */
+  c.fillStyle = portelan(cx - rCap, capCy - rCap, cx + rCap * 0.8, capCy + rCap * 1.2);
+  c.beginPath();
+  c.moveTo(cx, capCy - rCap * 1.12);
+  c.bezierCurveTo(cx + rCap * 1.02, capCy - rCap * 1.02,
+                  cx + rCap * 0.92, capCy + rCap * 0.62,
+                  cx + rCap * 0.34, capCy + rCap * 1.02);
+  c.bezierCurveTo(cx + rCap * 0.12, capCy + rCap * 1.14,
+                  cx - rCap * 0.12, capCy + rCap * 1.14,
+                  cx - rCap * 0.34, capCy + rCap * 1.02);
+  c.bezierCurveTo(cx - rCap * 0.92, capCy + rCap * 0.62,
+                  cx - rCap * 1.02, capCy - rCap * 1.02,
+                  cx, capCy - rCap * 1.12);
+  c.closePath();
+  c.fill();
+  creion(c, gr * 1.15);
+  c.stroke();
+
+  // sclipirea de porțelan, sus-stânga: ea spune „lucios", deci „nu e stofă"
+  c.save();
+  c.globalAlpha = 0.75;
+  c.fillStyle = '#ffffff';
+  c.beginPath();
+  c.ellipse(cx - rCap * 0.34, capCy - rCap * 0.42, rCap * 0.22, rCap * 0.34, -0.5, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
 }
 
-/* Gulerul-ghioc — *ruff*-ul. E lucrul care spune „Renaștere" înaintea oricărui
-   altuia: o roată de pânză scrobită, călcată în cute în formă de opt, care stă
-   în jurul gâtului ca o farfurie.
-
-   Se desenează **la urmă**, peste tot restul: el stă în fața umerilor, iar dacă
-   l-aș pune înainte, cusătura umărului i-ar trece peste cute. */
-function gulerulGhioc(c, g, gr) {
+/* Mâna manechinului, ieșind din mânecă: o palmă albă, cu degetele strânse, cum
+   stau la manechinele de muzeu. Nu se desenează degete unul câte unul — la
+   mărimea asta, o palmă cu un deget mare și o adâncitură între degete e tot ce se
+   citește, iar cinci degete desenate ar face o mănușă de cauciuc. */
+function manaManechinului(c, g, gr, lat) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const cy = sus + h * 0.012;
-  const rx = w * 0.235, ry = h * 0.042;
+  const x = cx + lat * w * 0.185, y = sus + h * 0.445;
+  const rx = w * 0.048, ry = h * 0.042;
 
-  // roata gulerului: două elipse, una în alta
-  const panza = c.createRadialGradient(cx, cy - ry * 0.3, ry * 0.2, cx, cy, rx);
-  panza.addColorStop(0, '#ffffff');
-  panza.addColorStop(1, '#efe8d8');
-  c.fillStyle = panza;
+  const grd = c.createLinearGradient(x - rx, y - ry, x + rx, y + ry);
+  grd.addColorStop(0, '#ffffff');
+  grd.addColorStop(0.45, '#f2f0ec');
+  grd.addColorStop(1, '#c6c2ba');
+  c.fillStyle = grd;
   c.beginPath();
-  c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  c.moveTo(x - rx * 0.7, y - ry);
+  c.quadraticCurveTo(x + rx * 0.9, y - ry * 0.6, x + rx * 0.75, y + ry * 0.5);
+  c.quadraticCurveTo(x + rx * 0.3, y + ry * 1.15, x - rx * 0.5, y + ry * 0.8);
+  c.quadraticCurveTo(x - rx * 1.0, y + ry * 0.2, x - rx * 0.7, y - ry);
+  c.closePath();
   c.fill();
-  creion(c, gr * 1.35);
+  creion(c, gr * 0.95);
   c.stroke();
-  creion(c, gr * 0.9, LINIE_SUBTIRE);
+  // adâncitura dintre degete și degetul mare
+  creion(c, gr * 0.6, LINIE_SUBTIRE);
   c.beginPath();
-  c.ellipse(cx, cy, rx * 0.34, ry * 0.42, 0, 0, Math.PI * 2);
-  c.stroke();
-
-  /* Cutele: fiecare e un „opt" culcat, care pleacă de la gât spre margine. Trase
-     drept, ca spițele unei roți, gulerul arată a floarea-soarelui; îndoite, arată
-     a pânză călcată. */
-  creion(c, gr * 0.7, LINIE_SUBTIRE);
-  const CUTE = 26;
-  for (let k = 0; k < CUTE; k++) {
-    const a = (k / CUTE) * Math.PI * 2;
-    const x0 = cx + Math.cos(a) * rx * 0.34, y0 = cy + Math.sin(a) * ry * 0.42;
-    const x1 = cx + Math.cos(a) * rx, y1 = cy + Math.sin(a) * ry;
-    const ax = Math.cos(a + 0.22), ay = Math.sin(a + 0.22);
-    c.beginPath();
-    c.moveTo(x0, y0);
-    c.quadraticCurveTo(cx + ax * rx * 0.78, cy + ay * ry * 0.78, x1, y1);
-    c.stroke();
-  }
-  // marginea zimțată, din vârfurile cutelor
-  creion(c, gr * 0.85);
-  c.beginPath();
-  for (let k = 0; k <= CUTE; k++) {
-    const a = (k / CUTE) * Math.PI * 2;
-    const r = 1 + (k % 2 ? 0.045 : 0);
-    const x = cx + Math.cos(a) * rx * r, y = cy + Math.sin(a) * ry * r;
-    if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
-  }
+  c.moveTo(x + rx * 0.1, y - ry * 0.5);
+  c.quadraticCurveTo(x + rx * 0.45, y + ry * 0.1, x + rx * 0.25, y + ry * 0.75);
   c.stroke();
 }
 
@@ -1474,29 +984,23 @@ function corsajulSiDecolteul(c, g, gr) {
      odată cu asta, mai largă. */
   const varf = talie + h * 0.085;
 
-  // cămașa de in care se vede peste decolteu, cu creț mărunt
-  creion(c, gr * 1.15);
+  /* Decolteul pătrat, tăiat drept de la un umăr la altul. E linia care spune
+     „Renaștere" imediat după siluetă — și tot ea lasă la vedere pieptul alb al
+     manechinului, adică lucrul care dovedește că rochia e îmbrăcată. */
+  creion(c, gr * 1.4);
   c.beginPath();
-  c.moveTo(cx - w * 0.185, decolteu);
-  c.quadraticCurveTo(cx, decolteu - h * 0.020, cx + w * 0.185, decolteu);
+  c.moveTo(cx - w * 0.235, decolteu + h * 0.030);
+  c.lineTo(cx - w * 0.150, decolteu + h * 0.050);
+  c.lineTo(cx + w * 0.150, decolteu + h * 0.050);
+  c.lineTo(cx + w * 0.235, decolteu + h * 0.030);
   c.stroke();
+  // panglica cusută pe marginea decolteului
   creion(c, gr * 0.6, LINIE_SUBTIRE);
-  for (let k = 0; k < 9; k++) {
-    const t = (k + 0.5) / 9;
-    const x = intre(cx - w * 0.175, cx + w * 0.175, t);
-    const y = decolteu - h * 0.018 * Math.sin(t * Math.PI);
-    c.beginPath();
-    c.moveTo(x, y); c.lineTo(x, y + h * 0.020);
-    c.stroke();
-  }
-
-  // decolteul pătrat al rochiei
-  creion(c, gr * 1.3);
   c.beginPath();
-  c.moveTo(cx - w * 0.20, decolteu + h * 0.028);
-  c.lineTo(cx - w * 0.155, decolteu + h * 0.050);
-  c.lineTo(cx + w * 0.155, decolteu + h * 0.050);
-  c.lineTo(cx + w * 0.20, decolteu + h * 0.028);
+  c.moveTo(cx - w * 0.222, decolteu + h * 0.044);
+  c.lineTo(cx - w * 0.145, decolteu + h * 0.062);
+  c.lineTo(cx + w * 0.145, decolteu + h * 0.062);
+  c.lineTo(cx + w * 0.222, decolteu + h * 0.044);
   c.stroke();
 
   /* Stomacherul: pana din față, cu marginile ei și cu un caroiaj de fir de aur.
@@ -1620,6 +1124,9 @@ function manecileBufante(c, g, gr) {
       c.arc(x, y, w * 0.014, 0, Math.PI);
       c.stroke();
     }
+
+    // mâna care iese din mânecă
+    manaManechinului(c, g, gr, lat);
   }
 }
 
@@ -1746,6 +1253,142 @@ function braulCuPietre(c, g, gr) {
     c.arc(x, y, w * 0.012, 0, Math.PI * 2);
     c.stroke();
   }
+}
+
+/* ---------- FORMELE ROCHIEI ----------
+
+   Rochia nu e o singură pată, ci **părți**: corsajul, mâneca stângă, mâneca
+   dreaptă, fusta și jupa care se vede prin deschizătură. Fiecare e o formă
+   închisă.
+
+   De ce contează: pasta pusă cu degetul se oprea acolo unde se termina tușa, nu
+   acolo unde se termină forma. Ieșeau bulgări peste conturul rochiei, în aer, și
+   silueta se strica — ceea ce e chiar pe dos față de rostul scenei, fiindcă
+   forma exponatului e tot ce ține scena laolaltă.
+
+   Așa că **fiecare tușă se taie la forma pe care ai atins-o.** Atingi corsajul,
+   vopseaua rămâne în corsaj; atingi mâneca, rămâne în mânecă. Exact ca la o carte
+   de colorat, și pentru același motiv: marginile sunt cele care fac culoarea să
+   însemne ceva.
+
+   Formele se scriu din aceleași numere din care se desenează conturul — dacă s-ar
+   scrie de două ori, ai colora o rochie și ai umple alta. */
+function traseulZonei(c, zona) {
+  const g = geomSala8();
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const talie = sus + TALIA * h;
+  const jos = sus + h;
+  const decolteu = sus + h * 0.068;
+  const varf = talie + h * 0.085;
+  const margineJupa = function (t) { return w * intre(0.03, 0.62, Math.pow(t, 1.05)); };
+
+  if (zona === 'corsaj') {
+    /* Corsajul: de la decolteu până la vârful de sub talie, între cele două
+       cusături ale mânecilor. */
+    c.beginPath();
+    c.moveTo(cx - w * 0.150, decolteu + h * 0.040);
+    c.lineTo(cx + w * 0.150, decolteu + h * 0.040);
+    c.quadraticCurveTo(cx + w * 0.140, sus + h * 0.26, cx + w * 0.150, talie);
+    c.lineTo(cx, varf);
+    c.lineTo(cx - w * 0.150, talie);
+    c.quadraticCurveTo(cx - w * 0.140, sus + h * 0.26, cx - w * 0.150, decolteu + h * 0.040);
+    c.closePath();
+    return;
+  }
+
+  if (zona === 'manecaSt' || zona === 'manecaDr') {
+    /* Mâneca: între cusătura de la corsaj și conturul de afară al rochiei, de la
+       umăr până la încheietură. Marginea de afară se ia din chiar profilul
+       rochiei — deci mâneca nu poate ieși niciodată din siluetă. */
+    const lat = zona === 'manecaSt' ? -1 : 1;
+    const vSus = 0.070, vJos = 0.400;
+    const PASI = 16;
+    c.beginPath();
+    for (let k = 0; k <= PASI; k++) {
+      const t = k / PASI, v = intre(vSus, vJos, t);
+      const x = cx + lat * w * intre(0.128, 0.152, t), y = sus + v * h;
+      if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    for (let k = PASI; k >= 0; k--) {
+      const t = k / PASI, v = intre(vSus, vJos, t);
+      c.lineTo(cx + lat * latimeaPelerinei(v) * w, sus + v * h);
+    }
+    c.closePath();
+    return;
+  }
+
+  if (zona === 'jupa') {
+    // jupa: triunghiul dintre cele două margini ale deschizăturii
+    c.beginPath();
+    for (let k = 0; k <= 24; k++) {
+      const t = k / 24, y = intre(talie + h * 0.02, jos - h * 0.010, t);
+      const x = cx - margineJupa(t);
+      if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    for (let k = 24; k >= 0; k--) {
+      const t = k / 24, y = intre(talie + h * 0.02, jos - h * 0.010, t);
+      c.lineTo(cx + margineJupa(t), y);
+    }
+    c.closePath();
+    return;
+  }
+
+  // fusta: tot ce e sub talie, mai puțin jupa (o tăiem cu winding invers)
+  const PASI = 30;
+  const st = -latimeaStanga(1), dr = latimeaDreapta(1);
+  c.beginPath();
+  for (let k = 0; k <= PASI; k++) {
+    const t = k / PASI, v = intre(TALIA, 1, t);
+    const x = cx - latimeaStanga(v) * w, y = sus + v * h;
+    if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+  }
+  for (let k = 0; k <= PASI; k++) {
+    const q = k / PASI;
+    c.lineTo(cx + intre(st, dr, q) * w,
+             sus + h * (1 + 0.026 * Math.sin(q * Math.PI * 2.4)));
+  }
+  for (let k = PASI; k >= 0; k--) {
+    const t = k / PASI, v = intre(TALIA, 1, t);
+    c.lineTo(cx + latimeaDreapta(v) * w, sus + v * h);
+  }
+  c.closePath();
+  /* Jupa se scoate din fustă, trasată în sens invers: cu regula „nonzero", un
+     contur întors face gaură. Altfel o tușă pusă pe fustă ar trece și peste jupa
+     de dedesubt, care e altă țesătură. */
+  for (let k = 24; k >= 0; k--) {
+    const t = k / 24, y = intre(talie + h * 0.02, jos - h * 0.010, t);
+    const x = cx - margineJupa(t);
+    if (k === 24) c.moveTo(x, y); else c.lineTo(x, y);
+  }
+  for (let k = 0; k <= 24; k++) {
+    const t = k / 24, y = intre(talie + h * 0.02, jos - h * 0.010, t);
+    c.lineTo(cx + margineJupa(t), y);
+  }
+  c.closePath();
+}
+
+const ZONELE_ROCHIEI = ['corsaj', 'manecaSt', 'manecaDr', 'jupa', 'fusta'];
+
+/* Pe care parte a rochiei a căzut degetul. Se întreabă chiar pânza, cu
+   `isPointInPath`: e răspunsul exact, dat de aceleași contururi din care se
+   desenează. Socotit de mână, cu dreptunghiuri, s-ar despărți de desen la prima
+   schimbare de croială. */
+const panzaZonelor = { panza: null, ctx: null };
+
+function zonaAtinsa(x, y) {
+  if (!panzaZonelor.ctx) {
+    panzaZonelor.panza = document.createElement('canvas');
+    panzaZonelor.panza.width = 1; panzaZonelor.panza.height = 1;
+    panzaZonelor.ctx = panzaZonelor.panza.getContext('2d');
+  }
+  const c = panzaZonelor.ctx;
+  for (const zona of ZONELE_ROCHIEI) {
+    traseulZonei(c, zona);
+    if (c.isPointInPath(x, y)) return zona;
+  }
+  // în siluetă, dar în nicio parte anume (gulerul, marginile): tot rochie e
+  traseulPelerinei(c);
+  return c.isPointInPath(x, y) ? 'rochie' : null;
 }
 
 function ochiulPelerinei(i, j) {
@@ -2333,8 +1976,24 @@ function pastaCuUnealta(c, x, y, lung, gros, unghi, culoare, forma, relief) {
   c.restore();
 }
 
-function lasaTusa(x, y, unghi, marime) {
+function lasaTusa(x, y, unghi, marime, zona) {
   const c = stratul().getContext('2d');
+  /* Vopseaua se pune **numai pe costum**, și numai în forma atinsă.
+
+     Degetul căzut alături nu lasă nimic. Sala e pictată de mult, de altcineva;
+     ce ai tu de făcut e exponatul. Iar o pată de pastă care trece peste conturul
+     rochiei nu adaugă nimic — strică tocmai silueta, adică singurul lucru care
+     ține scena laolaltă.
+
+     Tăiat la formă, fiecare tușă se oprește unde se oprește stofa: atingi
+     corsajul, culoarea rămâne în corsaj; atingi mâneca, rămâne în mânecă. Exact
+     ca la o carte de colorat, și pentru același motiv — marginile sunt cele care
+     fac culoarea să însemne ceva. */
+  const taiat = zona !== undefined ? zona : zonaAtinsa(x, y);
+  if (!taiat) return;
+  c.save();
+  if (taiat === 'rochie') traseulPelerinei(c); else traseulZonei(c, taiat);
+  c.clip();
   const u = USTENSILE[s8.unealta % USTENSILE.length];
   const culoare = CERC_CROMATIC[s8.culoare % CERC_CROMATIC.length];
 
@@ -2383,6 +2042,7 @@ function lasaTusa(x, y, unghi, marime) {
     facPicatura(x + (Math.random() - 0.5) * gros, y + gros * 0.4, culoare);
   }
   acoperaPelerina(x, y, Math.max(lung, gros) * 0.55);
+  c.restore();
 }
 
 /* Ce ochiuri ale pelerinei a acoperit tușa. Se socotește pe rețea, nu pe pixeli. */

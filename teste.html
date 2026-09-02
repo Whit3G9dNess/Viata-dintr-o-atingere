@@ -252,6 +252,27 @@ function creeazaPanza() {
     },
     strokeText: function () {},
     measureText: function (s) { masuratori++; return { width: String(s).length * 7 }; },
+
+    /* Pânza adevărată știe să spună dacă un punct cade înăuntrul conturului
+       desenat. A trebuit și aici, de când fiecare tușă de vopsea se taie la forma
+       pe care ai atins-o: fără ea, testele scenei uleiului nu mai pot rula deloc.
+
+       Se face prin numărarea trecerilor: tragi o rază din punct spre dreapta și
+       numeri de câte ori taie laturile conturului. Impar înseamnă înăuntru.
+       Curbele sunt aproximate prin capetele lor — pentru „e degetul pe corsaj sau
+       pe mânecă" e destul, iar o flatare adevărată a curbelor ar fi mai mult cod
+       de test decât cod de jucărie. */
+    isPointInPath: function (x, y) {
+      const p = puncte;
+      if (p.length < 3) return false;
+      let inauntru = false;
+      for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+        const taie = (p[i].y > y) !== (p[j].y > y) &&
+          x < (p[j].x - p[i].x) * (y - p[i].y) / ((p[j].y - p[i].y) || 1e-9) + p[i].x;
+        if (taie) inauntru = !inauntru;
+      }
+      return inauntru;
+    },
     clip: function () {},
     createLinearGradient: gradient,
     createRadialGradient: gradient,
@@ -441,6 +462,7 @@ return {
   click8: typeof click8 !== "undefined" ? click8 : null,
   geomSala8: typeof geomSala8 !== "undefined" ? geomSala8 : null,
   puneTusa: typeof puneTusa !== "undefined" ? puneTusa : null,
+  zonaAtinsa: typeof zonaAtinsa !== "undefined" ? zonaAtinsa : null,
   USTENSILE: typeof USTENSILE !== "undefined" ? USTENSILE : null,
   locurileUneltelor: typeof locurileUneltelor !== "undefined" ? locurileUneltelor : null,
   CERC_CROMATIC: typeof CERC_CROMATIC !== "undefined" ? CERC_CROMATIC : null,
@@ -3859,14 +3881,39 @@ function ruleaza() {
     adevarat(canal(albastru, 2) > canal(albastru, 0) + 80, "raza 8 nu e albastra: " + albastru);
   });
 
-  test("oriunde dai clic ramane pasta, si ea nu se sterge", function () {
+  test("pasta se pune numai pe costum, si ramane unde ai pus-o", function () {
+    /* A fost o vreme cand se putea manji si sala. Acum nu: sala e pictata de mult,
+       de altcineva, iar o pata de pasta care trece peste conturul rochiei strica
+       tocmai silueta — singurul lucru care tine scena laolalta. */
     const j = porneste({ latime: 1400, inaltime: 800 });
-    inUlei(j);
+    const g = inUlei(j);
+
     const inainte = j.s8.tuseFacute;
-    j.cursor.x = j.W() * 0.62; j.cursor.y = j.H() * 0.7;
+    j.cursor.x = j.W() * 0.62; j.cursor.y = j.H() * 0.72;   // pe podea, langa podium
     j.click8(j.ceas.t);
-    adevarat(j.s8.tuseFacute > inainte, "clicul pe perete n-a lasat nicio urma");
+    egal(j.s8.tuseFacute, inainte, "clicul pe podea a lasat vopsea in sala");
+
+    j.cursor.x = g.pelCx; j.cursor.y = g.pelSus + g.pelInalt * 0.75;
+    j.click8(j.ceas.t);
+    adevarat(j.s8.tuseFacute > inainte, "clicul pe costum n-a lasat nicio urma");
     adevarat(j.stratul() !== null, "lipseste stratul de vopsea al jucatorului");
+  });
+
+  test("fiecare tusa se opreste in forma pe care ai atins-o", function () {
+    /* Atingi corsajul, culoarea ramane in corsaj; atingi maneca, ramane in
+       maneca. Ca la o carte de colorat, si pentru acelasi motiv: marginile sunt
+       cele care fac culoarea sa insemne ceva. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inUlei(j);
+    adevarat(typeof j.zonaAtinsa === "function", "lipseste impartirea pe forme");
+    egal(j.zonaAtinsa(g.pelCx, g.pelSus + g.pelInalt * 0.25), "corsaj",
+      "mijlocul pieptului nu cade in corsaj");
+    egal(j.zonaAtinsa(g.pelCx - g.pelLat * 0.33, g.pelSus + g.pelInalt * 0.20), "manecaSt",
+      "umarul stang nu cade in maneca");
+    egal(j.zonaAtinsa(g.pelCx, g.pelSus + g.pelInalt * 0.85), "jupa",
+      "mijlocul fustei nu cade in jupa");
+    egal(j.zonaAtinsa(g.pelCx - g.pelLat * 2.2, g.pelSus + g.pelInalt * 0.5), null,
+      "un punct din sala e socotit parte din costum");
   });
 
   test("acoperirea se socoteste pe pelerina, nu pe toata sala", function () {
@@ -3879,7 +3926,7 @@ function ruleaza() {
       j.puneTusa(j.W() * 0.08 + Math.random() * j.W() * 0.06,
                  j.H() * 0.72 + Math.random() * j.H() * 0.2, j.ceas.t);
     }
-    egal(j.s8.acoperit, 0, "pictand pe perete s-a acoperit si pelerina");
+    egal(j.s8.acoperit, 0, "atingerile din afara costumului au acoperit rochia");
     acoperaPelerinaToata(j);
     aproape(j.s8.acoperit, 1, 0.01, "pelerina nu s-a acoperit de tot");
   });

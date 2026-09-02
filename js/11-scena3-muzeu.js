@@ -883,8 +883,14 @@ function deseneazaHaina(g, deschidere) {
               g.corpH * 0.515 * (1 + deschidere * 0.12), 0, 0, Math.PI * 2);
   ctx.clip();
 
-  // cămașa și papionul de sub haină — se văd în scobitura reverului cât e
-  // închisă, și sunt acoperite de căptușeală când se desface
+  /* Cămașa și papionul de sub haină. Se văd în scobitura reverului cât timp
+     haina e închisă — și **numai atunci**.
+
+     Erau desenate mereu, cu gândul că le acoperă căptușeala când haina se
+     desface. Nu le acoperea de tot: în spatele galeriei rămânea o bucată de
+     papion, plutind peste mătase ca o pată roșie fără explicație. Ce nu se mai
+     vede nu trebuie desenat — și e mai ieftin, pe deasupra. */
+  if (deschidere < 0.02) {
   ctx.fillStyle = '#f3ead5';
   ctx.beginPath();
   ctx.moveTo(g.cx - w * 0.17, y0 - h * 0.01);
@@ -897,6 +903,7 @@ function deseneazaHaina(g, deschidere) {
   ctx.beginPath(); ctx.moveTo(pcx, py); ctx.lineTo(pcx + pw, py - pw * 0.62); ctx.lineTo(pcx + pw, py + pw * 0.62); ctx.closePath(); ctx.fill();
   ctx.fillStyle = '#8f2c38';
   ctx.beginPath(); ctx.arc(pcx, py, pw * 0.3, 0, Math.PI * 2); ctx.fill();
+  }
 
   // căptușeala de mătase și cele nouă buzunare, doar cât e haina desfăcută
   if (deschidere > 0.02) {

@@ -1380,6 +1380,44 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului,
     /* Năframa: se leagă peste creștet și pe după obraji, dar lasă fața la
        vedere. Desenată peste tot capul, se face glugă. */
     c.fillStyle = PORT_ROMANESC.panza;
+
+    /* **Din spate, năframa acoperă tot capul.** Din față ea lasă obrazul la
+       vedere, fiindcă de-aia se leagă pe după el; pe ceafă însă n-are ce să lase
+       — pânza trece peste creștet și cade pe umeri. Cât timp desenam din spate
+       aceeași năframă cu deschizătură, femeii i se vedea ceafa goală printr-o
+       gaură pe care năframa n-o are pe partea aia. */
+    if (dinSpate) {
+      c.beginPath();
+      c.moveTo(-s * 0.140, -s * 0.90);
+      c.quadraticCurveTo(-s * 0.165, -s * 1.14, 0, -s * 1.175);
+      c.quadraticCurveTo(s * 0.165, -s * 1.14, s * 0.140, -s * 0.90);
+      c.quadraticCurveTo(0, -s * 0.845, -s * 0.140, -s * 0.90);
+      c.closePath(); c.fill();
+      // colțul care atârnă pe spate, sub nod
+      c.beginPath();
+      c.moveTo(-s * 0.075, -s * 0.90);
+      c.quadraticCurveTo(0, -s * 0.83, s * 0.075, -s * 0.90);
+      c.quadraticCurveTo(s * 0.045, -s * 0.74, 0, -s * 0.70);
+      c.quadraticCurveTo(-s * 0.045, -s * 0.74, -s * 0.075, -s * 0.90);
+      c.closePath(); c.fill();
+      // cutele pânzei pe ceafă
+      c.strokeStyle = PORT_ROMANESC.umbra;
+      c.lineWidth = Math.max(0.5, s * 0.009);
+      for (const q of [-0.6, -0.2, 0.2, 0.6]) {
+        c.beginPath();
+        c.moveTo(s * 0.135 * q, -s * 1.14);
+        c.quadraticCurveTo(s * 0.150 * q, -s * 1.0, s * 0.120 * q, -s * 0.875);
+        c.stroke();
+      }
+      c.strokeStyle = PORT_ROMANESC.rosu;
+      c.lineWidth = Math.max(0.6, s * 0.012);
+      c.beginPath();
+      c.moveTo(-s * 0.128, -s * 0.925);
+      c.quadraticCurveTo(0, -s * 0.875, s * 0.128, -s * 0.925);
+      c.stroke();
+      return;
+    }
+
     c.beginPath();
     c.moveTo(-s * 0.128, -s * 1.03);
     c.quadraticCurveTo(-s * 0.205, -s * 0.93, -s * 0.175, -s * 0.79);
