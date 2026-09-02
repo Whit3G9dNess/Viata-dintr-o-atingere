@@ -1135,10 +1135,14 @@ function podiumulCuFunii(c, g, gr) {
    sus —, strângerea de sub ele, talia (locul cel mai îngust din tot desenul), și
    fusta care se deschide până la poale. */
 const PROFIL_PELERINEI = [
-  [0.000, 0.070], [0.040, 0.095],
-  [0.065, 0.340], [0.095, 0.520],                   // umerii, cu aripioarele
-  [0.160, 0.625], [0.245, 0.595],                   // mâneca-balon, până la cot
-  [0.320, 0.400], [0.390, 0.215],                   // se strânge spre încheietură
+  [0.000, 0.070], [0.050, 0.100],
+  /* Umerii încep **sub** guler, nu la același nivel cu el. Mânecile porneau de
+     lângă gât și se atingeau la mijloc: corsajul dispărea cu totul între ele, iar
+     rochia se citea ca un ghem de baloane. Un trup se vede numai dacă i se lasă
+     loc între brațe. */
+  [0.082, 0.190], [0.115, 0.360],                   // umerii, cu aripioarele
+  [0.190, 0.470], [0.265, 0.450],                   // mâneca-balon, până la cot
+  [0.335, 0.330], [0.395, 0.200],                   // se strânge spre încheietură
   [0.430, 0.150],                                   // talia — locul cel mai îngust
   [0.505, 0.350], [0.605, 0.560], [0.720, 0.750],
   [0.845, 0.900], [0.950, 0.980], [1.000, 1.000]
@@ -1218,6 +1222,8 @@ function pelerinaInLinie(c, g, gr) {
   traseulPelerinei(c);
   c.fill();
 
+  formaDeSubRochie(c, g);
+
   creion(c, gr * 1.6);
   traseulPelerinei(c);
   c.stroke();
@@ -1227,6 +1233,37 @@ function pelerinaInLinie(c, g, gr) {
   manecileBufante(c, g, gr);
   braulCuPietre(c, g, gr);
   gulerulGhioc(c, g, gr);
+  /* Umărul manechinului, deasupra gulerului. E singurul lucru care se vede din
+     ce e **dedesubt** — și tocmai el spune că rochia e îmbrăcată, nu atârnată. */
+  capatulManechinului(c, g, gr);
+}
+
+/* Vârful manechinului: gâtul de lemn și butonul lui, ieșind din guler. Un
+   manechin de muzeu n-are cap; are un știft. */
+function capatulManechinului(c, g, gr) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const lat = w * 0.062, inalt = h * 0.075;
+  const lemn = c.createLinearGradient(cx - lat, 0, cx + lat, 0);
+  lemn.addColorStop(0, '#f0e6ce');
+  lemn.addColorStop(0.32, '#dcc9a4');
+  lemn.addColorStop(1, '#a89478');
+  c.fillStyle = lemn;
+  c.beginPath();
+  c.moveTo(cx - lat * 0.80, sus - inalt);
+  c.lineTo(cx - lat, sus + h * 0.020);
+  c.lineTo(cx + lat, sus + h * 0.020);
+  c.lineTo(cx + lat * 0.80, sus - inalt);
+  c.closePath();
+  c.fill();
+  creion(c, gr * 1.2);
+  c.stroke();
+  // butonul rotund din vârf
+  c.fillStyle = lemn;
+  c.beginPath();
+  c.ellipse(cx, sus - inalt, lat * 0.86, lat * 0.42, 0, 0, Math.PI * 2);
+  c.fill();
+  creion(c, gr * 1.1);
+  c.stroke();
 }
 
 /* Gulerul-ghioc — *ruff*-ul. E lucrul care spune „Renaștere" înaintea oricărui
@@ -1282,6 +1319,122 @@ function gulerulGhioc(c, g, gr) {
   c.stroke();
 }
 
+/* ---------- MODELAREA ----------
+
+   Rochia era albă și plată, cu linii subțiri peste ea — și nu se înțelegea deloc
+   ce formă are. „Parcă n-are manechin dedesubt", și chiar așa era: **o formă nu
+   se citește din contur, se citește din umbră.**
+
+   Conturul spune doar unde se termină lucrul. Ce spune că e rotund, că iese în
+   față, că are un trup sub el, e felul în care lumina alunecă pe el: mijlocul
+   luminat, marginile lăsate în umbră, și umbrele aruncate de o parte peste alta
+   — gulerul peste piept, mâneca peste fustă.
+
+   Umbrele astea nu strică albul. O pânză albă amorsată, pusă pe un manechin, tot
+   are umbre; ce n-are e **culoare**. De-aia se face totul în cenușiu cald, fără
+   niciun pigment: rochia rămâne nepictată, dar încetează să mai fie plată. */
+function formaDeSubRochie(c, g) {
+  const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
+  const talie = sus + TALIA * h;
+  const jos = sus + h;
+
+  c.save();
+  traseulPelerinei(c);
+  c.clip();
+
+  /* 1. Corsajul: un trup rotund. Lumină pe mijloc, umbră pe cele două laturi.
+     Asta singură face din corsaj un piept, nu un carton. */
+  const trup = c.createLinearGradient(cx - w * 0.15, 0, cx + w * 0.15, 0);
+  trup.addColorStop(0, 'rgba(112, 100, 80, 0.52)');
+  trup.addColorStop(0.28, 'rgba(255, 253, 245, 0)');
+  trup.addColorStop(0.60, 'rgba(255, 253, 245, 0)');
+  trup.addColorStop(1, 'rgba(112, 100, 80, 0.58)');
+  c.fillStyle = trup;
+  c.fillRect(cx - w * 0.16, sus + h * 0.05, w * 0.32, talie - sus - h * 0.03);
+
+  /* 2. Mânecile-balon: fiecare e o bilă de stofă. Lumina cade sus-stânga, deci
+     fiecare primește o pată deschisă acolo și se închide spre marginea de jos.
+     Rotunjimea lor e ce dă rochiei umeri. */
+  for (const lat of [-1, 1]) {
+    const mx = cx + lat * w * 0.315, my = sus + h * 0.215;
+    const rx = w * 0.175, ry = h * 0.125;
+    const bila = c.createRadialGradient(mx - rx * 0.35, my - ry * 0.45, rx * 0.08,
+                                        mx, my, rx * 1.25);
+    bila.addColorStop(0, 'rgba(255, 255, 252, 0.85)');
+    bila.addColorStop(0.45, 'rgba(255, 253, 245, 0)');
+    bila.addColorStop(1, 'rgba(112, 100, 80, 0.55)');
+    c.fillStyle = bila;
+    c.beginPath();
+    c.ellipse(mx, my, rx * 1.3, ry * 1.45, 0, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  /* 3. Fusta: un con. Lumina coboară pe mijlocul din față, umbra se strânge
+     spre cele două margini — și cu atât mai tare în jos, unde stofa e mai
+     adunată. */
+  const con = c.createLinearGradient(cx - w * 0.95, 0, cx + w * 0.95, 0);
+  con.addColorStop(0, 'rgba(104, 92, 74, 0.58)');
+  con.addColorStop(0.22, 'rgba(150, 138, 116, 0.22)');
+  con.addColorStop(0.46, 'rgba(255, 253, 245, 0)');
+  con.addColorStop(0.62, 'rgba(255, 253, 245, 0)');
+  con.addColorStop(0.82, 'rgba(150, 138, 116, 0.26)');
+  con.addColorStop(1, 'rgba(104, 92, 74, 0.62)');
+  c.fillStyle = con;
+  c.fillRect(cx - w * 1.4, talie, w * 2.8, jos - talie + h * 0.06);
+
+  // și o umbră care se adună la poale, ca stofa grea care atinge podiumul
+  const poale = c.createLinearGradient(0, jos - h * 0.22, 0, jos + h * 0.03);
+  poale.addColorStop(0, 'rgba(104, 92, 74, 0)');
+  poale.addColorStop(1, 'rgba(104, 92, 74, 0.36)');
+  c.fillStyle = poale;
+  c.fillRect(cx - w * 1.4, jos - h * 0.22, w * 2.8, h * 0.25);
+
+  /* 4. Umbrele aruncate. Ele sunt cele care spun cine stă **în fața** cui:
+     gulerul peste piept, mânecile peste fustă. Fără ele, toate părțile plutesc
+     în același plan, oricât de bine ar fi modelată fiecare. */
+  const subGuler = c.createLinearGradient(0, sus + h * 0.030, 0, sus + h * 0.105);
+  subGuler.addColorStop(0, 'rgba(96, 86, 70, 0.45)');
+  subGuler.addColorStop(1, 'rgba(96, 86, 70, 0)');
+  c.fillStyle = subGuler;
+  c.fillRect(cx - w * 0.32, sus + h * 0.030, w * 0.64, h * 0.075);
+
+  for (const lat of [-1, 1]) {
+    const ux = cx + lat * w * 0.30;
+    const subManeca = c.createLinearGradient(0, talie - h * 0.02, 0, talie + h * 0.10);
+    subManeca.addColorStop(0, 'rgba(96, 86, 70, 0.34)');
+    subManeca.addColorStop(1, 'rgba(96, 86, 70, 0)');
+    c.fillStyle = subManeca;
+    c.fillRect(ux - w * 0.18, talie - h * 0.02, w * 0.36, h * 0.12);
+  }
+
+  /* 5. Cutele fustei, ca umbre lungi, nu ca linii. O cută e o adâncitură: se
+     vede fiindcă acolo lumina nu ajunge, nu fiindcă cineva a tras o dungă. */
+  for (let k = 0; k < 9; k++) {
+    const t = (k + 0.5) / 9;
+    const de = (t - 0.5) * 2;
+    const laTalie = cx + de * latimeaPelerinei(TALIA) * 0.8 * w;
+    const laPoale = cx + de * (de < 0 ? latimeaStanga(0.97) : latimeaDreapta(0.97)) * 0.88 * w;
+    const lat = w * (0.05 + Math.abs(de) * 0.05);
+    c.save();
+    c.globalAlpha = 0.16 + Math.abs(de) * 0.12;
+    const cuta = c.createLinearGradient(laPoale - lat, 0, laPoale + lat, 0);
+    cuta.addColorStop(0, 'rgba(96, 86, 70, 0)');
+    cuta.addColorStop(0.5, 'rgba(96, 86, 70, 1)');
+    cuta.addColorStop(1, 'rgba(96, 86, 70, 0)');
+    c.fillStyle = cuta;
+    c.beginPath();
+    c.moveTo(laTalie - lat * 0.35, talie);
+    c.lineTo(laTalie + lat * 0.35, talie);
+    c.lineTo(laPoale + lat, jos + h * 0.02);
+    c.lineTo(laPoale - lat, jos + h * 0.02);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  c.restore();
+}
+
 /* Gâtul manechinului: un stâlp scurt care iese din decolteu. El e tot ce spune
    că rochia e **îmbrăcată pe ceva**, nu atârnată într-un cui. */
 function gatulManechinului(c, g, gr) {
@@ -1314,7 +1467,7 @@ function gatulManechinului(c, g, gr) {
    jos și face talia să pară și mai subțire decât e. */
 function corsajulSiDecolteul(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const decolteu = sus + h * 0.062;
+  const decolteu = sus + h * 0.068;
   const talie = sus + TALIA * h;
   /* Vârful corsajului coboară **sub** talie, într-un V lung. În portrete el ajunge
      cu o palmă mai jos decât brâul — de-aia fusta pare că pleacă de mai jos și,
@@ -1402,16 +1555,16 @@ function corsajulSiDecolteul(c, g, gr) {
    cusătura. Fără el, mâneca pare lipită de corsaj. */
 function manecileBufante(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const umar = sus + h * 0.085;
-  const incheietura = sus + h * 0.385;
+  const umar = sus + h * 0.115;
+  const incheietura = sus + h * 0.395;
 
   for (const lat of [-1, 1]) {
     // cusătura care desparte mâneca de corsaj
     creion(c, gr * 1.3);
     c.beginPath();
-    c.moveTo(cx + lat * w * 0.150, sus + h * 0.070);
-    c.quadraticCurveTo(cx + lat * w * 0.142, sus + h * 0.24,
-                       cx + lat * w * 0.165, sus + h * 0.36);
+    c.moveTo(cx + lat * w * 0.132, sus + h * 0.095);
+    c.quadraticCurveTo(cx + lat * w * 0.126, sus + h * 0.26,
+                       cx + lat * w * 0.150, sus + h * 0.375);
     c.stroke();
 
     /* Benzile de pe mânecă: șase cercuri care urmează umflătura. Fiecare e mai
@@ -1419,8 +1572,8 @@ function manecileBufante(c, g, gr) {
     creion(c, gr * 0.8, LINIE_SUBTIRE);
     for (let k = 1; k <= 6; k++) {
       const t = k / 7;
-      const v = intre(0.085, 0.385, t);
-      const dinauntru = w * intre(0.148, 0.165, t);
+      const v = intre(0.115, 0.395, t);
+      const dinauntru = w * intre(0.130, 0.150, t);
       const dinafara = latimeaPelerinei(v) * w;
       const y = sus + v * h;
       c.beginPath();
@@ -1433,35 +1586,35 @@ function manecileBufante(c, g, gr) {
     // aripioara de la umăr: un sul în formă de semilună
     creion(c, gr * 1.15);
     c.beginPath();
-    c.moveTo(cx + lat * w * 0.135, sus + h * 0.052);
-    c.quadraticCurveTo(cx + lat * w * 0.430, sus + h * 0.026,
-                       cx + lat * w * 0.500, umar + h * 0.030);
+    c.moveTo(cx + lat * w * 0.120, sus + h * 0.082);
+    c.quadraticCurveTo(cx + lat * w * 0.300, sus + h * 0.062,
+                       cx + lat * w * 0.360, umar + h * 0.040);
     c.stroke();
     c.beginPath();
-    c.moveTo(cx + lat * w * 0.135, sus + h * 0.052);
-    c.quadraticCurveTo(cx + lat * w * 0.380, sus + h * 0.090,
-                       cx + lat * w * 0.500, umar + h * 0.030);
+    c.moveTo(cx + lat * w * 0.120, sus + h * 0.082);
+    c.quadraticCurveTo(cx + lat * w * 0.270, sus + h * 0.118,
+                       cx + lat * w * 0.360, umar + h * 0.040);
     c.stroke();
     creion(c, gr * 0.6, LINIE_SUBTIRE);
     for (let k = 1; k < 5; k++) {
       const t = k / 5;
       c.beginPath();
-      c.moveTo(cx + lat * intre(w * 0.150, w * 0.470, t), sus + h * intre(0.046, 0.030, t));
-      c.lineTo(cx + lat * intre(w * 0.155, w * 0.465, t), sus + h * intre(0.086, 0.076, t));
+      c.moveTo(cx + lat * intre(w * 0.135, w * 0.340, t), sus + h * intre(0.076, 0.064, t));
+      c.lineTo(cx + lat * intre(w * 0.140, w * 0.335, t), sus + h * intre(0.114, 0.108, t));
       c.stroke();
     }
 
     // manșeta mică de la încheietură, cu dantela ei
     creion(c, gr * 1.15);
     c.beginPath();
-    c.moveTo(cx + lat * w * 0.170, incheietura - h * 0.015);
-    c.quadraticCurveTo(cx + lat * w * 0.235, incheietura + h * 0.010,
-                       cx + lat * w * 0.195, incheietura + h * 0.030);
+    c.moveTo(cx + lat * w * 0.155, incheietura - h * 0.015);
+    c.quadraticCurveTo(cx + lat * w * 0.215, incheietura + h * 0.010,
+                       cx + lat * w * 0.178, incheietura + h * 0.030);
     c.stroke();
     creion(c, gr * 0.6, LINIE_SUBTIRE);
     for (let k = 0; k < 5; k++) {
       const t = (k + 0.5) / 5;
-      const x = cx + lat * intre(w * 0.178, w * 0.205, t);
+      const x = cx + lat * intre(w * 0.162, w * 0.188, t);
       const y = intre(incheietura - h * 0.008, incheietura + h * 0.028, t);
       c.beginPath();
       c.arc(x, y, w * 0.014, 0, Math.PI);
