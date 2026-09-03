@@ -140,6 +140,8 @@ const s8 = {
   acoperit: 0,          // cât din pelerină s-a acoperit, 0..1
   picaturi: [],
   tuseFacute: 0,
+  inramare: 0,          // cât a urcat lucrarea pe perete și s-a înrămat
+  chemarePostament: 0,  // cât de tare cheamă postamentul, după ce a rămas gol
   scurgere: 0,          // cât s-a deschis trapa și s-a scurs culoarea
   perdea: null,
   diluare: 0,
@@ -485,9 +487,20 @@ function fondulSalii(c, g) {
    trebuie ca să cuprindă rochia. Din el rochia albă iese ca dintr-o fereastră.
 
    Are un halou în jur, ca discurile pictate să nu pară decupate cu foarfeca. */
+/* Mijlocul și raza discului portocaliu din fundul sălii. Se ține într-un singur
+   loc fiindcă acolo se duce, la sfârșit, tabloul — iar tabloul trebuie să cadă
+   **exact** în mijlocul lui, nu pe lângă. */
+function disculSalii(g) {
+  return {
+    cx: g.pelCx,
+    cy: g.pelSus + g.pelInalt * 0.42,
+    r: Math.min(W * 0.30, H * 0.42)
+  };
+}
+
 function disculDinSpate(c, g) {
-  const cx = g.pelCx, cy = g.pelSus + g.pelInalt * 0.42;
-  const r = Math.min(W * 0.30, H * 0.42);
+  const d = disculSalii(g);
+  const cx = d.cx, cy = d.cy, r = d.r;
 
   const halou = c.createRadialGradient(cx, cy, r * 0.9, cx, cy, r * 1.55);
   halou.addColorStop(0, 'rgba(224, 112, 60, 0.34)');
@@ -731,7 +744,11 @@ function traseulPelerinei(c) {
   c.closePath();
 }
 
-function pelerinaInLinie(c, g, gr) {
+/* `caTablou` cere numai veșmântul, fără manechinul de sub el. Când lucrarea s-a
+   înrămat și s-a agățat pe perete, ea nu mai e o rochie **pe** ceva: e o pictură.
+   Un cap de manechin ieșind din ramă ar arăta ca și cum cineva a agățat pe perete
+   și suportul. */
+function pelerinaInLinie(c, g, gr, caTablou) {
   const cx = g.pelCx, sus = g.pelSus, jos = g.pelJos, w = g.pelLat, h = g.pelInalt;
 
   gatulManechinului(c, g, gr);
@@ -761,7 +778,7 @@ function pelerinaInLinie(c, g, gr) {
   corsajulSiDecolteul(c, g, gr);
   manecileBufante(c, g, gr);
   braulCuPietre(c, g, gr);
-  capatulManechinului(c, g, gr);
+  if (!caTablou) capatulManechinului(c, g, gr);
 }
 
 /* ---------- MANECHINUL ----------
@@ -1489,29 +1506,44 @@ function pregatesteOchiurile() {
    Deci: alegem o literă care se citește (potrivită după ecran, nu după casetă),
    rupem textul pe lățimea dată, socotim câte rânduri ies — și abia atunci știm
    cât e de înaltă caseta. */
-function inaltimeaFisei(c, g) {
-  const marime = marimeaFisei(g);
-  c.save();
-  c.font = Math.round(marime) + 'px Georgia';
+/* Cât loc are fișa pe verticală, de la locul ei până aproape de podea. Peste
+   asta n-are voie să treacă: o casetă care iese din ecran nu e o casetă mare, e
+   un text tăiat. */
+function loculFisei(g) { return H * 0.90 - g.fisaY; }
+
+/* Înălțimea fișei **și** litera ei, socotite împreună.
+
+   Caseta se face cât textul — asta a rămas. Dar dacă textul cere mai mult decât
+   are unde, atunci se micșorează litera până încape, în loc să curgă afară din
+   chenar. Erau două socoteli care nu se vorbeau: una alegea litera după lățime,
+   alta măsura înălțimea cu ea, și nimeni nu întreba dacă rezultatul mai încape
+   pe ecran. Pe o fereastră mai scundă, ultimele rânduri ieșeau pur și simplu
+   dincolo de ramă. */
+function masuraFisei(c, g) {
+  const locul = loculFisei(g);
+  let marime = Math.max(9, Math.min(g.fisaLat * 0.055, g.S * 0.021));
   const paragrafe = TEXT_FISA_PIGMENTI.split('\n');
-  let inalt = g.fisaLat * 0.06;                 // marginea de sus
-  for (const par of paragrafe) {
-    inalt += randuriInCaseta(c, par, g.fisaLat * 0.86).length * marime * 1.42;
-    inalt += marime * 0.75;                     // pauza dintre paragrafe
+  let inalt = 0;
+  c.save();
+  for (let k = 0; k < 24; k++) {
+    c.font = Math.round(marime) + 'px Georgia';
+    inalt = g.fisaLat * 0.06;
+    for (const par of paragrafe) {
+      inalt += randuriInCaseta(c, par, g.fisaLat * 0.86).length * marime * 1.42;
+      inalt += marime * 0.75;
+    }
+    inalt += g.fisaLat * 0.04;
+    if (inalt <= locul || marime <= 9) break;
+    marime *= 0.94;
   }
   c.restore();
-  return inalt + g.fisaLat * 0.04;              // marginea de jos
-}
-
-/* Litera fișei: destul de mare cât s-o citești de la un metru, dar nu atât cât
-   să facă din panou un afiș. Se ia din ecran, fiindcă de ecran ține cititul. */
-function marimeaFisei(g) {
-  return Math.max(11, Math.min(g.fisaLat * 0.055, g.S * 0.021));
+  return { marime, inalt: Math.min(inalt, locul) };
 }
 
 function fisaDeSala8(c, g, gr) {
   const x = g.fisaX, y = g.fisaY, w = g.fisaLat;
-  const h = inaltimeaFisei(c, g);
+  const m = masuraFisei(c, g);
+  const h = m.inalt;
   c.save();
   c.fillStyle = 'rgba(255, 254, 250, 0.92)';
   c.fillRect(x, y, w, h);
@@ -1524,7 +1556,7 @@ function fisaDeSala8(c, g, gr) {
   /* Trei paragrafe, cu o singură mărime de literă pentru toate. Căutată pentru
      fiecare în parte, primul ar ieși mare și ultimul mărunt — iar o fișă scrisă
      cu trei litere diferite arată a colaj. */
-  const marime = marimeaFisei(g);
+  const marime = m.marime;
   let yy = y + w * 0.06;
   for (const par of TEXT_FISA_PIGMENTI.split('\n')) {
     yy = scrieInCaseta(c, par, x + w * 0.5, yy, w * 0.86, h, marime, '', '#3a342c');
@@ -2330,7 +2362,7 @@ function deseneazaVorba8(acum) {
 
 /* ---------- INTRAREA ---------- */
 function intraInUlei(acum) {
-  s8.viata = 0; s8.trapa = 0;
+  s8.inramare = 0; s8.chemarePostament = 0; s8.trapa = 0;
   stare = 'ulei';
   s8.faza = 'intrare'; s8.t0 = acum; s8.ultimulCadru = acum;
   s8.vapori = 1; s8.unealta = 1; s8.culoare = 4;
@@ -2392,6 +2424,18 @@ function peCerc(x, y) {
 function click8(acum) {
   const x = cursor.x, y = cursor.y;
   if (s8.faza === 'scurgere' || s8.faza === 'diluare' || s8.faza === 'iesire') return;
+  /* Pe postament se urcă. E singurul lucru de făcut în faza asta, deci orice
+     atingere pe el pornește drumul mai departe. */
+  if (s8.faza === 'postament') {
+    const g = geomSala8();
+    const dx = (cursor.x - g.podiumCx) / (g.podiumRx * 1.15);
+    const dy = (cursor.y - g.podiumCy) / (g.podiumRy * 2.6);
+    if (dx * dx + dy * dy <= 1) {
+      s8.faza = 'trapa'; s8.t0 = acum; s8.trapa = 0.001;
+      if (audio) sunetPortal();
+    }
+    return;
+  }
 
   const u = peTrusa(x, y);
   if (u >= 0) {
@@ -2459,24 +2503,37 @@ function actualizeazaUleiul(acum) {
          pleacă purtându-și rochia, și abia pe urmă se deschide drumul. E o
          deosebire mică în cod și mare în înțeles: ce ai pictat nu se scurge, ci
          se ridică și pleacă în lume. */
-      s8.faza = 'viata'; s8.t0 = acum; s8.viata = 0.001;
+      s8.faza = 'inramare'; s8.t0 = acum; s8.inramare = 0.001;
       if (audio) { sunetDescoperire(); }
-      spuneScena8('A prins viață.', 3800);
     } else if (!s8.aSpusTrapa && s8.tuseFacute === 12) {
       s8.aSpusTrapa = true;
       spuneScena8('Acoperă pelerina de tot: ea e lucrarea neterminată.', 6000);
     }
   }
 
-  /* Manechinul se ridică de pe podium și se destramă în lumină. Nu iese pe o
-     ușă: sala n-are ușă, și nici n-ar avea rost — el pleacă din **expunere**, nu
-     din cameră. Un exponat care prinde viață nu umblă, se dezleagă. */
-  if (s8.faza === 'viata') {
-    s8.viata = Math.min(1, s8.viata + dt / 3200);
-    if (s8.viata >= 1) {
-      s8.faza = 'trapa'; s8.t0 = acum; s8.trapa = 0.001;
-      if (audio) sunetPortal();
+  /* Lucrarea terminată **se înrămează și se agață pe perete**, în mijlocul
+     discului. Asta face din ce ai pictat un tablou: nu o haină pe care ai
+     mâzgălit, ci o lucrare expusă. Rochia se ridică de pe podium, se micșorează
+     și se așază în cerc, iar în jurul ei crește o ramă.
+
+     Înainte, în clipa aia manechinul se destrăma în lumină și dispărea — adică
+     lucrarea abia terminată se pierdea. E o deosebire mică în cod și mare în
+     înțeles: ce ai pictat nu se risipește, **rămâne atârnat**, iar tu treci mai
+     departe pe lângă el. */
+  if (s8.faza === 'inramare') {
+    s8.inramare = Math.min(1, s8.inramare + dt / 2600);
+    if (s8.inramare >= 1) {
+      s8.faza = 'postament'; s8.t0 = acum;
+      if (audio) sunetClopotel(660);
+      spuneScena8('Ești invitat pe postament.', 9000);
     }
+  }
+
+  /* Postamentul rămas gol devine portal. Nu se deschide singur: **aștepți să
+     urci pe el**. Un drum care se face singur nu e un drum, e o filmare — iar
+     scena asta a fost, de la primul cadru, despre ce faci tu cu mâna ta. */
+  if (s8.faza === 'postament') {
+    s8.chemarePostament = Math.min(1, (s8.chemarePostament || 0) + dt / 1400);
   }
 
   /* Capacul rotund al podiumului se deschide. Podiumul era plin; acum se
@@ -2529,12 +2586,12 @@ function stergeExponatulDeJos(g) {
   ctx.restore();
 }
 
-/* Scânteile despletirii: exponatul nu dispare, se desface în puncte de lumină
-   care urcă. Punctul e cu ce a început toată jucăria — e drept ca tot ce a fost
-   pictat aici să se întoarcă în puncte. */
+/* Scânteile de la înrămare: câteva puncte de lumină care se desprind din lucrare
+   în timp ce ea urcă spre perete. Punctul e cu ce a început toată jucăria — e
+   drept ca vopseaua ridicată de pe podium să lase în urmă tot puncte. */
 function scanteileDespletirii(acum) {
   const g = geomSala8();
-  const p = Math.min(1, s8.viata);
+  const p = Math.min(1, s8.inramare);
   ctx.save();
   for (let k = 0; k < 90; k++) {
     const a = samanta(4700 + k * 3.1), b = samanta(4760 + k * 7.7);
@@ -2599,6 +2656,103 @@ function deseneazaDiluarea(acum) {
 }
 
 /* ---------- DESENUL ---------- */
+/* Drumul lucrării de pe podium până în mijlocul discului: unde e acum, cât de
+   mică s-a făcut. Un singur loc care spune amândouă, fiindcă ele merg împreună —
+   cu cât urcă mai sus, cu atât se strânge.
+
+   Ținta nu e aleasă din ochi: e chiar mijlocul discului portocaliu, luat din
+   `disculSalii`. Dacă cineva mută vreodată discul, tabloul se duce după el. */
+function drumulTabloului(g) {
+  const d = disculSalii(g);
+  const p = atenuare(Math.max(0, Math.min(1, s8.inramare)));
+  // cât de mare e lucrarea la capăt: încape în disc, cu o margine în jur
+  /* Cât de mică se face lucrarea. Trebuie să **respire** în disc, nu să-l umple
+     până la margini: un tablou agățat are perete în jurul lui, altfel nu se vede
+     că e agățat, ci că a fost lipit. */
+  const tinta = Math.min(d.r * 0.92 / (g.pelLat * 2.1), d.r * 1.05 / g.pelInalt);
+  const scara = intre(1, tinta, p);
+  const cxAcum = intre(g.pelCx, d.cx, p);
+  const cyAcum = intre(g.pelSus + g.pelInalt * 0.5, d.cy, p);
+  return { p, scara, cx: cxAcum, cy: cyAcum, disc: d };
+}
+
+/* Rama care crește în jurul lucrării pe măsură ce ea se așază pe perete. E de
+   lemn întunecat cu o muchie de aur — nu bogată, fiindcă bogăția e înăuntru: ce
+   ai pictat tu. */
+function ramaLucrarii(c, g, dr) {
+  /* Rama e ceva mai largă decât lucrarea, de jur împrejur. Croită exact pe ea,
+     poalele care se leagănă și umbra de sub ele ieșeau afară pe dedesubt. */
+  const lat = g.pelLat * 2.24 * dr.scara, inalt = g.pelInalt * 1.16 * dr.scara;
+  const gros = Math.max(2, Math.min(W, H) * 0.011) * (0.4 + dr.p * 0.6);
+  const x = dr.cx - lat / 2, y = dr.cy - inalt / 2;
+
+  c.save();
+  c.globalAlpha = dr.p;
+  // umbra ramei pe perete
+  c.fillStyle = 'rgba(20, 14, 8, 0.35)';
+  c.fillRect(x - gros + gros * 0.6, y - gros + gros * 0.9, lat + gros * 2, inalt + gros * 2);
+  // lemnul
+  const lemn = c.createLinearGradient(x, y, x + lat * 0.4, y + inalt);
+  lemn.addColorStop(0, '#5e4326');
+  lemn.addColorStop(0.5, '#3d2b17');
+  lemn.addColorStop(1, '#241809');
+  c.fillStyle = lemn;
+  c.fillRect(x - gros, y - gros, lat + gros * 2, inalt + gros * 2);
+  // muchia de aur, pe dinăuntru
+  c.strokeStyle = '#c9a24a';
+  c.lineWidth = Math.max(1, gros * 0.28);
+  c.strokeRect(x - gros * 0.22, y - gros * 0.22, lat + gros * 0.44, inalt + gros * 0.44);
+  // fondul pânzei, sub ce ai pictat
+  c.fillStyle = '#f2ece0';
+  c.fillRect(x, y, lat, inalt);
+  c.restore();
+}
+
+/* Postamentul rămas gol cheamă: un inel de lumină care pulsează pe blatul lui,
+   și o săgeată de lumină care coboară în el. Chemarea crește încet — nu sare —
+   fiindcă un lucru care începe brusc să clipească sperie, iar aici e o invitație. */
+function chemareaPostamentului(c, g, acum) {
+  const cat = Math.max(0, Math.min(1, s8.chemarePostament || 0));
+  if (cat <= 0.01) return;
+  const bat = 0.55 + 0.45 * Math.sin(acum * 0.0032);
+
+  c.save();
+  const inel = c.createRadialGradient(g.podiumCx, g.podiumCy, g.podiumRx * 0.15,
+                                      g.podiumCx, g.podiumCy, g.podiumRx * 1.05);
+  inel.addColorStop(0, `rgba(255, 236, 180, ${0.30 * cat * bat})`);
+  inel.addColorStop(0.65, `rgba(255, 206, 120, ${0.22 * cat * bat})`);
+  inel.addColorStop(1, 'rgba(255, 206, 120, 0)');
+  c.fillStyle = inel;
+  c.beginPath();
+  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx * 1.05, g.podiumRy * 1.4, 0, 0, Math.PI * 2);
+  c.fill();
+
+  c.strokeStyle = `rgba(255, 226, 158, ${0.5 * cat * bat})`;
+  c.lineWidth = Math.max(1.5, Math.min(W, H) * 0.004);
+  c.beginPath();
+  c.ellipse(g.podiumCx, g.podiumCy, g.podiumRx * 0.82, g.podiumRy * 0.82, 0, 0, Math.PI * 2);
+  c.stroke();
+
+  // săgeata de lumină care coboară în postament
+  /* Săgeata stă chiar deasupra postamentului, nu la înălțimea tabloului. Pusă
+     mai sus, plutea peste lucrarea abia agățată și arăta ca și cum ar arăta spre
+     ea — adică fix pe dos față de ce spune. */
+  const sus = g.podiumCy - g.podiumRy * 1.7 - Math.sin(acum * 0.0026) * H * 0.010;
+  const lat = g.podiumRx * 0.18;
+  c.fillStyle = `rgba(255, 232, 170, ${0.55 * cat * bat})`;
+  c.beginPath();
+  c.moveTo(g.podiumCx, sus + g.podiumRy * 1.9);
+  c.lineTo(g.podiumCx - lat, sus);
+  c.lineTo(g.podiumCx - lat * 0.34, sus);
+  c.lineTo(g.podiumCx - lat * 0.34, sus - g.podiumRy * 2.2);
+  c.lineTo(g.podiumCx + lat * 0.34, sus - g.podiumRy * 2.2);
+  c.lineTo(g.podiumCx + lat * 0.34, sus);
+  c.lineTo(g.podiumCx + lat, sus);
+  c.closePath();
+  c.fill();
+  c.restore();
+}
+
 function deseneazaScena8(t, acum) {
   const g = geomSala8();
 
@@ -2608,16 +2762,19 @@ function deseneazaScena8(t, acum) {
      podium și desenată din nou, mai sus. Ștampila e o singură imagine: nu se
      poate mișca o bucată din ea, deci se acoperă locul cu sala goală și se
      redesenează exponatul unde a ajuns. */
-  if (s8.viata > 0 && s8.faza !== 'diluare' && s8.faza !== 'iesire') {
+  /* Cât timp lucrarea urcă spre perete, locul ei de pe podium trebuie șters din
+     ștampilă și desenat din nou acolo unde a ajuns. Ștampila e o singură imagine:
+     nu se poate muta o bucată din ea. */
+  const inDrum = s8.inramare > 0 && s8.faza !== 'diluare' && s8.faza !== 'iesire';
+  const dr = inDrum ? drumulTabloului(g) : null;
+  if (inDrum) {
     stergeExponatulDeJos(g);
-    const p = atenuare(Math.min(1, s8.viata));
+    ramaLucrarii(ctx, g, dr);
     ctx.save();
-    ctx.globalAlpha = Math.max(0, 1 - p * 1.15);
-    ctx.translate(0, -H * 0.42 * p * p);
-    ctx.translate(g.pelCx, g.pelSus);
-    ctx.scale(1 + p * 0.06, 1 + p * 0.10);
-    ctx.translate(-g.pelCx, -g.pelSus);
-    pelerinaInLinie(ctx, g, Math.max(1, g.S * 0.0022));
+    ctx.translate(dr.cx, dr.cy);
+    ctx.scale(dr.scara, dr.scara);
+    ctx.translate(-g.pelCx, -(g.pelSus + g.pelInalt * 0.5));
+    pelerinaInLinie(ctx, g, Math.max(1, g.S * 0.0022), dr.p > 0.15);
     ctx.restore();
   }
 
@@ -2628,17 +2785,15 @@ function deseneazaScena8(t, acum) {
        viață, stratul lui se ridică odată cu el și se stinge — pictura pleacă
        împreună cu rochia, fiindcă ea **e** rochia. */
     ctx.save();
-    if (s8.viata > 0) {
-      const p = atenuare(Math.min(1, s8.viata));
-      ctx.globalAlpha = Math.max(0, 1 - p * 1.15);
-      ctx.translate(0, -H * 0.42 * p * p);
-      ctx.translate(g.pelCx, g.pelSus);
-      ctx.scale(1 + p * 0.06, 1 + p * 0.10);
-      ctx.translate(-g.pelCx, -g.pelSus);
+    if (inDrum) {
+      ctx.translate(dr.cx, dr.cy);
+      ctx.scale(dr.scara, dr.scara);
+      ctx.translate(-g.pelCx, -(g.pelSus + g.pelInalt * 0.5));
     }
     ctx.drawImage(stratul(), 0, 0);
     ctx.restore();
-    if (s8.viata > 0) scanteileDespletirii(acum);
+    if (inDrum && dr.p < 1) scanteileDespletirii(acum);
+    chemareaPostamentului(ctx, g, acum);
     deseneazaTrapa(acum);
     deseneazaPicaturile();
     deseneazaTrusa(acum);

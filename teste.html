@@ -3940,18 +3940,32 @@ function ruleaza() {
 
   test("acoperita de tot, culoarea se scurge prin trapa de sub podium", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
-    inUlei(j);
+    const g8 = inUlei(j);
     /* Drumul de la ultima tusa pana afara din sala are acum trei opriri, nu una:
        intai **manechinul prinde viata** si se destrama in lumina, abia pe urma se
        deschide trapa, si abia pe urma se scurge culoarea. Testul cerea „scurgere"
        la saizeci de milisecunde dupa ce ai terminat de pictat — adica dinainte ca
        lucrarea sa apuce sa plece. Apara acelasi lucru, dar in ordinea in care se
        intampla. */
+    /* Drumul de la ultima tusa pana afara din sala: lucrarea **se inrameaza si se
+       aseaza pe perete**, in mijlocul discului; postamentul ramas gol devine
+       portal si te asteapta; abia cand urci pe el se deschide trapa si se scurge
+       culoarea.
+
+       Postamentul nu se deschide singur — de-aia testul si **urca** pe el, nu doar
+       asteapta. Un drum care se face singur nu e un drum, e o filmare. */
     acoperaPelerinaToata(j);
     j.avanseaza(60);
-    egal(j.s8.faza, "viata", "lucrarea terminata n-a prins viata");
-    j.avanseaza(3600);
-    egal(j.s8.faza, "trapa", "dupa ce a plecat, podiumul nu se deschide");
+    egal(j.s8.faza, "inramare", "lucrarea terminata nu se inrameaza");
+    j.avanseaza(3000);
+    egal(j.s8.faza, "postament", "dupa ce s-a agatat pe perete, nu te cheama nimeni");
+    adevarat(/postament/i.test(totTextul(j.cadruCurat())),
+      "nu scrie nicaieri ca esti invitat pe postament");
+    // urcam pe postament
+    j.cursor.x = g8.podiumCx; j.cursor.y = g8.podiumCy;
+    j.click8(j.ceas.t);
+    j.avanseaza(60);
+    egal(j.s8.faza, "trapa", "urcat pe postament, podiumul nu se deschide");
     j.avanseaza(2800);
     egal(j.s8.faza, "scurgere", "trapa nu s-a deschis");
     adevarat(j.s8.perdea !== null, "nu s-a luat poza vopselei de pe pelerina");
