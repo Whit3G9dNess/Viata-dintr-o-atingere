@@ -353,6 +353,34 @@ Iar suportul trebuie să se vadă: pasta stă în ostroave groase, și între el
 zărește ce e dedesubt. Acoperit peste tot, suportul dispare cu totul — și atunci
 nu mai e o suprafață pictată, ci un covor de vopsea.
 
+### Apa duce pigmentul (sala a noua)
+
+Sala a opta și sala a noua sunt două fețe ale aceleiași întrebări: cât din
+lucrare e al tău? În ulei, pasta rămâne fix unde ai lăsat-o — tu conduci. În
+acuarelă nu se pictează nimic: pe perete stă o foaie cu un desen grafic uscat,
+iar jucătorul are în mână un pulverizator. Dă apă; desenul se face singur.
+
+Toată sala stă pe o grilă de udare de 22×22 de ochiuri peste foaie
+(`s9.celule`). Fiecare stropire udă un cerc de ochiuri, iar `raspandesteApa()`
+mută apa între vecini la fiecare cadru — **fără să se piardă nimic pe drum**, plus
+un curent în jos, că foaia stă pe perete. Desenul se citește din grilă: fiecare
+linie și fiecare punct își ia grosimea și puterea din câtă apă e sub ele, așa că
+laviul crește **dinspre mâna jucătorului**, nu deodată peste tot.
+
+Trei lucruri fac ca o pată să pară acuarelă, și niciunul nu e culoarea:
+marginea strâmbă (`conturDeApa`, trei sinusuri cu perioade care nu se împart una
+la alta), **marginea mai apăsată decât mijlocul** — pigmentul împins de apă când
+balta se usucă, fix pe dos față de creasta de impasto din ulei — și granulația
+din adânciturile hârtiei. Singurul lucru fără dungă închisă e soarele: lucrul cel
+mai luminos din tablou nu poate avea marginea mai întunecată decât mijlocul.
+
+Laviul întreg costă vreo trei mii de operații de desen, iar când podeaua se face
+oglindă s-ar desena de două ori pe cadru. De-aia stă pe o ștampilă
+(`panzaLucrarii`), refăcută numai când s-a mișcat apa și cel mult de zece ori pe
+secundă; oglindirea din podea folosește **aceeași pânză**, întoarsă. Așa un cadru
+al sălii coboară de la vreo trei mii de operații la treizeci și cinci câtă vreme
+foaia stă uscată și la vreo opt sute când sala e inundată.
+
 În sala a opta suportul e chiar **desenul în linie**: hârtia albă și conturul de
 creion se văd printre tușe, și fiecare pată spune, prin ce acoperă, cât ai lucrat
 acolo. (Sala avusese înainte pereți de pânză de sac, făcuți dintr-o plăcuță de
@@ -383,7 +411,8 @@ flowchart TB
     B13["13-scena5-campie.js · 1905<br/>pânza uriașă, țăranii, pantofii"]
     B15["15-scena6-foc.js · 1993<br/>sala rotundă, șevaletul, pasta, arsura"]
     B16["16-scena7-gheata.js · 2133<br/>sala de gheață, costumul, portalul"]
-    B17["17-scena8-ulei.js · 1309<br/>sala în linie, trusa, cercul cromatic, chepengul"]
+    B17["17-scena8-ulei.js · 2820<br/>sala în linie, trusa, cercul cromatic, postamentul"]
+    B18["18-scena9-acuarela.js · 1439<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 155<br/>ce face fiecare atingere"]

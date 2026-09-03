@@ -2377,22 +2377,26 @@ function intraInUlei(acum) {
   opresteClipocitul();
   pornesteAtelierUlei();
   if (audio) sunetPortal();
-  spuneScena8('[Senzor olfactiv simulat: Aromă densă de ulei de in, ' +
-              'esență de terebentină și sicativ]', 7000, true);
+  /* Aici scria, la intrare, un rând despre mirosul de ulei de in și terebentină.
+     A ieșit, împreună cu îndemnul de a acoperi pelerina.
+
+     Amândouă spuneau jucătorului ce are de făcut sau ce ar trebui să simtă — iar
+     sala i-o spune deja, mai bine decât orice rând: uneltele stau la vedere,
+     cercul cromatic lângă ele, iar în mijloc e singurul lucru alb dintr-o cameră
+     pictată. Un text care explică un lucru limpede nu-l face mai limpede, îl face
+     mai puțin al tău. */
 }
 
 function iesiDinUlei(acum) {
-  /* Trapa duce în sala a noua, a acuarelei. Ea încă nu e făcută, așa că
-     deocamdată te scoate înapoi la custode — dar drumul e croit, ca la arsură și
-     ca la vârtej, și când va fi, aici se schimbă un singur rând. */
+  /* Postamentul duce în sala a noua, a acuarelei. Aici era, până acum, rândul
+     care te scotea înapoi la custode fiindcă sala nu exista încă — și tot aici
+     scria că, atunci când va exista, se schimbă un singur rând. Ăsta e rândul.
+
+     Trecerea are un sens: ieși dintr-o sală în care culoarea stă exact unde ai
+     pus-o și intri în una în care nu stă nicăieri. */
   opresteAtelierUlei();
   opresteClipocitul();
-  s3.vizitat = true;
-  stare = 'muzeu';
-  faza3('usaDeschisa');
-  s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
-  actiune3(acum);
-  pornesteNatura(false);
+  intraInAcuarela(acum);
 }
 
 /* ---------- CE SE ÎNTÂMPLĂ LA ATINGERE ---------- */
@@ -2505,9 +2509,6 @@ function actualizeazaUleiul(acum) {
          se ridică și pleacă în lume. */
       s8.faza = 'inramare'; s8.t0 = acum; s8.inramare = 0.001;
       if (audio) { sunetDescoperire(); }
-    } else if (!s8.aSpusTrapa && s8.tuseFacute === 12) {
-      s8.aSpusTrapa = true;
-      spuneScena8('Acoperă pelerina de tot: ea e lucrarea neterminată.', 6000);
     }
   }
 

@@ -152,4 +152,5 @@ window.addEventListener('pointerdown', (e) => {
   if (stare === 'foc') { click6(acum); return; }
   if (stare === 'gheata') { click7(acum); return; }
   if (stare === 'ulei') { click8(acum); return; }
+  if (stare === 'acuarela') { click9(acum); return; }
 });

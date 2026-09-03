@@ -180,6 +180,13 @@ function cadru(t) {
     actualizeazaUleiul(acum);
     deseneazaScena8(t, acum);
   }
+  else if (stare === 'acuarela') {
+    /* Stropitul se ține apăsat, ca pictatul din sala uleiului: un pulverizator
+       apăsat o singură dată e o brichetă, nu o stropitoare. */
+    pulverizeazaScena9();
+    actualizeazaAcuarela(acum);
+    deseneazaScena9(t, acum);
+  }
 
   deseneazaCursorul();
   requestAnimationFrame(cadru);

@@ -38,16 +38,25 @@ function sectiune(titlu) {
   lista.appendChild(h);
 }
 
+/* Cât a ținut fiecare test. Nu e o statistică de dragul ei: suita a ajuns la
+   două sute și ceva de teste, iar când una dintre săli începe să deseneză mai mult
+   decât trebuie, se vede întâi aici — rularea trece de la douăzeci de secunde la
+   două minute și nu se știe din ce. Cinci nume la sfârșit ajung ca să se știe. */
+const durate = [];
+
 function test(nume, corp) {
   const rand = document.createElement("div");
   rand.className = "test";
+  const plecat = performance.now();
   try {
     corp();
+    durate.push({ nume, ms: performance.now() - plecat });
     trecute++;
     rand.classList.add("trecut");
     rand.textContent = "✅ " + nume;
     lista.appendChild(rand);
   } catch (e) {
+    durate.push({ nume, ms: performance.now() - plecat });
     cazute++;
     rand.classList.add("cazut");
     rand.textContent = "❌ " + nume;
@@ -475,6 +484,27 @@ return {
   cursorulScenei8: typeof cursorulScenei8 !== "undefined" ? cursorulScenei8 : null,
   pensuleazaScena8: typeof pensuleazaScena8 !== "undefined" ? pensuleazaScena8 : null,
   deseneazaScena8: typeof deseneazaScena8 !== "undefined" ? deseneazaScena8 : null,
+
+  s9: typeof s9 !== "undefined" ? s9 : null,
+  intraInAcuarela: typeof intraInAcuarela !== "undefined" ? intraInAcuarela : null,
+  iesiDinAcuarela: typeof iesiDinAcuarela !== "undefined" ? iesiDinAcuarela : null,
+  click9: typeof click9 !== "undefined" ? click9 : null,
+  geomSala9: typeof geomSala9 !== "undefined" ? geomSala9 : null,
+  stropesteCuApa: typeof stropesteCuApa !== "undefined" ? stropesteCuApa : null,
+  udaFoaia: typeof udaFoaia !== "undefined" ? udaFoaia : null,
+  udarealaFoaie: typeof udarealaFoaie !== "undefined" ? udarealaFoaie : null,
+  raspandesteApa: typeof raspandesteApa !== "undefined" ? raspandesteApa : null,
+  actualizeazaAcuarela: typeof actualizeazaAcuarela !== "undefined" ? actualizeazaAcuarela : null,
+  deseneazaScena9: typeof deseneazaScena9 !== "undefined" ? deseneazaScena9 : null,
+  deseneazaLucrarea: typeof deseneazaLucrarea !== "undefined" ? deseneazaLucrarea : null,
+  pataDeAcuarela: typeof pataDeAcuarela !== "undefined" ? pataDeAcuarela : null,
+  deseneazaLaculDePodea: typeof deseneazaLaculDePodea !== "undefined" ? deseneazaLaculDePodea : null,
+  deseneazaSedimentarea: typeof deseneazaSedimentarea !== "undefined" ? deseneazaSedimentarea : null,
+  LINII_FOAIE: typeof LINII_FOAIE !== "undefined" ? LINII_FOAIE : null,
+  PUNCTE_FOAIE: typeof PUNCTE_FOAIE !== "undefined" ? PUNCTE_FOAIE : null,
+  OCHIURI_FOAIE: typeof OCHIURI_FOAIE !== "undefined" ? OCHIURI_FOAIE : null,
+  ploaiaScena9: function () { return typeof ploaiaScena9 !== "undefined" ? ploaiaScena9 : null; },
+  vinilScena9: function () { return typeof vinilScena9 !== "undefined" ? vinilScena9 : null; },
   actualizeazaUleiul: typeof actualizeazaUleiul !== "undefined" ? actualizeazaUleiul : null,
   stratul: typeof stratul !== "undefined" ? stratul : null,
   TEXT_FISA_PIGMENTI: typeof TEXT_FISA_PIGMENTI !== "undefined" ? TEXT_FISA_PIGMENTI : null,
@@ -630,6 +660,29 @@ function porneste(optiuni) {
       const d = Math.min(p, ramas) || p;
       ceas.t += d;
       j.cadru(ceas.t);
+      ramas -= d;
+    } while (ramas > 0);
+  };
+
+  /* Ca `avanseaza`, dar aruncă din când în când ce s-a desenat.
+
+     Pânza falsă ține minte fiecare operație de desen, ca să poată fi cercetată pe
+     urmă. Câtă vreme scenele desenau câteva sute de operații pe cadru, nu conta.
+     Sala a noua desenează o mie, iar un test care o duce o mie de cadre până la
+     capăt strânge un milion de obiecte pe care nu le citește nimeni — suita a
+     sărit de la douăzeci de secunde la două minute.
+
+     Deci: când testul se uită la **starea** scării, nu la desenul ei, se merge cu
+     asta și se golesc urmele din șaizeci în șaizeci de cadre. Cine vrea să vadă
+     ce s-a desenat folosește `doar` sau `cadruCurat`, care oricum golesc întâi. */
+  j.avanseazaUsor = function (ms, pas) {
+    const p = pas || 16;
+    let ramas = ms === undefined ? 16 : ms, cate = 0;
+    do {
+      const d = Math.min(p, ramas) || p;
+      ceas.t += d;
+      j.cadru(ceas.t);
+      if (++cate % 60 === 0) panza.goleste();
       ramas -= d;
     } while (ramas > 0);
   };
@@ -2357,6 +2410,12 @@ function ruleaza() {
     j.iesiDinGheata(j.ceas.t);
     egal(j.stare(), "ulei", "vârtejul nu duce în sala a opta");
     j.iesiDinUlei(j.ceas.t);
+    egal(j.stare(), "acuarela", "postamentul nu duce în sala a noua");
+    /* Iar însemnatul galeriei s-a mutat încă o dată, la noul capăt al drumului.
+       Se mută de fiecare dată când se adaugă o sală — și tocmai de-aia merită
+       verificat aici, în testul care umblă tot drumul: e singurul loc din suită
+       care ar prinde o sală adăugată fără ieșire. */
+    j.iesiDinAcuarela(j.ceas.t);
     adevarat(j.s3.vizitat, "galeria prin care am trecut n-a rămas însemnată");
   });
 
@@ -4048,6 +4107,187 @@ function ruleaza() {
   });
 
   /* ---------------------------------------------------------------- */
+  sectiune("Sala a noua: hazardul fluid, si apa care duce pigmentul");
+
+  function inAcuarela(j) {
+    j.mergiLaStarea("acuarela");
+    j.intraInAcuarela(j.ceas.t);
+    j.avanseaza(2000);          // trece limpezirea de la intrare
+    return j.geomSala9();
+  }
+
+  // stropeste foaia peste tot, ochi cu ochi
+  function udaToataFoaia(j) {
+    const g = j.geomSala9();
+    for (let i = 0; i < 14; i++) {
+      for (let k = 0; k < 14; k++) {
+        j.stropesteCuApa(g.foaieX + (i + 0.5) * g.foaieLat / 14,
+                         g.foaieY + (k + 0.5) * g.foaieInalt / 14,
+                         j.ceas.t);
+        j.ceas.t += 100;        // pulverizatorul are un ragaz intre stropiri
+      }
+    }
+  }
+
+  test("in sala a noua nu se picteaza: se da numai apa", function () {
+    /* Deosebirea de sala a opta, si tot rostul salii. Acolo puneai pasta si ea
+       ramanea unde ai lasat-o. Aici, o atingere nu adauga nicio culoare: uda
+       hartie, iar culoarea era deja acolo. Daca stropitul ar picta, sala ar fi
+       inca o sala de pictat, in alta paleta. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    const inainte = j.s9.udare;
+    j.stropesteCuApa(g.foaieX + g.foaieLat * 0.5, g.foaieY + g.foaieInalt * 0.5, j.ceas.t);
+    j.raspandesteApa();
+    adevarat(j.s9.udare > inainte, "stropirea n-a udat nimic");
+    egal(j.s9.faza, "uscat", "stropirea a sarit peste faza in care se lucreaza");
+  });
+
+  test("apa uda unde ai stropit, nu toata foaia deodata", function () {
+    /* Daca o singura stropire ar uda coala intreaga, n-ar mai exista nicio
+       legatura intre mana ta si ce se intampla pe perete, si tocmai legatura
+       asta subtire e ce are de aratat acuarela. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    j.stropesteCuApa(g.foaieX + g.foaieLat * 0.15, g.foaieY + g.foaieInalt * 0.5, j.ceas.t);
+    j.raspandesteApa();
+    const stanga = j.udarealaFoaie(0.15, 0.5);
+    const dreapta = j.udarealaFoaie(0.88, 0.5);
+    adevarat(stanga > 0.1, "acolo unde am stropit hartia a ramas uscata: " + stanga);
+    adevarat(dreapta < stanga * 0.35,
+      "o stropire a udat si capatul celalalt: " + dreapta + " fata de " + stanga);
+  });
+
+  test("apa se intinde singura prin fibre, si mai mult in jos", function () {
+    /* Hartia uda trage apa din vecini. Si o trage in jos mai tare decat in
+       laturi, fiindca foaia sta pe perete si gravitatia nu se opreste la
+       marginea unei pete. Fara asta, petele de udare ar avea marginea taiata,
+       adica exact ce nu face niciodata apa. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    j.stropesteCuApa(g.foaieX + g.foaieLat * 0.5, g.foaieY + g.foaieInalt * 0.5, j.ceas.t);
+    for (let k = 0; k < 60; k++) j.raspandesteApa();
+    const sus = j.udarealaFoaie(0.5, 0.30);
+    const jos = j.udarealaFoaie(0.5, 0.70);
+    adevarat(jos > 0.002, "apa n-a coborat deloc");
+    adevarat(jos > sus, "apa s-a dus in sus la fel ca in jos: " + sus + " / " + jos);
+  });
+
+  test("liniile uscate se prefac in laviu abia dupa ce sunt udate", function () {
+    /* Uscat, desenul e grafic: dungi subtiri. Ud, e laviu: pete late cu contur
+       strambat. Numaram formele desenate in cele doua stari; daca ar fi la fel
+       de multe, inseamna ca desenul nu s-a schimbat, doar culoarea. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    const uscat = j.doar(function () {
+      j.deseneazaLucrarea(j.panza.ctx, g.foaieX, g.foaieY, g.foaieLat, g.foaieInalt, 1);
+    });
+    udaToataFoaia(j);
+    for (let k = 0; k < 30; k++) j.raspandesteApa();
+    const ud = j.doar(function () {
+      j.deseneazaLucrarea(j.panza.ctx, g.foaieX, g.foaieY, g.foaieLat, g.foaieInalt, 1);
+    });
+    adevarat(ud.length > uscat.length * 2,
+      "udata, lucrarea are cam tot atatea forme ca uscata: " +
+      uscat.length + " -> " + ud.length);
+  });
+
+  test("marea nu inunda podeaua pana nu e udata foaia", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inAcuarela(j);
+    j.avanseaza(9000);
+    egal(j.s9.faza, "uscat", "sala a trecut mai departe fara sa fi stropit nimeni");
+    egal(j.s9.inundare, 0, "podeaua s-a facut lac de una singura");
+  });
+
+  test("cand foaia e leoarca, podeaua se face oglinda si te cheama in ea", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inAcuarela(j);
+    udaToataFoaia(j);
+    j.avanseazaUsor(1500);
+    egal(j.s9.faza, "inundat", "foaia uda de tot n-a inundat sala");
+    j.avanseazaUsor(4000);
+    adevarat(j.s9.inundare > 0.5, "lacul n-a urcat: " + j.s9.inundare);
+    const d = j.doar(function () { j.deseneazaScena9(j.ceas.t, j.ceas.t); });
+    adevarat(/Plonjeaz/i.test(totScrisul(d)), "nu ma cheama nimeni in reflexie");
+  });
+
+  test("plonjonul se da in apa, nu in perete", function () {
+    /* Sub linia apei se plonjeaza; deasupra ei, mai poti stropi. O atingere in
+       tavan care te-ar arunca in mare ar face din scufundare un accident. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    udaToataFoaia(j);
+    j.avanseazaUsor(4000);
+    j.cursor.x = g.foaieX + g.foaieLat * 0.5; j.cursor.y = j.H() * 0.06;
+    j.click9(j.ceas.t);
+    egal(j.s9.faza, "inundat", "o atingere in perete m-a aruncat in apa");
+    j.cursor.x = j.W() * 0.5; j.cursor.y = j.H() * 0.98;
+    j.click9(j.ceas.t);
+    egal(j.s9.faza, "plonjon", "atingerea din lac nu duce nicaieri");
+  });
+
+  test("dupa plonjon culorile se usuca in fibre si sala preda stafeta", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inAcuarela(j);
+    udaToataFoaia(j);
+    j.avanseazaUsor(4000);
+    j.cursor.x = j.W() * 0.5; j.cursor.y = j.H() * 0.98;
+    j.click9(j.ceas.t);
+    j.avanseazaUsor(4000);
+    egal(j.s9.faza, "sedimentare", "coborarea nu se termina niciodata");
+    j.avanseazaUsor(9000);
+    adevarat(j.stare() !== "acuarela", "sala a noua nu preda stafeta nimanui");
+  });
+
+  test("hazardul fluid: aceeasi stropire da acelasi laviu", function () {
+    /* Hazard nu inseamna ca se schimba de la un cadru la altul. Petele isi trag
+       forma dintr-o samanta, ca peste tot in jucarie: altfel laviul ar clipi,
+       iar o acuarela care clipeste nu e o acuarela, e un ecran stricat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inAcuarela(j);
+    const unu = j.doar(function () {
+      j.pataDeAcuarela(j.panza.ctx, 500, 400, 90, "#3f5c8c", 0.8, 12.5, 1);
+    });
+    const doi = j.doar(function () {
+      j.pataDeAcuarela(j.panza.ctx, 500, 400, 90, "#3f5c8c", 0.8, 12.5, 1);
+    });
+    egal(JSON.stringify(unu), JSON.stringify(doi), "aceeasi pata iese altfel de doua ori");
+  });
+
+  test("laviul are marginea mai apasata decat mijlocul", function () {
+    /* Semnul cel mai sigur al acuarelei, si singurul lucru care o deosebeste de
+       o pata de vopsea oarecare: pigmentul impins spre margine cand balta se
+       usuca. In ulei e fix pe dos, creasta prinde lumina la mijloc. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inAcuarela(j);
+    const d = j.doar(function () {
+      j.pataDeAcuarela(j.panza.ctx, 500, 400, 90, "#3f5c8c", 0.9, 3.1, 1);
+    });
+    adevarat(d.some(function (x) { return x.op === "stroke"; }),
+      "pata n-are dunga pe contur");
+  });
+
+  test("in sala a noua se aude ploaia, si nu vinilul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inAcuarela(j);
+    adevarat(j.ploaiaScena9() !== null, "in sala acuarelei nu ploua");
+    egal(j.vinilScena9(), null, "vinilul salii urmatoare porneste prea devreme");
+  });
+
+  test("sala a noua nu ramane pe ecran dupa ce s-a incheiat", function () {
+    /* Aceeasi regula ca la celelalte sali: cand te-a predat mai departe, opreste
+       si ce a pornit. O ploaie ramasa in fundal peste sala urmatoare e o
+       stricaciune pe care n-o vezi niciodata in cod, doar cu urechea. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inAcuarela(j);
+    j.iesiDinAcuarela(j.ceas.t);
+    egal(j.ploaiaScena9(), null, "ploaia a ramas sa cada peste sala urmatoare");
+  });
+
+  /* ---------------------------------------------------------------- */
   sectiune("Cadrul din grădină trebuie să încapă în buget");
 
   /* Aduce scena a doua la starea în care se îneca: grădina plină, cerul cu
@@ -4528,6 +4768,18 @@ function ruleaza() {
   rezumat.textContent = cazute
     ? cazute + " căzute, " + trecute + " trecute"
     : "toate cele " + trecute + " teste trec";
+
+  const tot = durate.reduce(function (a, d) { return a + d.ms; }, 0);
+  const lente = durate.slice().sort(function (a, b) { return b.ms - a.ms; }).slice(0, 5);
+  const jos = document.createElement("div");
+  jos.className = "motiv";
+  jos.style.paddingLeft = "0";
+  jos.style.marginTop = "1.4rem";
+  jos.textContent = "\u23f1 " + (tot / 1000).toFixed(1) + " s în total. Cele mai lente:\n" +
+    lente.map(function (d) {
+      return "   " + (d.ms / 1000).toFixed(2) + " s  " + d.nume;
+    }).join("\n");
+  lista.appendChild(jos);
 })();
 </script>
 

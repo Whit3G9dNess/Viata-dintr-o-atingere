@@ -513,6 +513,159 @@ function sunetFrige() {
   nota(196, t, 0.18, 0.09, 'sawtooth', 130);
 }
 
+/* ---------- PLOAIA SĂLII DE ACUARELĂ ----------
+
+   Două lucruri, ca la focul din sala a șasea, și din același motiv: un singur
+   zgomot nu face niciodată o încăpere.
+
+   Dedesubt, **ropotul** — zgomot alb trecut printr-un filtru care taie gravele,
+   ca ploaia de vară pe geam: multe picături foarte mici, prea multe ca să le poți
+   număra. Deasupra, **picăturile rare** dintr-un bazin ascuns, fiecare cu ecoul
+   ei. Numai ropotul sună a televizor stricat; numai picăturile, a robinet
+   defect. Împreună se aude apă.
+
+   Ecoul e ce le deosebește de pocnetele focului: acolo lemnul plesnea și se
+   termina, aici picătura cade într-un bazin și sunetul se plimbă prin cameră. */
+let ploaiaScena9 = null;
+
+function pornestePloaia() {
+  if (!audio || ploaiaScena9) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  /* Ropotul: zgomot alb cu gravele tăiate. Ploaia n-are bas — basul e tunetul,
+     iar aici nu tună. Sub 1200 Hz începe să sune a vânt, nu a picături. */
+  const taiere = audio.createBiquadFilter();
+  taiere.type = 'highpass';
+  taiere.frequency.setValueAtTime(1400, t);
+  const forma = audio.createBiquadFilter();
+  forma.type = 'lowpass';
+  forma.frequency.setValueAtTime(6200, t);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.032, t + 3);
+
+  // ploaia se întețește și se domolește, foarte încet
+  const val = audio.createOscillator();
+  val.type = 'sine';
+  val.frequency.setValueAtTime(0.085, t);
+  const adancime = audio.createGain();
+  adancime.gain.setValueAtTime(0.012, t);
+  val.connect(adancime).connect(vol.gain);
+  val.start(t);
+
+  sursa.connect(taiere).connect(forma).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  ploaiaScena9 = { sursa, val, vol, panaLa: t + 0.3 };
+}
+
+/* Picăturile din bazin, puse din vreme pe ceasul audio. Fiecare e un ton scurt
+   care coboară — apa care cade într-o adâncitură dă o notă, nu un zgomot — cu o
+   umbră mai stinsă în urma ei, care e ecoul. */
+function tinePicaturileDeApa() {
+  if (!audio || !ploaiaScena9) return;
+  const acum = audio.currentTime;
+  while (ploaiaScena9.panaLa < acum + 2) {
+    const cand = ploaiaScena9.panaLa;
+    const inalt = 900 + Math.random() * 1400;
+    nota(inalt, cand, 0.09, 0.05 + Math.random() * 0.05, 'sine', inalt * 0.45);
+    // ecoul: aceeași picătură, mai târziu și mai stinsă
+    nota(inalt * 0.98, cand + 0.16, 0.13, 0.018, 'sine', inalt * 0.4);
+    ploaiaScena9.panaLa = cand + 0.5 + Math.random() * 1.9;
+  }
+}
+
+function oprestePloaia() {
+  if (!ploaiaScena9) return;
+  const p = ploaiaScena9;
+  ploaiaScena9 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    p.vol.gain.cancelScheduledValues(t);
+    p.vol.gain.setValueAtTime(Math.max(0.0001, p.vol.gain.value), t);
+    p.vol.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+    p.sursa.stop(t + 1.2);
+    p.val.stop(t + 1.2);
+  } catch (e) { /* dacă s-a oprit deja, nu-i nimic de făcut */ }
+}
+
+/* Pulverizatorul: „fssss". Zgomot alb foarte înalt, care se stinge repede — o
+   ceață de picături, nu un jet. */
+function sunetPulverizare() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.30, 0.09, 5200, 2600);
+  zgomot(t + 0.02, 0.22, 0.05, 8000, 4000);
+}
+
+/* Plonjonul în reflexie: un bufnet adânc, care se închide într-o bolboroseală.
+   Adâncimea se aude din cât de jos coboară tonul, nu din cât e de tare. */
+function sunetPlonjon() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.5, 0.22, 900, 90);
+  nota(210, t, 0.9, 0.16, 'sine', 46);
+  for (let k = 0; k < 9; k++) {
+    const c = t + 0.25 + k * 0.11 + Math.random() * 0.06;
+    nota(320 + Math.random() * 500, c, 0.10, 0.045, 'sine', 140);
+  }
+}
+
+/* Pârâitul de vinil vechi, cu care se deschide sala a zecea. Nu e zgomot alb: e
+   zgomot **rar**, pocnete mici și neregulate peste un fâșâit subțire — exact
+   deosebirea dintre un difuzor stricat și un pick-up. */
+let vinilScena9 = null;
+
+function pornesteVinilul() {
+  if (!audio || vinilScena9) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const filtru = audio.createBiquadFilter();
+  filtru.type = 'bandpass';
+  filtru.frequency.setValueAtTime(3200, t);
+  filtru.Q.setValueAtTime(0.7, t);
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.022, t + 1.5);
+  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  vinilScena9 = { sursa, vol, panaLa: t + 0.2 };
+}
+
+function tineVinilul() {
+  if (!audio || !vinilScena9) return;
+  const acum = audio.currentTime;
+  while (vinilScena9.panaLa < acum + 1.5) {
+    const cand = vinilScena9.panaLa;
+    zgomot(cand, 0.012 + Math.random() * 0.02, 0.03 + Math.random() * 0.05,
+           1800 + Math.random() * 2600, 700);
+    vinilScena9.panaLa = cand + 0.08 + Math.random() * 0.5;
+  }
+}
+
+function opresteVinilul() {
+  if (!vinilScena9) return;
+  const v = vinilScena9;
+  vinilScena9 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    v.vol.gain.cancelScheduledValues(t);
+    v.vol.gain.setValueAtTime(Math.max(0.0001, v.vol.gain.value), t);
+    v.vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+    v.sursa.stop(t + 0.9);
+  } catch (e) { /* deja oprit */ }
+}
+
 function sunetAtingere() {
   if (!audio) return;
   nota(1600, audio.currentTime, 0.045, 0.022, 'sine', 900);

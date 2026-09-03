@@ -46,6 +46,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 26 | Scena 8 — sala de ulei, amprenta și chepengul | ✅ gata |
 | 27 | Un pumn de îndreptări cerute la fața locului | ✅ gata |
 | 28 | Sala a opta, refăcută: desenul necolorat, trusa și cercul cromatic | ✅ gata |
+| 29 | Scena 9 — sala acuarelei: hazardul fluid, lacul-oglindă, plonjonul | ✅ gata |
 
 ---
 
@@ -1020,11 +1021,11 @@ lucruri care nu mai există.
 - **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
   dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
   sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
-- **Ce urmează după chepeng.** Coborârea din sala a opta duce deocamdată înapoi la
-  custode, fiindcă sala a noua — a acuarelei — încă nu e făcută. Drumul e croit, ca
-  la arsură și ca la vârtej; când va fi, aici se schimbă un singur rând, în
-  `iesiDinUlei`. Diluarea de la sfârșitul sălii a opta e chiar începutul ei:
-  culorile se desfac în apă și ecranul se umple de transparențe.
+- **Ce urmează după ziar.** Sedimentarea din sala a noua se încheie cu un ziar
+  îngălbenit și cu pârâit de vinil — începutul sălii a zecea, care încă nu e
+  făcută. Până va fi, `iesiDinAcuarela` te scoate înapoi la custode, ca la
+  arsură, ca la vârtej și ca la trapa uleiului — și tot ca acolo, când va fi, se
+  schimbă un singur rând.
 - **Șevaletul** e văzut drept din față. Piciorul din spate îl sprijină, dar sala
   e rotundă și lucrarea stă în mijlocul ei: la un moment dat ar merita văzut
   puțin din trei sferturi, cum îl vezi când intri pe ușă.
