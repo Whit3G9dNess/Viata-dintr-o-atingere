@@ -129,7 +129,9 @@ const USTENSILE = [
 const OCHIURI_PELERINA = 26;      // cât de fin se socotește acoperirea pelerinei
 
 const s8 = {
-  faza: 'intrare',      // intrare → pictezi → scurgere → diluare → iesire
+  faza: 'intrare',      // intrare → pictezi → viata → trapa → scurgere → diluare → iesire
+  viata: 0,             // cât a prins viață și a plecat manechinul
+  trapa: 0,             // cât s-a deschis capacul rotund al podiumului
   t0: 0, ultimulCadru: 0,
   vapori: 1,            // aburii calzi de la intrare, cu textul mirosului
   unealta: 1,           // ce ustensilă e în mână
@@ -173,6 +175,45 @@ function coloaneleIntrarii() {
   };
 }
 
+/* ---------- REGISTRUL DIN STÂNGA ----------
+
+   Îndemnul, cercul cromatic și uneltele stăteau împrăștiate peste sală, fiecare
+   la un loc socotit separat — și se călcau: cercul peste scris, uneltele peste
+   cerc. Când trei lucruri își aleg locul fiecare pe cont propriu, mai devreme sau
+   mai târziu se ciocnesc.
+
+   Acum au **un registru al lor**: o coloană care le ține pe toate trei, una sub
+   alta, cu spații socotite din înălțimea ei. Nimic nu se mai poate suprapune,
+   fiindcă nimic nu-și mai alege locul singur.
+
+   Și e limpede că **nu face parte din sală**: un panou de sticlă fumurie, cu
+   colțuri rotunjite, care plutește peste expoziție. Uneltele nu sunt exponate, ci
+   ce ai tu în mână — iar lucrurile din mâna ta stau într-un strat deasupra
+   lumii, nu în ea. */
+function geomRegistru() {
+  const S = Math.min(W, H);
+  const lat = Math.min(W * 0.235, H * 0.44);
+  const x = W * 0.022, y = H * 0.045;
+  const inalt = H * 0.90;
+  const margine = lat * 0.075;
+
+  const textInalt = Math.min(H * 0.115, lat * 0.42);
+  const cercR = Math.min((lat - margine * 2) * 0.44, H * 0.135);
+  const unelteInalt = Math.min(H * 0.20, S * 0.30);
+
+  const textY = y + margine;
+  const cercCy = textY + textInalt + margine * 1.2 + cercR;
+  const unelteY = cercCy + cercR + margine * 1.4 + unelteInalt * 0.5;
+
+  return {
+    x, y, lat, inalt, margine,
+    textX: x + margine, textY, textLat: lat - margine * 2, textInalt,
+    cercCx: x + lat * 0.5, cercCy, cercR,
+    unelteX: x + margine * 1.3, unelteY, unelteInalt,
+    unelteLat: lat - margine * 2.6
+  };
+}
+
 function geomSala8() {
   const S = Math.min(W, H);
   const podea = H * 0.62;                  // unde peretele din fund atinge podeaua
@@ -180,7 +221,7 @@ function geomSala8() {
 
   // podiumul rotund din mijloc, văzut în perspectivă
   const podiumCx = W * 0.5, podiumCy = H * 0.855;
-  const podiumRx = Math.min(W * 0.20, H * 0.29), podiumRy = podiumRx * 0.27;
+  const podiumRx = Math.min(W * 0.215, H * 0.31), podiumRy = podiumRx * 0.27;
 
   /* Pelerina, întinsă pe podium: gulerul sus, trena revărsată în față. E singura
      suprafață care se socotește la acoperire — restul sălii poate fi mânjit cât
@@ -195,14 +236,15 @@ function geomSala8() {
      clopot, nu o haină. O mantie pusă pe manechin e **mai înaltă decât lată**,
      oricât s-ar revărsa poalele: asta e prima măsură după care ochiul o
      recunoaște, înaintea oricărei broderii. */
-  /* Mai mare decât înainte. Rochia e exponatul: ea trebuie să umple firida, nu
-     să stea sfioasă în mijlocul ei. Iar cu cât e mai mare, cu atât despărțiturile
-     ei — corsaj, mâneci, jupă — sunt suprafețe pe care chiar ai loc să pictezi. */
-  const pelLat = podiumRx * 0.72;
+  /* Rochia e **piesa centrală**, și trebuie să se vadă din prima că e. Cu cât e
+     mai mare, cu atât despărțiturile ei — corsaj, mâneci, jupă — sunt suprafețe
+     pe care chiar ai loc să pictezi; iar o rochie care abia acoperă podiumul nu
+     cere să fie pictată, cere să fie privită de aproape. */
+  const pelLat = podiumRx * 0.94;
   /* Rochia începe mai jos decât înainte: deasupra ei trebuie să încapă **capul
      manechinului**. El e lucrul care spune, dintr-o privire, că veșmântul e
      îmbrăcat pe ceva — iar un știft de lemn, cât aveam, nu spune nimic. */
-  const pelSus = H * 0.315;
+  const pelSus = H * 0.285;
   const pelJos = podiumCy + podiumRy * 0.05;
 
   const trusaLat = Math.min(W * 0.215, S * 0.42);
@@ -219,13 +261,11 @@ function geomSala8() {
     trusaX: W * 0.028, trusaY: H * 0.09, trusaLat, trusaInalt,
 
     // cercul cromatic, sub trusă
-    cercCx: W * 0.028 + trusaLat * 0.5,
-    /* Cercul cromatic sus, uneltele dedesubt. Invers — uneltele deasupra — cozile
-       lor lungi ajungeau peste îndemn, iar colțul se citea de-a valma. Așa, se
-       citește de sus în jos ca o frază: ce ai de făcut, cu ce culoare, cu ce
-       unealtă. */
-    cercCy: H * 0.305,
-    cercR,
+    /* Cercul și uneltele își iau locul din registru, nu de aici: acolo sunt
+       socotite toate trei deodată, deci nu se pot călca. */
+    cercCx: geomRegistru().cercCx,
+    cercCy: geomRegistru().cercCy,
+    cercR: geomRegistru().cercR,
 
     /* Fișa de sală, pe peretele din fund, sus în dreapta. Aici stă numai unde
        începe și cât e de lată; **înălțimea o dă textul**, măsurată la desen. O
@@ -607,17 +647,21 @@ function podiumulCuFunii(c, g, gr) {
    sus —, strângerea de sub ele, talia (locul cel mai îngust din tot desenul), și
    fusta care se deschide până la poale. */
 const PROFIL_PELERINEI = [
-  [0.000, 0.070], [0.050, 0.100],
-  /* Umerii încep **sub** guler, nu la același nivel cu el. Mânecile porneau de
-     lângă gât și se atingeau la mijloc: corsajul dispărea cu totul între ele, iar
-     rochia se citea ca un ghem de baloane. Un trup se vede numai dacă i se lasă
-     loc între brațe. */
-  [0.082, 0.190], [0.115, 0.360],                   // umerii, cu aripioarele
-  [0.190, 0.470], [0.265, 0.450],                   // mâneca-balon, până la cot
-  [0.335, 0.330], [0.395, 0.200],                   // se strânge spre încheietură
-  [0.430, 0.150],                                   // talia — locul cel mai îngust
-  [0.505, 0.350], [0.605, 0.560], [0.720, 0.750],
-  [0.845, 0.900], [0.950, 0.980], [1.000, 1.000]
+  /* Proporțiile sunt luate de pe manechinele adevărate, nu alese din ochi.
+     Pe un manechin îmbrăcat, **talia stă cam la o treime** din înălțimea
+     veșmântului, nu la jumătate: deasupra ei e un trup scurt și îngust, dedesubt
+     o fustă lungă. Mutată prea jos — cum era, la 0.43 — corsajul se lungește,
+     fusta se scurtează, și rochia arată a rochiță de păpușă cu bustul prea mare.
+
+     Iar mânecile nu trec de jumătatea lățimii de la poale. Le făcusem aproape
+     două treimi: silueta ieșea în formă de romb, cu umerii cât șoldurile. */
+  [0.000, 0.062], [0.045, 0.085],
+  [0.075, 0.230], [0.105, 0.360],                   // umerii, cu aripioarele
+  [0.165, 0.455], [0.230, 0.430],                   // mâneca-balon, până la cot
+  [0.285, 0.290], [0.325, 0.170],                   // se strânge spre încheietură
+  [0.345, 0.125],                                   // talia — o treime din înălțime
+  [0.430, 0.335], [0.550, 0.565], [0.700, 0.785],
+  [0.850, 0.925], [0.950, 0.982], [1.000, 1.000]
 ];
 
 function latimeaPelerinei(v) {
@@ -647,7 +691,7 @@ function latimeaDreapta(v) { return latimeaPelerinei(v) + adaosulTrenei(v) * 0.3
    totul se deschide. În portretele de epocă vârful corsajului coboară chiar sub
    talie, într-un V lung — și tocmai V-ul ăla face ca fusta să pară de două ori
    mai largă decât e. */
-const TALIA = 0.430;
+const TALIA = 0.345;
 
 function traseulPelerinei(c) {
   const g = geomSala8();
@@ -1504,12 +1548,13 @@ const OTEL_UNEALTA  = '#c9ced3';
    evantai, ca niște pensule lăsate una peste alta — nu aliniate ca la raft. */
 function locurileUneltelor() {
   const g = geomSala8();
-  const S = g.S;
-  /* Uneltele stau **sub** îndemn, nu peste el: cozile lor sunt lungi și urcă
-     mult deasupra mijlocului, iar așezate mai sus scriau peste litere. */
-  const x0 = W * 0.048, y0 = H * 0.585;
-  const pas = Math.min(W * 0.040, S * 0.076);
-  const inalt = Math.min(H * 0.20, S * 0.32);
+  /* Uneltele își iau locul din registru: acolo sunt socotite deodată cu
+     îndemnul și cu cercul, deci nu se pot călca unele pe altele. */
+  const R = geomRegistru();
+  const pas = R.unelteLat / USTENSILE.length;
+  const x0 = R.unelteX + pas * 0.5;
+  const y0 = R.unelteY;
+  const inalt = R.unelteInalt;
   const locuri = [];
   /* Drepte și la aceeași înălțime, nu răsfirate în evantai. Erau înclinate, ca
      niște unelte lăsate pe masă — dar ele **nu fac parte din sală**: sunt un
@@ -1527,6 +1572,7 @@ function deseneazaTrusa(acum) {
   const gr = Math.max(1, g.S * 0.0022);
   const locuri = locurileUneltelor();
 
+  panoulRegistrului();
   indemnulScenei8(g, locuri);
 
   for (let k = 0; k < USTENSILE.length; k++) {
@@ -1574,51 +1620,61 @@ function deseneazaTrusa(acum) {
 
    Scris pe două rânduri, cu al doilea mai mic: primul e invitația, al doilea
    explicația. Puse la fel, se citesc ca o singură frază lungă. */
-function indemnulScenei8(g, locuri) {
-  const x = W * 0.032, y = H * 0.062;
-  const lat = Math.min(W * 0.30, g.S * 0.56);
-  /* Destul de înaltă cât să încapă **amândouă** rândurile cu tot cu coada
-     literelor. Era cât un rând și jumătate, iar al doilea ieșea din vopsea. */
-  const inalt = H * 0.082;
-
+/* Panoul de sticlă fumurie pe care stă tot registrul. E singurul lucru din
+   scenă care se vede că e **deasupra** imaginii, nu în ea: translucid, cu o
+   dungă de lumină pe muchia de sus și o umbră lăsată pe sală. */
+function panoulRegistrului() {
+  const R = geomRegistru();
   ctx.save();
-  // tușa de vopsea de sub scris, dintr-o pastă caldă
-  ctx.globalAlpha = 0.88;
-  const banda = ctx.createLinearGradient(x, y, x + lat, y + inalt);
-  banda.addColorStop(0, '#f0c86a');
-  banda.addColorStop(0.55, '#e8b04a');
-  banda.addColorStop(1, '#d9963a');
-  ctx.fillStyle = banda;
+
+  // umbra pe care o aruncă panoul pe sală
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+  dreptunghi(R.x + R.lat * 0.02, R.y + R.lat * 0.02, R.lat, R.inalt, R.lat * 0.09);
+
+  const sticla = ctx.createLinearGradient(R.x, R.y, R.x + R.lat, R.y + R.inalt);
+  sticla.addColorStop(0, 'rgba(22, 30, 46, 0.86)');
+  sticla.addColorStop(0.5, 'rgba(16, 24, 38, 0.80)');
+  sticla.addColorStop(1, 'rgba(12, 20, 32, 0.88)');
+  ctx.fillStyle = sticla;
+  dreptunghi(R.x, R.y, R.lat, R.inalt, R.lat * 0.09);
+
+  // muchia luminată de sus și de la stânga
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+  ctx.lineWidth = Math.max(1, R.lat * 0.006);
   ctx.beginPath();
-  ctx.moveTo(x, y + inalt * 0.30);
-  ctx.quadraticCurveTo(x + lat * 0.22, y - inalt * 0.12, x + lat * 0.58, y + inalt * 0.06);
-  ctx.quadraticCurveTo(x + lat * 0.86, y + inalt * 0.20, x + lat, y + inalt * 0.02);
-  ctx.lineTo(x + lat * 0.985, y + inalt * 0.92);
-  ctx.quadraticCurveTo(x + lat * 0.6, y + inalt * 1.16, x + lat * 0.24, y + inalt * 0.98);
-  ctx.quadraticCurveTo(x + lat * 0.08, y + inalt * 0.90, x, y + inalt * 1.02);
-  ctx.closePath();
-  ctx.fill();
-  // creasta de sus a tușei, cât să se vadă că e pastă, nu dreptunghi
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = '#fff3d0';
-  ctx.lineWidth = Math.max(1, inalt * 0.10);
-  ctx.beginPath();
-  ctx.moveTo(x + lat * 0.04, y + inalt * 0.26);
-  ctx.quadraticCurveTo(x + lat * 0.3, y + inalt * 0.02, x + lat * 0.62, y + inalt * 0.16);
+  if (ctx.roundRect) ctx.roundRect(R.x, R.y, R.lat, R.inalt, R.lat * 0.09);
+  else ctx.rect(R.x, R.y, R.lat, R.inalt);
   ctx.stroke();
   ctx.restore();
+}
 
-  const marimeMare = Math.max(13, Math.min(g.S * 0.026, lat * 0.062));
+function indemnulScenei8(g, locuri) {
+  const R = geomRegistru();
+  const marimeMare = Math.max(13, Math.min(R.textLat * 0.088, g.S * 0.026));
+
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#4a2c10';
+  const cx = R.textX + R.textLat * 0.5;
+
+  /* Îndemnul stă acum pe sticla panoului, scris cu alb — nu pe o bandă de vopsea
+     galbenă, cum era. Banda avea rostul ei cât timp sala era o coală albă; într-o
+     sală întunecată, un dreptunghi galben în colț arată a etichetă lipită. */
+  ctx.fillStyle = '#f6f1e4';
   ctx.font = `bold ${Math.round(marimeMare)}px Georgia`;
-  ctx.fillText('Spațiul este pânza ta.', x + lat * 0.5, y + inalt * 0.38);
-  ctx.font = `italic ${Math.round(marimeMare * 0.80)}px Georgia`;
-  ctx.fillStyle = '#5e3a16';
-  ctx.fillText('Lasă-ți amprenta. Personalizează exponatul.',
-               x + lat * 0.5, y + inalt * 0.70);
+  ctx.fillText('Spațiul este pânza ta.', cx, R.textY + R.textInalt * 0.30);
+  ctx.fillStyle = 'rgba(240, 232, 214, 0.78)';
+  ctx.font = `italic ${Math.round(marimeMare * 0.78)}px Georgia`;
+  ctx.fillText('Lasă-ți amprenta.', cx, R.textY + R.textInalt * 0.62);
+  ctx.fillText('Personalizează exponatul.', cx, R.textY + R.textInalt * 0.88);
+
+  // o linie subțire sub text, care desparte registrul în încăperi
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  ctx.lineWidth = Math.max(1, R.lat * 0.004);
+  ctx.beginPath();
+  ctx.moveTo(R.textX + R.textLat * 0.12, R.textY + R.textInalt * 1.06);
+  ctx.lineTo(R.textX + R.textLat * 0.88, R.textY + R.textInalt * 1.06);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -2257,6 +2313,7 @@ function deseneazaVorba8(acum) {
 
 /* ---------- INTRAREA ---------- */
 function intraInUlei(acum) {
+  s8.viata = 0; s8.trapa = 0;
   stare = 'ulei';
   s8.faza = 'intrare'; s8.t0 = acum; s8.ultimulCadru = acum;
   s8.vapori = 1; s8.unealta = 1; s8.culoare = 4;
@@ -2323,7 +2380,11 @@ function click8(acum) {
   if (u >= 0) {
     s8.unealta = u;
     if (audio) sunetCleios();
-    spuneScena8('Ai luat: ' + USTENSILE[u].nume + '.', 2600);
+    /* Aici scria „Ai luat: pensulă subțire cu vârf ascuțit". Nu mai scrie:
+       unealta aleasă se ridică din rând, se îndreaptă și primește sub ea o urmă
+       din culoarea ta — se vede că ai luat-o, și se vede și care e. Un rând de
+       text care spune ce tocmai ai văzut cu ochii nu adaugă nimic; îți ia doar
+       privirea de pe treabă. */
     return;
   }
   const k = peCerc(x, y);
@@ -2373,13 +2434,42 @@ function actualizeazaUleiul(acum) {
 
   if (s8.faza === 'pictezi') {
     if (s8.acoperit >= 1) {
-      facPerdeaua();
-      s8.faza = 'scurgere'; s8.t0 = acum; s8.scurgere = 0.001;
-      if (audio) { sunetSlosh(); sunetPlescait(); }
-      spuneScena8('Pelerina e acoperită. Culoarea nu mai stă — se scurge.', 6000);
+      /* Rochia e gata. Ce urmează nu mai e despre vopsea, ci despre ce ai făcut
+         cu ea: **manechinul prinde viață și pleacă**.
+
+         Înainte, în clipa aia se deschidea direct trapa și culoarea se scurgea —
+         adică lucrarea abia terminată dispărea ca o apă murdară. Acum întâi
+         pleacă purtându-și rochia, și abia pe urmă se deschide drumul. E o
+         deosebire mică în cod și mare în înțeles: ce ai pictat nu se scurge, ci
+         se ridică și pleacă în lume. */
+      s8.faza = 'viata'; s8.t0 = acum; s8.viata = 0.001;
+      if (audio) { sunetDescoperire(); }
+      spuneScena8('A prins viață.', 3800);
     } else if (!s8.aSpusTrapa && s8.tuseFacute === 12) {
       s8.aSpusTrapa = true;
       spuneScena8('Acoperă pelerina de tot: ea e lucrarea neterminată.', 6000);
+    }
+  }
+
+  /* Manechinul se ridică de pe podium și se destramă în lumină. Nu iese pe o
+     ușă: sala n-are ușă, și nici n-ar avea rost — el pleacă din **expunere**, nu
+     din cameră. Un exponat care prinde viață nu umblă, se dezleagă. */
+  if (s8.faza === 'viata') {
+    s8.viata = Math.min(1, s8.viata + dt / 3200);
+    if (s8.viata >= 1) {
+      s8.faza = 'trapa'; s8.t0 = acum; s8.trapa = 0.001;
+      if (audio) sunetPortal();
+    }
+  }
+
+  /* Capacul rotund al podiumului se deschide. Podiumul era plin; acum se
+     descoperă că era o gură. */
+  if (s8.faza === 'trapa') {
+    s8.trapa = Math.min(1, s8.trapa + dt / 2400);
+    if (s8.trapa >= 1) {
+      facPerdeaua();
+      s8.faza = 'scurgere'; s8.t0 = acum; s8.scurgere = 0.001;
+      if (audio) { sunetSlosh(); sunetPlescait(); }
     }
   }
 
@@ -2406,6 +2496,44 @@ function actualizeazaUleiul(acum) {
     if (s8.diluare >= 1) { s8.faza = 'iesire'; s8.t0 = acum; }
   }
   if (s8.faza === 'iesire' && acum - s8.t0 > 900) iesiDinUlei(acum);
+}
+
+/* Locul de pe podium de unde a plecat exponatul: se acoperă cu fondul sălii și
+   cu discul, ca și cum rochia n-ar fi fost niciodată acolo. */
+function stergeExponatulDeJos(g) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(g.pelCx - g.pelLat * 1.6, g.pelSus - g.pelInalt * 0.5,
+           g.pelLat * 3.2, g.pelInalt * 1.6);
+  ctx.clip();
+  fondulSalii(ctx, g);
+  disculDinSpate(ctx, g);
+  conulDeLumina(ctx, g);
+  ctx.restore();
+}
+
+/* Scânteile despletirii: exponatul nu dispare, se desface în puncte de lumină
+   care urcă. Punctul e cu ce a început toată jucăria — e drept ca tot ce a fost
+   pictat aici să se întoarcă în puncte. */
+function scanteileDespletirii(acum) {
+  const g = geomSala8();
+  const p = Math.min(1, s8.viata);
+  ctx.save();
+  for (let k = 0; k < 90; k++) {
+    const a = samanta(4700 + k * 3.1), b = samanta(4760 + k * 7.7);
+    const cat = Math.max(0, Math.min(1, (p - a * 0.45) / 0.55));
+    if (cat <= 0) continue;
+    const x = g.pelCx + (b - 0.5) * g.pelLat * 2.1 * (0.3 + a);
+    const y0 = g.pelSus + g.pelInalt * (0.1 + b * 0.9);
+    const y = y0 - H * 0.55 * cat * cat - H * 0.42 * p * p;
+    ctx.globalAlpha = (1 - cat) * 0.85;
+    ctx.fillStyle = CERC_CROMATIC[Math.floor(a * CERC_CROMATIC.length) % CERC_CROMATIC.length];
+    ctx.beginPath();
+    ctx.arc(x + Math.sin(acum * 0.002 + k) * g.S * 0.006, y,
+            Math.max(0.8, g.S * 0.006 * (1 - cat * 0.5)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 /* ---------- DILUAREA ---------- */
@@ -2459,11 +2587,41 @@ function deseneazaScena8(t, acum) {
 
   ctx.drawImage(pregatesteSalaUlei(), 0, 0);
 
+  /* Cât timp manechinul se ridică, rochia din ștampilă trebuie ștearsă de pe
+     podium și desenată din nou, mai sus. Ștampila e o singură imagine: nu se
+     poate mișca o bucată din ea, deci se acoperă locul cu sala goală și se
+     redesenează exponatul unde a ajuns. */
+  if (s8.viata > 0 && s8.faza !== 'diluare' && s8.faza !== 'iesire') {
+    stergeExponatulDeJos(g);
+    const p = atenuare(Math.min(1, s8.viata));
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 1 - p * 1.15);
+    ctx.translate(0, -H * 0.42 * p * p);
+    ctx.translate(g.pelCx, g.pelSus);
+    ctx.scale(1 + p * 0.06, 1 + p * 0.10);
+    ctx.translate(-g.pelCx, -g.pelSus);
+    pelerinaInLinie(ctx, g, Math.max(1, g.S * 0.0022));
+    ctx.restore();
+  }
+
   if (s8.faza === 'diluare' || s8.faza === 'iesire') {
     deseneazaDiluarea(acum);
   } else {
-    // ce a pictat jucătorul, peste desenul în linie
+    /* Ce a pictat jucătorul, peste desenul în linie. Când manechinul prinde
+       viață, stratul lui se ridică odată cu el și se stinge — pictura pleacă
+       împreună cu rochia, fiindcă ea **e** rochia. */
+    ctx.save();
+    if (s8.viata > 0) {
+      const p = atenuare(Math.min(1, s8.viata));
+      ctx.globalAlpha = Math.max(0, 1 - p * 1.15);
+      ctx.translate(0, -H * 0.42 * p * p);
+      ctx.translate(g.pelCx, g.pelSus);
+      ctx.scale(1 + p * 0.06, 1 + p * 0.10);
+      ctx.translate(-g.pelCx, -g.pelSus);
+    }
     ctx.drawImage(stratul(), 0, 0);
+    ctx.restore();
+    if (s8.viata > 0) scanteileDespletirii(acum);
     deseneazaTrapa(acum);
     deseneazaPicaturile();
     deseneazaTrusa(acum);
