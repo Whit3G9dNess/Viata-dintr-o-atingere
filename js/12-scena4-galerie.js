@@ -1250,23 +1250,39 @@ function deseneazaTaina(lx, ly, r, acum) {
 function deseneazaEtichetaRamei(lx, ly, r) {
   ctx.fillStyle = '#3a2718';
   ctx.fillRect(lx - r, ly - r, r * 2, r * 2);
+  /* Plăcuța umple aproape toată lupa, iar scrisul stă bine înăuntrul ei.
+
+     Era mică și îngustă, iar titlul — un rând de douăzeci și cinci de litere —
+     ieșea cu capetele afară, peste alamă, în lemnul ramei. Nu se citea nici pe
+     departe „gravat pe plăcuță": se citea „scris peste". Într-o lupă, cel mai
+     important lucru e că ce vezi prin ea trebuie să pară **mai limpede** decât
+     restul, nu mai înghesuit. */
+  const pw = r * 1.86, ph = r * 1.24;
   ctx.fillStyle = '#b9922f';
-  dreptunghi(lx - r * 0.9, ly - r * 0.5, r * 1.8, r * 1.0, r * 0.06);
+  dreptunghi(lx - pw / 2, ly - ph / 2, pw, ph, r * 0.07);
   ctx.fillStyle = 'rgba(255, 240, 190, 0.45)';
-  ctx.fillRect(lx - r * 0.9, ly - r * 0.5, r * 1.8, Math.max(1, r * 0.03));
+  ctx.fillRect(lx - pw / 2, ly - ph / 2, pw, Math.max(1, r * 0.03));
   ctx.strokeStyle = '#6d4d1a'; ctx.lineWidth = Math.max(1, r * 0.014);
   ctx.beginPath();
-  if (ctx.roundRect) ctx.roundRect(lx - r * 0.82, ly - r * 0.42, r * 1.64, r * 0.84, r * 0.04);
-  else ctx.rect(lx - r * 0.82, ly - r * 0.42, r * 1.64, r * 0.84);
+  if (ctx.roundRect) ctx.roundRect(lx - pw * 0.44, ly - ph * 0.40, pw * 0.88, ph * 0.80, r * 0.045);
+  else ctx.rect(lx - pw * 0.44, ly - ph * 0.40, pw * 0.88, ph * 0.80);
   ctx.stroke();
 
   /* Rândurile se așază unul sub altul folosind unde s-a terminat cel dinainte.
-     Puse la înălțimi fixe, se călcau când titlul trecea pe două rânduri. */
-  const marime = Math.max(9, Math.round(r * 0.125));
-  const jos = textIncadrat('«Tu, înainte de a începe»', lx, ly - r * 0.33,
-                           r * 1.5, marime * 1.35, `${marime}px Georgia`, '#3a2a10');
-  textIncadrat('atinge rama', lx, jos + marime * 0.4, r * 1.5,
-               marime * 1.35, `italic ${marime}px Georgia`, '#5a4520');
+     Puse la înălțimi fixe, se călcau când titlul trecea pe două rânduri.
+
+     Lățimea de rupere e mai mică decât chenarul dinăuntru, ca să rămână o margine
+     de aer de fiecare parte — un scris lipit de ramă arată strâmt oricât ar fi de
+     bine centrat. */
+  /* Litera e mai mică decât ar încăpea la limită. „Încape" nu e destul pentru o
+     gravură: o inscripție lipită de marginea plăcuței arată înghesuită chiar dacă
+     nicio literă nu iese. Aerul dintre scris și ramă e parte din gravură. */
+  const marime = Math.max(8, Math.round(r * 0.098));
+  const latScris = pw * 0.80;
+  const jos = textIncadrat('«Tu, înainte de a începe»', lx, ly - ph * 0.24,
+                           latScris, marime * 1.4, `${marime}px Georgia`, '#3a2a10');
+  textIncadrat('atinge rama', lx, jos + marime * 0.55, latScris,
+               marime * 1.4, `italic ${marime}px Georgia`, '#5a4520');
 }
 
 function deseneazaPrinLupa(lx, ly, r, acum) {
