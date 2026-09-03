@@ -122,7 +122,7 @@ window.addEventListener('pointerdown', (e) => {
           minge.luminozitate = 1;
           minge.sareDeBucurie = true;
           minge.sarituriRamase = 3;
-          minge.vy = saltulMingii(0.3);
+          minge.vy = saltPanaLaTavan(0.3);
           minge.turtire = 1;          // răspunsul se vede chiar în cadrul atingerii
           sunetBucurie();
         }

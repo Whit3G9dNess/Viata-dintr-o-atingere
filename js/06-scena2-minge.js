@@ -664,6 +664,34 @@ function adaugaPata(x, y, marime) {
 function gravitatiaMingii() { return minge.raza * 0.016; }
 function saltulMingii(cat) { return -minge.raza * cat; }
 
+/* Cât de sus are voie să urce mingea: până la o rază și un pic de marginea de
+   sus, ca să nu iasă niciodată din ecran. */
+function tavanulMingii() { return minge.raza * 1.15; }
+
+/* Un salt care **nu poate trece de tavan**.
+
+   Aici era stricăciunea cea mai urâtă din toată jucăria, și era una de fizică,
+   nu de desen: fiecare atingere punea viteza în sus la o valoare fixă, oricât de
+   sus ar fi fost deja mingea. Cine o atingea din nou înainte să cadă o trimitea
+   mai sus, și tot așa — după șase-șapte atingeri repezi mingea era la o mie de
+   pixeli deasupra ecranului și nu se mai întorcea niciodată. Din afară: mingea a
+   dispărut, jocul s-a stricat.
+
+   Socoteala e cea din manual: o minge aruncată în sus cu viteza `v` urcă
+   `v²/(2g)`. Deci cea mai mare viteză care încă o lasă sub tavan e
+   `√(2g·h)`, unde `h` e cât mai are până acolo. Cu cât e mai sus, cu atât
+   primește mai puțin; lipită de tavan, nu mai primește nimic.
+
+   Nu e o limită pusă de-a curmezișul fizicii, ci chiar fizica dusă până la capăt.
+   De-aia mingea nu se oprește brusc când atinge plafonul: pur și simplu nu mai
+   are cum să urce. */
+function saltPanaLaTavan(cat) {
+  const dorit = Math.abs(saltulMingii(cat));
+  const locRamas = Math.max(0, minge.y - tavanulMingii());
+  const catMax = Math.sqrt(2 * gravitatiaMingii() * locRamas);
+  return -Math.min(dorit, catMax);
+}
+
 function actualizeazaMingea(acum) {
   minge.turtire *= 0.82;                 // îndesarea se destinde repede
   if (minge.turtire < 0.004) minge.turtire = 0;
@@ -675,6 +703,14 @@ function actualizeazaMingea(acum) {
       minge.vy += gravitatiaMingii();
       minge.y += minge.vy;
       minge.rotatie += 0.06;
+      /* Ultima plasă de siguranță: orice ar împinge-o de sus, mingea nu trece de
+         tavan. Saltul e deja socotit ca să n-ajungă acolo — dar o plasă care nu
+         se folosește niciodată nu costă nimic, iar una care lipsește costă tot
+         jocul. */
+      if (minge.y < tavanulMingii()) {
+        minge.y = tavanulMingii();
+        if (minge.vy < 0) minge.vy = 0;
+      }
       // în zbor, mingea bucuroasă scutură stropi de vopsea pe traiectorie
       if (minge.sareDeBucurie && Math.random() < 0.05) {
         adaugaPata(minge.x + (Math.random() * 2 - 1) * 50,
@@ -696,7 +732,7 @@ function actualizeazaMingea(acum) {
         }
         if (minge.sarituriRamase > 0) {
           minge.sarituriRamase--;
-          minge.vy = saltulMingii(0.24 + Math.random() * 0.09);
+          minge.vy = saltPanaLaTavan(0.24 + Math.random() * 0.09);
           minge.turtire = 0.7;                 // se îndeasă când lovește pământul
           if (audio) sunetBoing();
         } else {
@@ -761,7 +797,7 @@ function actualizeazaMingea(acum) {
         if (audio) sunetBoing();
       }
     } else if (!ajunsa) {
-      minge.vy = saltulMingii(0.1);   // hop, hop, hop...
+      minge.vy = saltPanaLaTavan(0.1);   // hop, hop, hop...
     } else {
       minge.mod = 'liber';
       minge.vy = 0;

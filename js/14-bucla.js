@@ -81,7 +81,7 @@ function cadru(t) {
          așteaptă — nu face nicio săritură de intrare. */
       minge.sareDeBucurie = minge.atinsaInCrestere;
       minge.sarituriRamase = minge.atinsaInCrestere ? 3 : 0;
-      minge.vy = minge.atinsaInCrestere ? saltulMingii(0.3) : 0;
+      minge.vy = minge.atinsaInCrestere ? saltPanaLaTavan(0.3) : 0;
       minge.turtire = minge.atinsaInCrestere ? 1 : 0.35;
       minge.atinsaInCrestere = false;
       minge.luminozitate = 1;

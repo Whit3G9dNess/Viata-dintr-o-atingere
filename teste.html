@@ -357,6 +357,8 @@ return {
   PAGINI_INVITATIE: typeof PAGINI_INVITATIE !== "undefined" ? PAGINI_INVITATIE : null,
   ARTICOLE_MANUAL: ARTICOLE_MANUAL,
   balon: balon, minge: minge, elefant: elefant,
+  tavanulMingii: typeof tavanulMingii !== "undefined" ? tavanulMingii : null,
+  saltPanaLaTavan: typeof saltPanaLaTavan !== "undefined" ? saltPanaLaTavan : null,
   pete: pete, adaugaPata: adaugaPata,
   nori: nori,
   baloaneCuloare: baloaneCuloare,
@@ -2442,6 +2444,43 @@ function ruleaza() {
     egal(j.stare(), "minge", "atingerea n-a grăbit metamorfoza");
     adevarat(j.minge.vy < 0 || j.minge.y < j.minge.sol,
       "mingea nu a sărit după ce a fost atinsă în creștere");
+  });
+
+  test("mingea nu poate fi bătută afară din ecran", function () {
+    /* Fiecare atingere punea viteza în sus la o valoare fixă, oricât de sus ar
+       fi fost deja mingea. Cine o atingea din nou înainte să cadă o trimitea mai
+       sus, și tot așa — după șase-șapte atingeri repezi mingea era la o mie de
+       pixeli deasupra ecranului și nu se mai întorcea. Din afară: mingea a
+       dispărut, jocul s-a stricat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    let ceaMaiSus = j.minge.y;
+    for (let q = 0; q < 12; q++) {
+      const p = j.scalaPanzei();
+      j.atinge(j.minge.x / p, j.minge.y / p);
+      for (let k = 0; k < 20; k++) {
+        j.avanseaza(16);
+        if (j.minge.y < ceaMaiSus) ceaMaiSus = j.minge.y;
+      }
+    }
+    adevarat(ceaMaiSus >= 0,
+      "mingea a ieșit prin tavanul ecranului, la " + Math.round(ceaMaiSus));
+    adevarat(ceaMaiSus >= j.tavanulMingii() - 1,
+      "mingea a trecut de tavanul ei: " + Math.round(ceaMaiSus) +
+      " față de " + Math.round(j.tavanulMingii()));
+  });
+
+  test("și după ce a fost bătută sus, mingea cade înapoi pe pământ", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    pregatesteScena2(j);
+    for (let q = 0; q < 8; q++) {
+      const p = j.scalaPanzei();
+      j.atinge(j.minge.x / p, j.minge.y / p);
+      j.avanseaza(120);
+    }
+    j.avanseaza(6000);
+    aproape(j.minge.y, j.minge.sol, j.minge.raza * 0.25,
+      "mingea n-a mai ajuns pe pământ");
   });
 
   test("mingea nu sare singură: stă pe loc până o atingi", function () {
