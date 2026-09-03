@@ -464,6 +464,7 @@ return {
   puneTusa: typeof puneTusa !== "undefined" ? puneTusa : null,
   zonaAtinsa: typeof zonaAtinsa !== "undefined" ? zonaAtinsa : null,
   USTENSILE: typeof USTENSILE !== "undefined" ? USTENSILE : null,
+  latimeaStanga: typeof latimeaStanga !== "undefined" ? latimeaStanga : null,
   locurileUneltelor: typeof locurileUneltelor !== "undefined" ? locurileUneltelor : null,
   CERC_CROMATIC: typeof CERC_CROMATIC !== "undefined" ? CERC_CROMATIC : null,
   peTrusa: typeof peTrusa !== "undefined" ? peTrusa : null,
@@ -3888,8 +3889,14 @@ function ruleaza() {
     const j = porneste({ latime: 1400, inaltime: 800 });
     const g = inUlei(j);
 
+    /* Punctul de pe podea se ia **din chiar silueta rochiei**, nu dintr-o
+       fractiune scrisa de mana. Era la 0.62 din latime — bun cat timp poalele
+       tineau pana acolo, gresit din clipa in care rochia s-a facut mai ampla, si
+       atunci testul cadea pe o schimbare care nu stricase nimic. Un test care se
+       leaga de cifre scrise de mana masoara cifrele, nu lucrul. */
     const inainte = j.s8.tuseFacute;
-    j.cursor.x = j.W() * 0.62; j.cursor.y = j.H() * 0.72;   // pe podea, langa podium
+    j.cursor.x = g.pelCx + g.pelLat * (j.latimeaStanga(1) + 0.6);
+    j.cursor.y = g.pelSus + g.pelInalt * 0.75;
     j.click8(j.ceas.t);
     egal(j.s8.tuseFacute, inainte, "clicul pe podea a lasat vopsea in sala");
 
@@ -3934,8 +3941,18 @@ function ruleaza() {
   test("acoperita de tot, culoarea se scurge prin trapa de sub podium", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inUlei(j);
+    /* Drumul de la ultima tusa pana afara din sala are acum trei opriri, nu una:
+       intai **manechinul prinde viata** si se destrama in lumina, abia pe urma se
+       deschide trapa, si abia pe urma se scurge culoarea. Testul cerea „scurgere"
+       la saizeci de milisecunde dupa ce ai terminat de pictat — adica dinainte ca
+       lucrarea sa apuce sa plece. Apara acelasi lucru, dar in ordinea in care se
+       intampla. */
     acoperaPelerinaToata(j);
     j.avanseaza(60);
+    egal(j.s8.faza, "viata", "lucrarea terminata n-a prins viata");
+    j.avanseaza(3600);
+    egal(j.s8.faza, "trapa", "dupa ce a plecat, podiumul nu se deschide");
+    j.avanseaza(2800);
     egal(j.s8.faza, "scurgere", "trapa nu s-a deschis");
     adevarat(j.s8.perdea !== null, "nu s-a luat poza vopselei de pe pelerina");
     j.avanseaza(5000);

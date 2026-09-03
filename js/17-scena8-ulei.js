@@ -272,8 +272,13 @@ function geomSala8() {
        casetă de înălțime fixă te pune să alegi între a micșora litera până nu se
        mai citește și a lăsa textul să curgă afară din chenar. Caseta se face cât
        trebuie ca să cuprindă ce are de spus, și gata. */
-    fisaX: W * 0.665, fisaY: H * 0.145,
-    fisaLat: Math.min(W * 0.30, S * 0.56)
+    /* Fișa se trage spre marginea din dreapta și se îngustează. Era lată de
+       aproape o treime din ecran și începea de la 0.665 — adică exact acolo unde
+       se revarsă poalele rochiei. O casetă de text care atinge exponatul îl
+       sufocă: ochiul nu mai știe la ce să se uite. Îngustă și lunguiață, textul
+       curge pe mai multe rânduri și lasă rochia să respire. */
+    fisaX: W * 0.755, fisaY: H * 0.125,
+    fisaLat: Math.min(W * 0.225, S * 0.42)
   };
 }
 
@@ -655,13 +660,21 @@ const PROFIL_PELERINEI = [
 
      Iar mânecile nu trec de jumătatea lățimii de la poale. Le făcusem aproape
      două treimi: silueta ieșea în formă de romb, cu umerii cât șoldurile. */
-  [0.000, 0.062], [0.045, 0.085],
-  [0.075, 0.230], [0.105, 0.360],                   // umerii, cu aripioarele
-  [0.165, 0.455], [0.230, 0.430],                   // mâneca-balon, până la cot
-  [0.285, 0.290], [0.325, 0.170],                   // se strânge spre încheietură
-  [0.345, 0.125],                                   // talia — o treime din înălțime
-  [0.430, 0.335], [0.550, 0.565], [0.700, 0.785],
-  [0.850, 0.925], [0.950, 0.982], [1.000, 1.000]
+  /* Și încă ceva, la fel de important: rochiile de Renaștere sunt **ample, purtate
+     de femei robuste**. Talia strânsă din portrete e strânsă *față de umeri și
+     șolduri late*, nu subțire în sine. Cu talia la o optime din lățime, cum era,
+     ieșea o siluetă de insectă: un trup de sârmă între două volume mari. Un corset
+     de epocă strânge, dar nu taie omul în două.
+
+     Deci: umerii mai lați, mâneca mai plină, corsajul mai gros, talia îngustă dar
+     omenească. Rochia trebuie să pară că are cine s-o poarte. */
+  [0.000, 0.090], [0.045, 0.135],
+  [0.075, 0.330], [0.105, 0.460],                   // umerii, cu aripioarele
+  [0.165, 0.555], [0.230, 0.530],                   // mâneca-balon, până la cot
+  [0.285, 0.400], [0.325, 0.290],                   // se strânge spre încheietură
+  [0.345, 0.245],                                   // talia — o treime din înălțime
+  [0.430, 0.390], [0.550, 0.600], [0.700, 0.800],
+  [0.850, 0.930], [0.950, 0.982], [1.000, 1.000]
 ];
 
 function latimeaPelerinei(v) {
@@ -768,10 +781,14 @@ function pelerinaInLinie(c, g, gr) {
    sclipire ascuțită; pânza e caldă și mată. */
 function capatulManechinului(c, g, gr) {
   const cx = g.pelCx, sus = g.pelSus, w = g.pelLat, h = g.pelInalt;
-  const gatJos = sus + h * 0.055;
-  const gatSus = sus - h * 0.105;
-  const rCap = w * 0.155;
-  const capCy = gatSus - rCap * 0.86;
+  /* Gâtul e scurt și gros, nu o tijă. Îl făcusem lung de o zecime din rochie și
+     subțire cât un deget — de-acolo venea toată impresia de manechin firav, chiar
+     după ce umerii se lățiseră. Pe un manechin adevărat gâtul e cât o palmă și se
+     lărgește vizibil spre umeri. */
+  const gatJos = sus + h * 0.050;
+  const gatSus = sus - h * 0.055;
+  const rCap = w * 0.185;
+  const capCy = gatSus - rCap * 0.80;
 
   const portelan = function (x0, y0, x1, y1) {
     const grd = c.createLinearGradient(x0, y0, x1, y1);
@@ -785,22 +802,22 @@ function capatulManechinului(c, g, gr) {
      a trupului, și fără ele gâtul crește direct din rochie ca o tulpină. */
   c.fillStyle = portelan(cx - w * 0.30, sus, cx + w * 0.26, gatJos + h * 0.05);
   c.beginPath();
-  c.moveTo(cx - w * 0.235, sus + h * 0.075);
-  c.quadraticCurveTo(cx - w * 0.215, sus + h * 0.005, cx - w * 0.105, gatJos - h * 0.020);
-  c.lineTo(cx + w * 0.105, gatJos - h * 0.020);
-  c.quadraticCurveTo(cx + w * 0.215, sus + h * 0.005, cx + w * 0.235, sus + h * 0.075);
+  c.moveTo(cx - w * 0.340, sus + h * 0.082);
+  c.quadraticCurveTo(cx - w * 0.310, sus - h * 0.008, cx - w * 0.150, gatJos - h * 0.016);
+  c.lineTo(cx + w * 0.150, gatJos - h * 0.016);
+  c.quadraticCurveTo(cx + w * 0.310, sus - h * 0.008, cx + w * 0.340, sus + h * 0.082);
   c.closePath();
   c.fill();
   creion(c, gr * 1.1);
   c.stroke();
 
   // gâtul
-  c.fillStyle = portelan(cx - w * 0.075, 0, cx + w * 0.075, 0);
+  c.fillStyle = portelan(cx - w * 0.115, 0, cx + w * 0.115, 0);
   c.beginPath();
-  c.moveTo(cx - w * 0.070, gatJos);
-  c.quadraticCurveTo(cx - w * 0.062, gatSus + h * 0.03, cx - w * 0.055, gatSus);
-  c.lineTo(cx + w * 0.055, gatSus);
-  c.quadraticCurveTo(cx + w * 0.062, gatSus + h * 0.03, cx + w * 0.070, gatJos);
+  c.moveTo(cx - w * 0.115, gatJos);
+  c.quadraticCurveTo(cx - w * 0.096, gatSus + h * 0.022, cx - w * 0.082, gatSus);
+  c.lineTo(cx + w * 0.082, gatSus);
+  c.quadraticCurveTo(cx + w * 0.096, gatSus + h * 0.022, cx + w * 0.115, gatJos);
   c.closePath();
   c.fill();
   creion(c, gr * 1.1);
@@ -810,7 +827,7 @@ function capatulManechinului(c, g, gr) {
   subGat.addColorStop(0, 'rgba(120, 112, 100, 0)');
   subGat.addColorStop(1, 'rgba(120, 112, 100, 0.35)');
   c.fillStyle = subGat;
-  c.fillRect(cx - w * 0.075, gatJos - h * 0.03, w * 0.15, h * 0.04);
+  c.fillRect(cx - w * 0.120, gatJos - h * 0.03, w * 0.24, h * 0.04);
 
   /* Capul: un ou întors, mai lat sus decât jos, fără nicio trăsătură. Netezimea
      lui e chiar rostul: un manechin cu față ar deveni un personaj, iar aici
