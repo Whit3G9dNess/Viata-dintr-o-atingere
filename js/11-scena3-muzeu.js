@@ -1027,30 +1027,131 @@ function deseneazaHaina(g, deschidere) {
     ctx.quadraticCurveTo(i * w * 0.40, h * 0.20, i * w * 0.32, h * 0.10);
     ctx.closePath(); ctx.fill();
 
-    // broderia de alamă în linie de biciuiră
-    ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(1.3, w * 0.006); ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(i * w * 0.42, h * 0.86);
-    ctx.quadraticCurveTo(i * w * 0.52, h * 0.62, i * w * 0.34, h * 0.48);
-    ctx.quadraticCurveTo(i * w * 0.18, h * 0.34, i * w * 0.28, h * 0.20);
-    ctx.stroke();
-    ctx.fillStyle = ALAMA;
-    ctx.beginPath();
-    ctx.ellipse(i * w * 0.28, h * 0.18, w * 0.032, w * 0.016, i * 0.8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // nasturii, pe poala care se petrece deasupra
-    if (lat === -1) {
-      ctx.fillStyle = ALAMA;
-      for (let k = 0; k < 3; k++) {
-        ctx.beginPath();
-        ctx.arc(i * w * 0.46, h * (0.36 + k * 0.2), w * 0.026, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+    podoabeleHainei(i, w, h, lat);
     ctx.restore();
   }
   ctx.restore();          // tăietura la trupul custodelui
+}
+
+/* ---------- PODOABELE HAINEI ----------
+
+   Custodele poartă o haină de ceremonie, nu un halat. Avea pe ea o singură dâră
+   de alamă și trei nasturi — pe o poală lată cât un stat de om, adică aproape
+   nimic: de la doi pași se citea drept o pată verde.
+
+   O haină de gală se cunoaște după **ceaprazuri**: rânduri de găitan trase de la
+   încheietoare spre umăr, fiecare mai scurt decât cel de dedesubt, fiindcă urmează
+   pieptul care se îngustează. Ele dau ritm, iar ritmul e ce face un veșmânt să
+   pară scump. Peste ele vin bordura brodată de pe margine, poalele cu vrej și
+   nasturii de alamă.
+
+   Totul se desenează **numai cu alamă pe verde**: două culori. O haină cu cinci
+   culori de fir ar fi arătat a costum de carnaval, iar custodele nostru e un om
+   serios care poartă un muzeu în buzunar. */
+function podoabeleHainei(i, w, h, lat) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  /* Ceaprazurile: cinci rânduri de găitan, cu câte o buclă la capătul dinafară și
+     un nasture la cel dinăuntru. Se scurtează spre poale, ca pieptul. */
+  const RANDURI = 5;
+  for (let k = 0; k < RANDURI; k++) {
+    const t = k / (RANDURI - 1);
+    const y = h * (0.14 + t * 0.34);
+    const dinauntru = w * 0.13;
+    const dinafara = w * intre(0.50, 0.34, t);
+
+    ctx.strokeStyle = ALAMA;
+    ctx.lineWidth = Math.max(1.2, w * 0.009);
+    ctx.beginPath();
+    ctx.moveTo(i * dinauntru, y);
+    ctx.quadraticCurveTo(i * (dinauntru + dinafara) * 0.5, y + h * 0.018,
+                         i * dinafara, y - h * 0.006);
+    ctx.stroke();
+
+    // bucla de la capăt, ca la găitanul răsucit
+    ctx.lineWidth = Math.max(0.9, w * 0.005);
+    ctx.beginPath();
+    ctx.arc(i * dinafara, y + h * 0.012, w * 0.020, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // nasturele de la capătul dinăuntru
+    ctx.fillStyle = ALAMA;
+    ctx.beginPath();
+    ctx.arc(i * dinauntru, y, w * 0.021, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 246, 208, 0.75)';
+    ctx.beginPath();
+    ctx.arc(i * dinauntru - w * 0.006, y - w * 0.006, w * 0.008, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* Bordura de pe marginea din față: două fire paralele care coboară de la guler
+     până la poale, cu un vrej mărunt între ele. Ea e ce închide desenul — o haină
+     cu marginea goală arată tăiată, nu croită. */
+  const margineX = function (q) { return i * w * intre(0.085, 0.135, q); };
+  ctx.strokeStyle = ALAMA;
+  ctx.lineWidth = Math.max(0.9, w * 0.0045);
+  for (const dx of [-0.020, 0.020]) {
+    ctx.beginPath();
+    for (let k = 0; k <= 12; k++) {
+      const q = k / 12;
+      const x = margineX(q) + i * w * dx, y = h * intre(0.06, 0.94, q);
+      if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  // vrejul dintre fire
+  ctx.lineWidth = Math.max(0.7, w * 0.0032);
+  for (let k = 0; k < 9; k++) {
+    const q = (k + 0.5) / 9;
+    const x = margineX(q), y = h * intre(0.06, 0.94, q);
+    ctx.beginPath();
+    ctx.moveTo(x - i * w * 0.018, y + h * 0.020);
+    ctx.quadraticCurveTo(x + i * w * 0.026, y, x - i * w * 0.018, y - h * 0.020);
+    ctx.stroke();
+  }
+
+  /* Vrejul de la poale: un val de fir care urmează tivul. Se oprește înainte de
+     margine, ca broderia adevărată — firul nu se coase chiar pe muchie, fiindcă
+     acolo stofa se roade. */
+  ctx.lineWidth = Math.max(1, w * 0.005);
+  ctx.beginPath();
+  ctx.moveTo(i * w * 0.16, h * 0.90);
+  ctx.quadraticCurveTo(i * w * 0.36, h * 0.955, i * w * 0.46, h * 0.885);
+  ctx.stroke();
+  for (let k = 0; k < 4; k++) {
+    const q = (k + 0.5) / 4;
+    const x = i * w * intre(0.18, 0.44, q);
+    const y = h * (0.90 + Math.sin(q * Math.PI) * 0.035);
+    ctx.lineWidth = Math.max(0.6, w * 0.003);
+    ctx.beginPath();
+    ctx.arc(x, y - h * 0.022, w * 0.016, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  /* Ecusonul de pe piept: o placă ovală de alamă, cu o dungă gravată. E semnul de
+     custode — lucrul care spune că omul ăsta **lucrează** aici, nu vizitează. */
+  if (lat === -1) {
+    const ex = i * w * 0.34, ey = h * 0.58;
+    const placa = ctx.createLinearGradient(ex - w * 0.05, ey, ex + w * 0.05, ey);
+    placa.addColorStop(0, '#f4e0a0');
+    placa.addColorStop(0.45, ALAMA);
+    placa.addColorStop(1, '#8a6a25');
+    ctx.fillStyle = placa;
+    ctx.beginPath();
+    ctx.ellipse(ex, ey, w * 0.055, w * 0.038, i * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#6f5418';
+    ctx.lineWidth = Math.max(0.7, w * 0.0035);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ex - w * 0.030, ey); ctx.lineTo(ex + w * 0.030, ey);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 /* Elefantul-muzeu: stă pe fund, cu fața la tine, și te privește. Tot ce era
