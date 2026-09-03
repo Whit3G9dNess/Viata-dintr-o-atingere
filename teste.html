@@ -4530,5 +4530,43 @@ function ruleaza() {
     : "toate cele " + trecute + " teste trec";
 })();
 </script>
+
+<!-- ============================================================
+     REÎNCĂRCAREA TESTELOR
+
+     Aici pagina **se reîncarcă singură**, spre deosebire de joc: la teste n-ai ce
+     pierde. N-are drum parcurs, n-are progres — le pornești, se duc până la capăt
+     în două secunde, iar dacă între timp s-a schimbat un fișier, singurul lucru
+     rezonabil e să le rulezi din nou.
+
+     Așa, cât timp ține fereastra asta deschisă, ea arată în permanență starea
+     adevărată a suitei, fără să atingă nimeni nimic.
+     ============================================================ -->
+<script>
+(function () {
+  var ultimul = null;
+  function intreaba() {
+    fetch('/__ceas', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (t) {
+        if (t === null) return;
+        if (ultimul === null) ultimul = t;
+        else if (t !== ultimul) location.reload();
+      })
+      .catch(function () { /* de pe file:// testele oricum nu merg */ });
+  }
+  /* Pe lângă întrebarea din două în două secunde, mai întreabă **ori de câte ori
+     te întorci la fereastră**. Browserul încetinește ceasurile în filele pe care
+     nu le privește nimeni — până la o dată pe minut — așa că, fără asta, te-ai
+     fi întors la joc și ai fi așteptat degeaba un semn care venea târziu. */
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) intreaba();
+  });
+  window.addEventListener('focus', intreaba);
+
+  intreaba();
+  setInterval(intreaba, 2000);
+})();
+</script>
 </body>
 </html>

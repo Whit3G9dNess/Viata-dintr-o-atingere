@@ -10,18 +10,39 @@ linie. Cinci scene, legate una de alta prin atingeri.
 fără niciun server. De-aia fișierele din `js/` sunt scripturi obișnuite, nu
 module — modulele nu se încarcă de pe disc.
 
-**Cu server** (îți trebuie pentru teste). Îl pornești **din folderul acesta**, ca
-adresele să fie aceleași oriunde ai muta proiectul:
+**Cu server** (îți trebuie pentru teste). Pornește **serverul de casă**, din
+folderul de deasupra — cel în care stă `server.py`:
 
 ```bash
-python -m http.server 8765
+python server.py
 ```
 
-apoi deschizi `http://localhost:8765/index.html`.
+apoi deschizi `http://localhost:8765/Viata-dintr-o-atingere/Viata-dintr-o-atingere/index.html`.
+
+Serverul ăsta face două lucruri pe care `python -m http.server` nu le face, și
+amândouă contează când lucrezi la joc:
+
+1. **Nu lasă browserul să țină minte nimic.** Cu serverul obișnuit, fișierele din
+   `js/` rămân în memoria browserului, iar un refresh îți poate da codul de acum
+   zece minute — pagina arată neschimbată și crezi că nu s-a lucrat nimic. E cea
+   mai înșelătoare pierdere de vreme cu putință, fiindcă nimic nu pare stricat.
+2. **Spune paginii când s-a schimbat un fișier**, prin `/__ceas` — un singur
+   număr, data celei mai proaspete modificări. Pagina îl întreabă din două în
+   două secunde, și atunci:
+   - **jocul** arată un semn mic în colțul din stânga jos: *s-a schimbat ceva ·
+     reîncarcă*. Clic pe el și pagina se reîncarcă. Nu se reîncarcă singur
+     dinadins: jocul n-are salvare, iar o reîncărcare venită peste tine în sala a
+     opta ți-ar șterge tot drumul până acolo.
+   - **testele** se reîncarcă singure și rulează din nou. Acolo n-ai ce pierde,
+     iar fereastra arată în permanență starea adevărată a suitei.
+
+De pe `file://` nu există server, întrebarea eșuează în tăcere și nu se întâmplă
+nimic — jocul merge mai departe cu dublu-clic, ca înainte.
 
 ## Cum rulezi testele
 
-Cu serverul pornit, deschizi `http://localhost:8765/teste.html`.
+Cu serverul pornit, deschizi
+`http://localhost:8765/Viata-dintr-o-atingere/Viata-dintr-o-atingere/teste.html`.
 Testele se rulează singure și scriu sus câte au trecut și câte au căzut.
 
 Nu copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
