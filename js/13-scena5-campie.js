@@ -1707,6 +1707,25 @@ function click5(acum) {
     if (audio) sunetClopotel(660);
     return;
   }
+
+  /* Cât merg oamenii spre casă, atingerea îi **grăbește**.
+
+     Aici era un blocaj, și unul din cele care nu se văd în cod: după ce îi atingi,
+     drumul lor până la ușă ține două secunde și jumătate, iar ușile se deschid în
+     încă una și ceva. Trei secunde și șapte zecimi în care apăsai oriunde și nu se
+     întâmpla **nimic**. Scena nu era stricată; încetase să răspundă. Din afară
+     arată la fel, și e mai rău: la o scenă stricată te lași, la una tăcută apeși
+     întruna, convins că greșești ceva.
+
+     Toată sala e făcută din atingeri care mută lucrurile înainte — cei zece pași
+     înapoi, oamenii chemați, ușa. Locul ăsta era singurul în care atingerea nu
+     făcea nimic, și tocmai de-aia părea stricat. */
+  if (s5.faza === 'casa') {
+    if (s5.plecare < 1) s5.plecare = Math.min(1, s5.plecare + 0.34);
+    else s5.usi = Math.min(1, s5.usi + 0.34);
+    if (audio) sunetClopotel(700 + s5.usi * 160);
+    return;
+  }
   if (s5.faza !== 'sala' || s5.pasi >= PASI_INAPOI) return;
   s5.pasi++;
   if (audio) sunetClopotel(520 + s5.pasi * 40);

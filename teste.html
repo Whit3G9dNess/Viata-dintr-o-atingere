@@ -588,6 +588,8 @@ return {
   })(),
   PRAG_LUPA_IN_MANA: typeof PRAG_LUPA_IN_MANA !== "undefined" ? PRAG_LUPA_IN_MANA : null,
   click5: typeof click5 !== "undefined" ? click5 : null,
+  geomTabloului: typeof geomTabloului !== "undefined" ? geomTabloului : null,
+  intraInCampie: typeof intraInCampie !== "undefined" ? intraInCampie : null,
   click4: typeof click4 !== "undefined" ? click4 : null,
   naturaScena3: function () { return typeof naturaScena3 !== "undefined" ? naturaScena3 : null; },
   pictezaSala: typeof pictezaSala !== "undefined" ? pictezaSala : null,
@@ -1999,6 +2001,93 @@ function ruleaza() {
     const b = j.geomBuzunar(j.geomMuzeu());
     adevarat(b.w > j.geomMuzeu().hainaW * 0.35,
       "buzunarul ține doar " + Math.round(b.w / j.geomMuzeu().hainaW * 100) + "% din lățimea hainei");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Nicio clipă fără răspuns, în câmpie");
+
+  /* Duce scena a cincea pana in clipa in care taranii pleaca spre casa. */
+  function pleacaTaranii(j) {
+    j.mergiLaStarea("campie");
+    j.intraInCampie(j.ceas.t);
+    j.avanseazaUsor(3000);
+    for (let k = 0; k < 14 && j.s5.faza === "sala"; k++) {
+      j.click5(j.ceas.t);
+      j.avanseazaUsor(120);
+    }
+    egal(j.s5.faza, "viu", "cei zece pasi inapoi n-au trezit tabloul");
+    const g = j.geomTabloului();
+    j.cursor.x = g.x + j.TARANI[0].x * g.lat;
+    j.cursor.y = g.y + j.TARANI[0].y * g.inalt - 4;
+    j.click5(j.ceas.t);
+    egal(j.s5.faza, "casa", "atinsi, taranii n-au plecat spre casa");
+    return g;
+  }
+
+  test("cat merg oamenii spre casa, atingerea ii grabeste", function () {
+    /* Aici era un blocaj: dupa ce ii atingeai, drumul lor pana la usa tinea doua
+       secunde si jumatate, iar usile se deschideau in inca una si ceva. Aproape
+       patru secunde in care apasai oriunde si nu se intampla nimic. Scena nu era
+       stricata; incetase sa raspunda — iar din afara arata la fel, si e mai rau:
+       la o scena stricata te lasi, la una tacuta apesi intruna. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = pleacaTaranii(j);
+    const inainte = j.s5.plecare;
+    j.cursor.x = g.x + g.lat * 0.5; j.cursor.y = g.y + g.inalt * 0.5;
+    j.click5(j.ceas.t);
+    adevarat(j.s5.plecare > inainte + 0.2,
+      "atingerea nu i-a grabit deloc: " + inainte + " -> " + j.s5.plecare);
+  });
+
+  test("dupa ce ii atingi, trei-patru atingeri deschid usa", function () {
+    /* Masura blocajului, in atingeri, nu in secunde: un jucator nerabdator
+       trebuie sa poata trece mai repede decat ceasul, si sa vada de fiecare data
+       ca a facut ceva. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = pleacaTaranii(j);
+    let apasari = 0;
+    while (j.s5.usi <= 0.75 && apasari < 12) {
+      j.cursor.x = g.x + g.lat * 0.5; j.cursor.y = g.y + g.inalt * 0.5;
+      j.click5(j.ceas.t);
+      apasari++;
+      j.avanseazaUsor(80);
+    }
+    adevarat(apasari <= 8, "au trebuit " + apasari + " atingeri ca sa se deschida usa");
+    j.cursor.x = g.x + g.lat * 0.5; j.cursor.y = g.y + g.inalt * 0.5;
+    j.click5(j.ceas.t);
+    egal(j.stare(), "foc", "usa deschisa nu duce in sala focului");
+  });
+
+  test("niciuna dintre atingeri nu ramane fara raspuns", function () {
+    /* Proba intreaga: din clipa in care taranii pleaca si pana cand usa se
+       deschide, **fiecare** atingere trebuie sa miste ceva. Testul se uita la
+       plecare, la usi si la stare — daca niciunul nu s-a clintit, atingerea a
+       cazut in gol, si acolo se naste senzatia de blocaj. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = pleacaTaranii(j);
+    for (let k = 0; k < 6; k++) {
+      const inainte = [j.s5.plecare, j.s5.usi, j.stare()];
+      j.cursor.x = g.x + g.lat * 0.5; j.cursor.y = g.y + g.inalt * 0.5;
+      j.click5(j.ceas.t);
+      const dupa = [j.s5.plecare, j.s5.usi, j.stare()];
+      adevarat(dupa[0] !== inainte[0] || dupa[1] !== inainte[1] || dupa[2] !== inainte[2],
+        "atingerea " + (k + 1) + " n-a facut nimic (plecare " + inainte[0] +
+        ", usi " + inainte[1] + ")");
+      if (j.stare() !== "campie") break;
+      j.avanseazaUsor(80);
+    }
+  });
+
+  test("cine asteapta in loc sa apese ajunge tot acolo", function () {
+    /* Graba e o scurtatura, nu o conditie. Cine se uita linistit cum pleaca
+       oamenii trebuie sa gaseasca usa deschisa la fel de bine. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = pleacaTaranii(j);
+    j.avanseazaUsor(9000);
+    adevarat(j.s5.usi > 0.75, "asteptand, usile nu s-au deschis: " + j.s5.usi);
+    j.cursor.x = g.x + g.lat * 0.5; j.cursor.y = g.y + g.inalt * 0.5;
+    j.click5(j.ceas.t);
+    egal(j.stare(), "foc", "usa deschisa singura nu duce in sala focului");
   });
 
   /* ---------------------------------------------------------------- */

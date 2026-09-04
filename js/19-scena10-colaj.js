@@ -27,6 +27,14 @@ const CARTON_MUCHIE = '#87683f';
 const ZIAR          = '#e0d3b0';
 const ZIAR_UMBRA    = '#c3b085';
 const CERNEALA      = '#463c2c';
+/* Cerneala fișelor e mult mai închisă decât restul scrisului de pe perete —
+   aproape neagră, cu un pic de brun ca să nu iasă din paleta caldă a sălii.
+
+   Restul e vechi și șters dinadins, și așa trebuie să rămână; dar sala e stinsă
+   într-o umbră sepia, iar un maro potrivit pe hârtie luminată se face ilizibil pe
+   hârtie în penumbră. Cele două definiții sunt singurele lucruri de pe perete
+   care trebuie **citite**, nu pipăite — deci n-au voie să fie și ele vechi. */
+const CERNEALA_FISA = '#150d04';
 const SFOARA        = '#9c8455';
 const SFOARA_UMBRA  = '#6d5a33';
 const OS            = '#e6d9bb';
@@ -315,16 +323,34 @@ function fisaScrisa(c, p, w, h) {
   c.save();
   /* Cerneala e ștearsă de vreme, dar nu atât încât să nu se citească. În sala asta
      totul e vechi — numai ce trebuie citit are voie să fie limpede. */
-  c.globalAlpha = 0.88;
+  /* O foaie palidă lipită sub scris. Cerneala aproape neagră se citește bine pe
+     hârtia de ziar, dar pe cartonul maro tot se îneacă — iar culoarea cartonului
+     nu se poate schimba, e chiar materia lui. Deci se lipește peste el o etichetă,
+     cum se face pe orice ladă: nu e un truc de citire, e felul în care oamenii au
+     scris dintotdeauna pe lucruri prea închise la culoare. */
+  const et = c.createLinearGradient(0, -h * 0.44, 0, h * 0.42);
+  et.addColorStop(0, '#f4ecd6');
+  et.addColorStop(1, '#e2d6b8');
+  c.globalAlpha = 0.90;
+  c.fillStyle = et;
+  conturRupt(c, w * 0.92, h * 0.86, p.sam * 1.7, 0.020);
+  c.fill();
+  c.globalAlpha = 0.30;
+  c.strokeStyle = '#7d6a44';
+  c.lineWidth = Math.max(0.8, Math.min(w, h) * 0.008);
+  conturRupt(c, w * 0.92, h * 0.86, p.sam * 1.7, 0.020);
+  c.stroke();
+
+  c.globalAlpha = 1;
   c.font = 'bold ' + Math.round(marime * 1.35) + 'px Georgia, serif';
-  c.fillStyle = CERNEALA;
+  c.fillStyle = CERNEALA_FISA;
   c.textAlign = 'left';
   c.textBaseline = 'top';
   c.fillText(p.titlu, -w * 0.40, -h * 0.38);
-  c.globalAlpha = 0.35;
+  c.globalAlpha = 0.55;
   c.fillRect(-w * 0.40, -h * 0.38 + marime * 1.7, w * 0.80, Math.max(1, h * 0.008));
-  c.globalAlpha = 0.86;
-  scrieCuvinte(c, p.scris, w * 0.80, marime, CERNEALA,
+  c.globalAlpha = 1;
+  scrieCuvinte(c, p.scris, w * 0.80, marime, CERNEALA_FISA,
                -w * 0.40, -h * 0.38 + marime * 2.5, marime * 1.34);
   c.restore();
 }
@@ -1160,11 +1186,6 @@ const SPOTURI = [
   { u: 0.66, v: 0.24, r: 0.22 },
   { u: 0.45, v: 0.70, r: 0.24 },
   { u: 0.85, v: 0.52, r: 0.20 },
-  /* Câte unul pe fiecare fișă. Sala e stinsă dinadins, ca să pipăi în loc să te
-     uiți — dar cele două definiții nu se pipăie, se citesc, deci ele au voie la
-     lumină fără să te ia nimeni de mână până la ele. */
-  { u: 0.128, v: 0.468, r: 0.19 },
-  { u: 0.872, v: 0.838, r: 0.19 }
 ];
 
 function pictezaLumina(c, acum) {
@@ -1191,6 +1212,26 @@ function pictezaLumina(c, acum) {
     g.addColorStop(1, 'rgba(120, 80, 30, 0)');
     c.fillStyle = g;
     c.fillRect(sp.u * W - r, sp.v * H - r, r * 2, r * 2);
+  }
+
+  /* Câte o pată de lumină pe fiecare bilet, **oriunde ar fi el**. Sala e stinsă
+     dinadins, ca să pipăi în loc să te uiți — dar cele două definiții nu se
+     pipăie, se citesc.
+
+     Întâi luminile astea stăteau la locuri scrise de mână, de pe când fișele erau
+     lipite pe perete. Când fișele au ajuns să atârne de sfoară — și să cadă de pe
+     ea — luminile au rămas să strălucească pe două bucăți de perete gol. Lumina
+     merge după ce trebuie văzut, nu după unde a fost pus cândva. */
+  for (const f of FISE_COLAJ) {
+    const loc = undeAtarnaBiletul(f, acum);
+    if (!loc) continue;
+    const r = S * 0.21;
+    const g = c.createRadialGradient(loc.x, loc.y, 0, loc.x, loc.y, r);
+    g.addColorStop(0, 'rgba(236, 190, 108, ' + (0.58 * cat).toFixed(3) + ')');
+    g.addColorStop(0.45, 'rgba(190, 138, 60, ' + (0.22 * cat).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(120, 80, 30, 0)');
+    c.fillStyle = g;
+    c.fillRect(loc.x - r, loc.y - r, r * 2, r * 2);
   }
 
   // lumina din palmă
