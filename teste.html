@@ -521,6 +521,8 @@ return {
   peClapa: typeof peClapa !== "undefined" ? peClapa : null,
   PIESE_PERETE: typeof PIESE_PERETE !== "undefined" ? PIESE_PERETE : null,
   DARE_CLEI: typeof DARE_CLEI !== "undefined" ? DARE_CLEI : null,
+  FISE_COLAJ: typeof FISE_COLAJ !== "undefined" ? FISE_COLAJ : null,
+  FUNDAL_COLAJ: typeof FUNDAL_COLAJ !== "undefined" ? FUNDAL_COLAJ : null,
   SPOTURI: typeof SPOTURI !== "undefined" ? SPOTURI : null,
   atelierulScena10: function () { return typeof atelierulScena10 !== "undefined" ? atelierulScena10 : null; },
   culorileSalii10: (function () {
@@ -4594,6 +4596,33 @@ function ruleaza() {
     adevarat(j.atelierulScena10() !== null, "in atelierul retro nu se aude nimic");
     j.iesiDinColaj(j.ceas.t);
     egal(j.atelierulScena10(), null, "atelierul a ramas sa toarca peste sala urmatoare");
+  });
+
+  test("pe perete stau lipite cele doua definitii, si se pot citi", function () {
+    /* In celelalte sali fisa sta intr-o caseta pe perete; aici sala **e** un
+       colaj, deci fisa se lipeste pe el ca orice altceva. Doua materii, doua
+       definitii — una pe hartie, una pe carton. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    adevarat(j.FISE_COLAJ !== null && j.FISE_COLAJ.length === 2, "lipsesc fisele");
+    const feluri = j.FISE_COLAJ.map(function (f) { return f.fel; });
+    adevarat(feluri.indexOf("ziar") >= 0 && feluri.indexOf("carton") >= 0,
+      "amandoua definitiile stau pe acelasi fel de material");
+    const tot = j.FISE_COLAJ.map(function (f) { return f.scris; }).join(" ");
+    adevarat(/Junk Art este un curent artistic/.test(tot), "lipseste definitia Junk Art");
+    adevarat(/Colajul este o tehnic/.test(tot), "lipseste definitia colajului");
+
+    /* Sforile trec peste tot ce e pe perete — dar o funie cazuta fix peste
+       mijlocul unui rand ineaca doua cuvinte, iar doua cuvinte lipsa dintr-o
+       definitie o fac de nefolosit. Deci fisele stau **intre** sfori. */
+    for (const f of j.FISE_COLAJ) {
+      const de = f.u - f.w * 0.42, pana = f.u + f.w * 0.42;
+      for (const p of j.s10.piese) {
+        if (p.fel !== "sfoara") continue;
+        adevarat(p.u < de || p.u > pana,
+          "sfoara de la " + p.u + " trece prin mijlocul fisei " + f.titlu);
+      }
+    }
   });
 
   test("in sala a zecea nu intra nicio culoare rece", function () {

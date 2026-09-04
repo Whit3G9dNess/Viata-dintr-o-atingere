@@ -62,21 +62,21 @@ const s10 = {
    grămadă de gunoi — care e altceva decât Junk Art, deși seamănă. */
 const PIESE_PERETE = [
   // ziare interbelice
-  { fel: 'ziar',    u: 0.115, v: 0.215, w: 0.225, h: 0.290, unghi: -0.13, sam: 11 },
-  { fel: 'ziar',    u: 0.640, v: 0.150, w: 0.205, h: 0.255, unghi:  0.16, sam: 23 },
-  { fel: 'ziar',    u: 0.400, v: 0.720, w: 0.245, h: 0.230, unghi: -0.07, sam: 37 },
+  { fel: 'ziar',    u: 0.120, v: 0.300, w: 0.255, h: 0.300, unghi: -0.38, sam: 11 },
+  { fel: 'ziar',    u: 0.615, v: 0.155, w: 0.230, h: 0.265, unghi:  0.42, sam: 23 },
+  { fel: 'ziar',    u: 0.430, v: 0.800, w: 0.270, h: 0.245, unghi: -0.16, sam: 37 },
   // carton ondulat
-  { fel: 'carton',  u: 0.320, v: 0.180, w: 0.255, h: 0.310, unghi:  0.08, sam: 51 },
-  { fel: 'carton',  u: 0.845, v: 0.480, w: 0.235, h: 0.350, unghi: -0.10, sam: 67 },
-  { fel: 'carton',  u: 0.130, v: 0.680, w: 0.230, h: 0.290, unghi:  0.12, sam: 83 },
+  { fel: 'carton',  u: 0.340, v: 0.185, w: 0.295, h: 0.345, unghi:  0.19, sam: 51 },
+  { fel: 'carton',  u: 0.860, v: 0.505, w: 0.255, h: 0.400, unghi: -0.31, sam: 67 },
+  { fel: 'carton',  u: 0.110, v: 0.705, w: 0.250, h: 0.320, unghi:  0.52, sam: 83 },
   // sfori de cânepă, întinse de sus până jos
   { fel: 'sfoara',  u: 0.245, v: 0.5, w: 0.0130, h: 1, unghi: 0, sam: 97 },
   { fel: 'sfoara',  u: 0.545, v: 0.5, w: 0.0155, h: 1, unghi: 0, sam: 109 },
   { fel: 'sfoara',  u: 0.735, v: 0.5, w: 0.0115, h: 1, unghi: 0, sam: 127 },
-  // nasturi de os și de lemn
-  { fel: 'nasturi', u: 0.475, v: 0.395, w: 0.125, h: 0.125, unghi: 0, sam: 139 },
-  { fel: 'nasturi', u: 0.665, v: 0.760, w: 0.115, h: 0.115, unghi: 0, sam: 151 },
-  { fel: 'nasturi', u: 0.905, v: 0.170, w: 0.105, h: 0.105, unghi: 0, sam: 167 }
+  // nasturi de os, de corn și de lemn
+  { fel: 'nasturi', u: 0.490, v: 0.405, w: 0.135, h: 0.135, unghi: 0, sam: 139 },
+  { fel: 'nasturi', u: 0.700, v: 0.775, w: 0.120, h: 0.120, unghi: 0, sam: 151 },
+  { fel: 'nasturi', u: 0.915, v: 0.155, w: 0.110, h: 0.110, unghi: 0, sam: 167 }
 ];
 
 /* Straturile de dedesubt: bucăți cu care nu ai ce face, lipite acolo înainte de
@@ -85,17 +85,26 @@ const PIESE_PERETE = [
    Cu numai douăsprezece bucăți pe perete, fiecare lucru pe care îl vezi e un
    lucru de făcut, iar peretele se citește ca o listă de butoane. Un asamblaj
    stratificat are **mai mult decât poți atinge**: asta îl face vechi, și asta te
-   face să-l cercetezi cu mâna în loc să-l bifezi cu ochiul. */
+   face să-l cercetezi cu mâna în loc să-l bifezi cu ochiul.
+
+   Așezarea lor e ce deosebește un colaj de un avizier. Întâi le pusesem pe toate
+   cam drepte și cam de o mărime, și ieșea un panou de afișe: rânduri, coloane,
+   ochiul se plimba cuminte. Junk Art înseamnă altceva — bucăți de mărimi care nu
+   se aseamănă, întoarse care încotro, unele fâșii înguste, unele lespezi
+   întregi, călcându-se una pe alta și lăsând între ele crăpături întunecate. */
 const FUNDAL_COLAJ = [
-  { fel: 'carton', u: 0.075, v: 0.400, w: 0.230, h: 0.330, unghi:  0.22, sam: 211 },
-  { fel: 'ziar',   u: 0.255, v: 0.470, w: 0.190, h: 0.240, unghi: -0.26, sam: 223 },
-  { fel: 'carton', u: 0.520, v: 0.290, w: 0.290, h: 0.240, unghi: -0.05, sam: 227 },
-  { fel: 'ziar',   u: 0.790, v: 0.760, w: 0.230, h: 0.250, unghi:  0.19, sam: 229 },
-  { fel: 'carton', u: 0.620, v: 0.560, w: 0.250, h: 0.300, unghi:  0.14, sam: 233 },
-  { fel: 'ziar',   u: 0.930, v: 0.360, w: 0.180, h: 0.290, unghi: -0.20, sam: 239 },
-  { fel: 'carton', u: 0.200, v: 0.060, w: 0.260, h: 0.200, unghi: -0.16, sam: 241 },
-  { fel: 'ziar',   u: 0.560, v: 0.940, w: 0.210, h: 0.200, unghi:  0.09, sam: 251 },
-  { fel: 'carton', u: 0.040, v: 0.930, w: 0.230, h: 0.220, unghi: -0.12, sam: 257 }
+  { fel: 'carton', u: 0.065, v: 0.430, w: 0.265, h: 0.385, unghi:  0.62, sam: 211 },
+  { fel: 'ziar',   u: 0.270, v: 0.520, w: 0.230, h: 0.115, unghi: -0.58, sam: 223 },
+  { fel: 'carton', u: 0.520, v: 0.300, w: 0.345, h: 0.220, unghi: -0.11, sam: 227 },
+  { fel: 'ziar',   u: 0.805, v: 0.825, w: 0.265, h: 0.285, unghi:  0.35, sam: 229 },
+  { fel: 'carton', u: 0.635, v: 0.600, w: 0.285, h: 0.350, unghi:  0.24, sam: 233 },
+  { fel: 'ziar',   u: 0.955, v: 0.340, w: 0.200, h: 0.345, unghi: -0.45, sam: 239 },
+  { fel: 'carton', u: 0.205, v: 0.040, w: 0.310, h: 0.215, unghi: -0.29, sam: 241 },
+  { fel: 'ziar',   u: 0.575, v: 0.965, w: 0.250, h: 0.130, unghi:  0.15, sam: 251 },
+  { fel: 'carton', u: 0.020, v: 0.955, w: 0.265, h: 0.240, unghi: -0.21, sam: 257 },
+  { fel: 'carton', u: 0.405, v: 0.045, w: 0.130, h: 0.310, unghi:  0.33, sam: 263 },
+  { fel: 'ziar',   u: 0.745, v: 0.425, w: 0.165, h: 0.310, unghi:  0.51, sam: 269 },
+  { fel: 'carton', u: 0.905, v: 0.955, w: 0.220, h: 0.200, unghi: -0.40, sam: 271 }
 ];
 
 /* Dârele de clei dintre bucăți. Nu leagă nimic în cod — cleiul nu ține piesele
@@ -110,6 +119,68 @@ const DARE_CLEI = [
   [0.78, 0.30, 0.86, 0.38],
   [0.50, 0.74, 0.62, 0.70]
 ];
+
+/* Cele două fișe de sală. În celelalte săli textul stă într-o casetă pe perete;
+   aici n-ar avea unde, și n-ar avea de ce: sala **e** un colaj, deci fișa se lipește
+   pe el ca orice altceva, pe câte o bucată a ei. Una pe hârtie, una pe carton —
+   două materii, două definiții.
+
+   Se pun ultimele, peste tot restul: sunt singurele bucăți de pe perete care
+   trebuie **citite**, iar un text pe jumătate acoperit nu e un text. */
+const TEXT_JUNK = 'Junk Art este un curent artistic care folosește obiecte și ' +
+  'materiale uzate sau aruncate pentru a crea opere de artă.';
+const TEXT_COLAJ = 'Colajul este o tehnică artistică prin care se combină și se ' +
+  'lipesc pe o suprafață diferite materiale, imagini sau fragmente pentru a forma ' +
+  'o compoziție nouă.';
+
+/* Așezate **între sfori**, nu sub ele. Sforile trec peste tot ce e pe perete, și
+   așa și trebuie — dar o funie groasă căzută fix peste mijlocul unui rând îneacă
+   două cuvinte, iar două cuvinte lipsă dintr-o definiție o fac de nefolosit. */
+const FISE_COLAJ = [
+  { fel: 'ziar',   u: 0.128, v: 0.468, w: 0.272, h: 0.218, unghi: -0.10, sam: 301,
+    titlu: 'JUNK ART', scris: TEXT_JUNK },
+  { fel: 'carton', u: 0.872, v: 0.838, w: 0.258, h: 0.222, unghi:  0.07, sam: 313,
+    titlu: 'COLAJUL',  scris: TEXT_COLAJ }
+];
+
+/* Scrisul de pe o bucată, îndoit pe lățimea ei. Nu se poate folosi `textIncadrat`
+   al muzeului: acela scrie pe pânza de pe ecran, iar aici scriem pe ștampila
+   peretelui, în sistemul răsucit al bucății. */
+function scrieCuvinte(c, text, latMax, marime, culoare, x, y, hLinie) {
+  c.font = Math.round(marime) + 'px Georgia, serif';
+  c.fillStyle = culoare;
+  c.textAlign = 'left';
+  c.textBaseline = 'top';
+  const cuv = text.split(' ');
+  let linie = '', yy = y;
+  for (const cv of cuv) {
+    const proba = linie ? linie + ' ' + cv : cv;
+    if (c.measureText(proba).width > latMax && linie) {
+      c.fillText(linie, x, yy); linie = cv; yy += hLinie;
+    } else linie = proba;
+  }
+  if (linie) c.fillText(linie, x, yy);
+  return yy + hLinie;
+}
+
+function fisaScrisa(c, p, w, h) {
+  const marime = Math.max(8, Math.min(w, h) * 0.082);
+  c.save();
+  /* Cerneala e ștearsă de vreme, dar nu atât încât să nu se citească. În sala asta
+     totul e vechi — numai ce trebuie citit are voie să fie limpede. */
+  c.globalAlpha = 0.88;
+  c.font = 'bold ' + Math.round(marime * 1.35) + 'px Georgia, serif';
+  c.fillStyle = CERNEALA;
+  c.textAlign = 'left';
+  c.textBaseline = 'top';
+  c.fillText(p.titlu, -w * 0.40, -h * 0.38);
+  c.globalAlpha = 0.35;
+  c.fillRect(-w * 0.40, -h * 0.38 + marime * 1.7, w * 0.80, Math.max(1, h * 0.008));
+  c.globalAlpha = 0.86;
+  scrieCuvinte(c, p.scris, w * 0.80, marime, CERNEALA,
+               -w * 0.40, -h * 0.38 + marime * 2.5, marime * 1.34);
+  c.restore();
+}
 
 function pregatestePiesele() {
   s10.piese = PIESE_PERETE.map(function (p, i) {
@@ -288,6 +359,8 @@ function bucataDeZiar(c, p, w, h) {
   }
   c.globalAlpha = 1;
 
+  if (p.scris) { c.restore(); return; }    // pe fișe se scrie altceva, mai încolo
+
   // titlul, gros și scurt
   c.fillStyle = CERNEALA;
   c.fillRect(-w * 0.40, -h * 0.40, w * 0.72, h * 0.055);
@@ -416,72 +489,167 @@ function bucataDeCarton(c, p, w, h) {
 /* Un pâlc de nasturi, cusuți grosolan. Unii de os (deschiși, cu patru găuri),
    alții de lemn (închiși, cu două). Ața trecută prin ei se vede — cusutul
    grosolan e chiar ce cere Arte Povera: se vede cum a fost făcut. */
+/* Un nasture adevărat, după cele de os și de corn din cutia bunicii.
+
+   Un cerc cu două găuri nu e un nasture, e un semn de nasture. Ce-l face lucru
+   sunt patru amănunte, și toate patru se văd și de departe:
+
+   - **rama ridicată** și, înăuntrul ei, o **adâncitură** în care stau găurile.
+     Asta dă grosime: un nasture e o farfurioară, nu o rondelă.
+   - **vărgatura** materiei. Osul și cornul au straturi, iar straturile se văd ca
+     niște dungi curbate care traversează nasturele dintr-o parte în alta —
+     niciodată concentrice.
+   - **luciul**, o singură pată, sus la stânga, fiindcă lumina vine de acolo.
+   - **găurile cu adâncime**: buza de sus întunecată, cea de jos luminată. O gaură
+     desenată ca un punct negru arată a pată, nu a gaură. */
+const FELURI_NASTURE = [
+  { nume: 'os',    fata: '#efe5cc', umbra: '#bdae8b', dunga: '#d6c69f', gauri: 4 },
+  { nume: 'corn',  fata: '#c9b48c', umbra: '#7b6440', dunga: '#8f7a52', gauri: 4 },
+  { nume: 'corn2', fata: '#8e8578', umbra: '#4a4338', dunga: '#635a4b', gauri: 2 },
+  { nume: 'lemn',  fata: '#9d7a4c', umbra: '#5b4324', dunga: '#7a5c33', gauri: 2 },
+  { nume: 'sidef', fata: '#e8e2d4', umbra: '#a9a394', dunga: '#cfc7b4', gauri: 4 }
+];
+
+function unNasture(c, x, y, r, fel, sam, luminat) {
+  const F = FELURI_NASTURE[fel % FELURI_NASTURE.length];
+  const turtit = 0.92 + samanta(sam * 3.7) * 0.08;
+
+  c.save();
+  c.translate(x, y);
+  c.rotate((samanta(sam * 5.3) - 0.5) * 2);
+  c.scale(1, turtit);
+
+  // umbra pe care o aruncă pe pânză
+  c.globalAlpha = 0.34;
+  c.fillStyle = '#241a08';
+  c.beginPath();
+  c.ellipse(r * 0.14, r * 0.18, r * 1.03, r * 1.03, 0, 0, Math.PI * 2);
+  c.fill();
+  c.globalAlpha = 1;
+
+  // corpul, cu rama mai luminată sus-stânga
+  const corp = c.createLinearGradient(-r * 0.7, -r * 0.7, r * 0.8, r * 0.8);
+  corp.addColorStop(0, amesteca(F.fata, '#ffffff', 0.28));
+  corp.addColorStop(0.45, F.fata);
+  corp.addColorStop(1, F.umbra);
+  c.fillStyle = corp;
+  c.beginPath();
+  c.arc(0, 0, r, 0, Math.PI * 2);
+  c.fill();
+
+  // vărgatura materiei: dungi curbate, dintr-o margine în cealaltă
+  c.save();
+  c.beginPath();
+  c.arc(0, 0, r * 0.99, 0, Math.PI * 2);
+  c.clip();
+  const unV = samanta(sam * 7.1) * Math.PI;
+  c.rotate(unV);
+  for (let k = 0; k < 9; k++) {
+    const z = samanta(sam * 11.3 + k * 3.1);
+    c.globalAlpha = 0.10 + z * 0.26;
+    c.strokeStyle = z > 0.5 ? F.dunga : amesteca(F.umbra, '#000000', 0.2);
+    c.lineWidth = r * (0.05 + z * 0.16);
+    c.beginPath();
+    const y0 = (k / 8 - 0.5) * r * 2.1;
+    c.moveTo(-r * 1.1, y0);
+    c.quadraticCurveTo(0, y0 + (z - 0.5) * r * 0.5, r * 1.1, y0 + (z - 0.5) * r * 0.3);
+    c.stroke();
+  }
+  c.restore();
+
+  // rama: un inel mai închis și, înăuntru, adâncitura
+  c.globalAlpha = 0.55;
+  c.strokeStyle = amesteca(F.umbra, '#000000', 0.25);
+  c.lineWidth = Math.max(0.7, r * 0.06);
+  c.beginPath();
+  c.arc(0, 0, r * 0.97, 0, Math.PI * 2);
+  c.stroke();
+
+  const groapa = c.createRadialGradient(-r * 0.2, -r * 0.24, 0, 0, 0, r * 0.72);
+  groapa.addColorStop(0, amesteca(F.fata, '#000000', 0.10));
+  groapa.addColorStop(0.75, amesteca(F.fata, '#000000', 0.02));
+  groapa.addColorStop(1, amesteca(F.umbra, '#000000', 0.12));
+  c.globalAlpha = 0.75;
+  c.fillStyle = groapa;
+  c.beginPath();
+  c.arc(0, 0, r * 0.70, 0, Math.PI * 2);
+  c.fill();
+  c.globalAlpha = 0.5;
+  c.strokeStyle = amesteca(F.umbra, '#000000', 0.35);
+  c.lineWidth = Math.max(0.6, r * 0.05);
+  c.beginPath();
+  c.arc(0, 0, r * 0.70, 0, Math.PI * 2);
+  c.stroke();
+  c.globalAlpha = 0.4;
+  c.strokeStyle = amesteca(F.fata, '#ffffff', 0.5);
+  c.beginPath();
+  c.arc(0, 0, r * 0.66, Math.PI * 0.15, Math.PI * 0.85);
+  c.stroke();
+
+  // găurile, cu adâncime
+  c.globalAlpha = 1;
+  const gr = r * 0.135, de = r * 0.30;
+  for (let q = 0; q < F.gauri; q++) {
+    const un = (q / F.gauri) * Math.PI * 2 + (F.gauri === 2 ? 0 : Math.PI / 4);
+    const gx = Math.cos(un) * de, gy = Math.sin(un) * de;
+    c.fillStyle = amesteca(F.umbra, '#000000', 0.55);
+    c.beginPath();
+    c.arc(gx, gy, gr, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = amesteca(F.fata, '#ffffff', 0.45);
+    c.lineWidth = Math.max(0.5, gr * 0.30);
+    c.beginPath();
+    c.arc(gx, gy, gr * 0.9, Math.PI * 0.15, Math.PI * 0.85);
+    c.stroke();
+    c.strokeStyle = 'rgba(0,0,0,0.45)';
+    c.beginPath();
+    c.arc(gx, gy, gr * 0.9, Math.PI * 1.15, Math.PI * 1.85);
+    c.stroke();
+  }
+
+  // luciul: o singură pată, sus la stânga
+  const lum = c.createRadialGradient(-r * 0.44, -r * 0.48, 0, -r * 0.44, -r * 0.48, r * 0.62);
+  lum.addColorStop(0, 'rgba(255,255,255,0.55)');
+  lum.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = lum;
+  c.beginPath();
+  c.arc(0, 0, r, 0, Math.PI * 2);
+  c.fill();
+
+  if (luminat) {
+    c.globalCompositeOperation = 'lighter';
+    c.globalAlpha = luminat * 0.55;
+    c.fillStyle = OCRU_CALD;
+    c.beginPath();
+    c.arc(0, 0, r * 0.75, 0, Math.PI * 2);
+    c.fill();
+  }
+  c.restore();
+}
+
+/* Un pâlc de nasturi, cusuți grosolan: mărimi și materii amestecate, unii peste
+   alții, cu ața trecută pe sub ei și prin găuri. Cusutul grosolan e chiar ce cere
+   Arte Povera: se vede cum a fost făcut. */
 function palcDeNasturi(c, p, w, h, luminat) {
   const cate = 5 + (p.sam % 3);
   for (let k = 0; k < cate; k++) {
     const a = samanta(p.sam * 3.7 + k * 5.3), b = samanta(p.sam * 8.9 + k * 3.1);
     const e = samanta(p.sam * 13.1 + k * 7.7);
-    const x = (a - 0.5) * w * 0.9, y = (b - 0.5) * h * 0.9;
-    const r = Math.min(w, h) * (0.15 + e * 0.13);
-    const deOs = e > 0.45;
+    const x = (a - 0.5) * w * 0.86, y = (b - 0.5) * h * 0.86;
+    const r = Math.min(w, h) * (0.13 + e * 0.15);
 
     // ața, întâi: trece pe sub nasture
     c.strokeStyle = '#6b5a35';
-    c.globalAlpha = 0.7;
-    c.lineWidth = Math.max(0.8, r * 0.14);
-    c.beginPath();
-    c.moveTo(x - r * 2.2, y + r * (a - 0.5) * 2);
-    c.lineTo(x + r * 2.0, y + r * (b - 0.5) * 2);
-    c.stroke();
-
-    c.globalAlpha = 1;
-    const corp = c.createRadialGradient(x - r * 0.3, y - r * 0.35, 0, x, y, r);
-    corp.addColorStop(0, deOs ? '#f2e9d2' : '#9a744a');
-    corp.addColorStop(0.7, deOs ? OS : LEMN);
-    corp.addColorStop(1, deOs ? '#c4b58f' : '#5b4324');
-    c.fillStyle = corp;
-    c.beginPath();
-    c.arc(x, y, r, 0, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = deOs ? '#b0a075' : '#4a3519';
-    c.lineWidth = Math.max(0.7, r * 0.09);
-    c.stroke();
-
-    // adâncitura din mijloc și găurile
-    c.globalAlpha = 0.35;
-    c.beginPath();
-    c.arc(x, y, r * 0.66, 0, Math.PI * 2);
-    c.stroke();
-    c.globalAlpha = 1;
-    c.fillStyle = deOs ? '#7d7050' : '#2e2110';
-    const gauri = deOs ? 4 : 2;
-    for (let q = 0; q < gauri; q++) {
-      const un = (q / gauri) * Math.PI * 2 + (gauri === 2 ? 0 : Math.PI / 4);
-      c.beginPath();
-      c.arc(x + Math.cos(un) * r * 0.3, y + Math.sin(un) * r * 0.3, r * 0.12, 0, Math.PI * 2);
-      c.fill();
-    }
-    // ața peste el, prin găuri
-    c.strokeStyle = '#7a6840';
+    c.globalAlpha = 0.75;
     c.lineWidth = Math.max(0.8, r * 0.13);
     c.beginPath();
-    if (gauri === 2) {
-      c.moveTo(x - r * 0.3, y); c.lineTo(x + r * 0.3, y);
-    } else {
-      c.moveTo(x - r * 0.21, y - r * 0.21); c.lineTo(x + r * 0.21, y + r * 0.21);
-      c.moveTo(x + r * 0.21, y - r * 0.21); c.lineTo(x - r * 0.21, y + r * 0.21);
-    }
+    c.moveTo(x - r * 2.4, y + r * (a - 0.5) * 2.2);
+    c.lineTo(x + r * 2.2, y + r * (b - 0.5) * 2.2);
     c.stroke();
+    c.globalAlpha = 1;
 
-    if (luminat) {
-      c.save();
-      c.globalAlpha = luminat * 0.8;
-      c.fillStyle = OCRU_CALD;
-      c.beginPath();
-      c.arc(x, y, r * 0.34, 0, Math.PI * 2);
-      c.fill();
-      c.restore();
-    }
+    unNasture(c, x, y, r, Math.floor(e * FELURI_NASTURE.length),
+              p.sam * 17 + k * 29, luminat);
   }
   c.globalAlpha = 1;
 }
@@ -751,6 +919,15 @@ function pregatestePeretele() {
     if (pi.fel === 'sfoara') continue;              // sforile se mișcă, stau deasupra
     puneBucata(pi, 1);
   }
+  for (const pi of FISE_COLAJ) {
+    puneBucata(pi, 1);
+    const cut = cutiaPiesei(pi);
+    c.save();
+    c.translate(cut.cx, cut.cy);
+    c.rotate(pi.unghi);
+    fisaScrisa(c, pi, cut.w, cut.h);
+    c.restore();
+  }
   c.globalAlpha = 1;
 
   // cleiul peste tot, la urmă: el e ce s-a pus ultimul
@@ -776,7 +953,12 @@ const SPOTURI = [
   { u: 0.20, v: 0.30, r: 0.26 },
   { u: 0.66, v: 0.24, r: 0.22 },
   { u: 0.45, v: 0.70, r: 0.24 },
-  { u: 0.85, v: 0.52, r: 0.20 }
+  { u: 0.85, v: 0.52, r: 0.20 },
+  /* Câte unul pe fiecare fișă. Sala e stinsă dinadins, ca să pipăi în loc să te
+     uiți — dar cele două definiții nu se pipăie, se citesc, deci ele au voie la
+     lumină fără să te ia nimeni de mână până la ele. */
+  { u: 0.128, v: 0.468, r: 0.19 },
+  { u: 0.872, v: 0.838, r: 0.19 }
 ];
 
 function pictezaLumina(c, acum) {
@@ -828,38 +1010,69 @@ function increteste(c, p, cut, cat) {
   c.save();
   c.translate(cut.cx, cut.cy);
   c.rotate(p.unghi);
-  const w = cut.w * (1 - q * 0.07), h = cut.h * (1 - q * 0.07);
+  const w = cut.w, h = cut.h;
   conturRupt(c, w, h, p.sam);
   c.clip();
 
-  c.lineCap = 'round';
-  for (let k = 0; k < 16; k++) {
-    const a = samanta(p.sam * 17.3 + k * 3.1), b = samanta(p.sam * 5.9 + k * 7.7);
-    const un = a * Math.PI * 2;
-    const lung = Math.max(w, h) * (0.3 + b * 0.55);
-    const x0 = (a - 0.5) * w * 0.4, y0 = (b - 0.5) * h * 0.4;
-    const x1 = x0 + Math.cos(un) * lung, y1 = y0 + Math.sin(un) * lung;
-    const gros = Math.max(1, Math.min(w, h) * 0.014);
+  /* Hârtia mototolită nu e hârtie cu niște linii pe ea: e hârtie **făcută din
+     fețe**. Când o strângi în pumn, coala se rupe în zeci de bucăți plate, fiecare
+     întoarsă în altă parte, deci fiecare prinzând altfel lumina. De-aia un ghem de
+     hârtie se cunoaște dintr-o privire, chiar și alb pe alb: nu după cute, ci după
+     **pete de lumină cu muchii drepte**, lipite una de alta.
 
-    c.globalAlpha = q * (0.30 + b * 0.25);
-    c.strokeStyle = '#fdf6dd';
-    c.lineWidth = gros;
-    c.beginPath();
-    c.moveTo(x0, y0);
-    c.quadraticCurveTo((x0 + x1) / 2 + (b - 0.5) * lung * 0.3,
-                       (y0 + y1) / 2 + (a - 0.5) * lung * 0.3, x1, y1);
-    c.stroke();
+     Întâi îi desenasem numai cutele — dungi albe și întunecate peste foaie — și
+     rămânea o foaie zârghiită, nu una mototolită. */
+  const FETE = 26;
+  for (let k = 0; k < FETE; k++) {
+    const a = samanta(p.sam * 17.3 + k * 3.1);
+    const b = samanta(p.sam * 5.9 + k * 7.7);
+    const e = samanta(p.sam * 11.1 + k * 5.3);
+    const f = samanta(p.sam * 23.7 + k * 2.9);
 
-    c.globalAlpha = q * (0.26 + a * 0.22);
-    c.strokeStyle = '#5a4a29';
-    c.lineWidth = gros * 0.9;
+    // mijlocul feței, strâns spre centru pe măsură ce se mototolește
+    const mx = (a - 0.5) * w * (0.94 - q * 0.16);
+    const my = (b - 0.5) * h * (0.94 - q * 0.16);
+    const raza = Math.min(w, h) * (0.12 + e * 0.20);
+
     c.beginPath();
-    c.moveTo(x0 + gros, y0 + gros);
-    c.quadraticCurveTo((x0 + x1) / 2 + (b - 0.5) * lung * 0.3 + gros,
-                       (y0 + y1) / 2 + (a - 0.5) * lung * 0.3 + gros,
-                       x1 + gros, y1 + gros);
+    for (let v = 0; v < 5; v++) {
+      const un = (v / 5) * Math.PI * 2 + f * 6.28;
+      const rr = raza * (0.55 + samanta(p.sam * 3.3 + k * 13 + v * 7) * 0.95);
+      const px = mx + Math.cos(un) * rr, py = my + Math.sin(un) * rr;
+      if (v === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath();
+
+    /* Fața e cu atât mai luminată cu cât e „întoarsă" mai spre lumină. Lumina vine
+       din stânga sus, ca peste tot în sala asta, deci fețele din stânga sus sunt
+       cele deschise. Dacă le-aș fi luminat la întâmplare, ar fi ieșit un camuflaj. */
+    const spreLumina = 0.5 - (mx / w + my / h) * 0.55;
+    const catre = spreLumina + (e - 0.5) * 0.5;
+    /* Fețele se pun aproape opac. Puse străvezii, se vedeau ca un contur de
+       sârmă peste ziarul întins — hârtia rămânea plată și deasupra ei plutea o
+       plasă de poligoane. O foaie mototolită nu lasă să se vadă prin ea. */
+    c.globalAlpha = q * (0.78 + f * 0.22);
+    c.fillStyle = catre > 0.5 ? amesteca(ZIAR, '#fffdf2', Math.min(1, (catre - 0.5) * 1.9))
+                              : amesteca(ZIAR_UMBRA, '#4a3d22', Math.min(1, (0.5 - catre) * 1.5));
+    c.fill();
+
+    // muchia feței: cuta propriu-zisă, o dungă subțire de lumină
+    c.globalAlpha = q * (0.18 + e * 0.24);
+    c.strokeStyle = f > 0.5 ? 'rgba(255, 250, 232, 0.9)' : 'rgba(70, 58, 32, 0.75)';
+    c.lineWidth = Math.max(0.6, Math.min(w, h) * 0.005);
     c.stroke();
   }
+
+  /* Umbra strânsă pe la margini: ghemul s-a micșorat, iar hârtia de sub el a rămas
+     în umbra lui. Fără asta, mototoleala plutește deasupra foii întinse. */
+  c.globalAlpha = q * 0.5;
+  const rama = c.createRadialGradient(0, 0, Math.min(w, h) * 0.3,
+                                      0, 0, Math.max(w, h) * 0.62);
+  rama.addColorStop(0, 'rgba(40, 30, 14, 0)');
+  rama.addColorStop(1, 'rgba(40, 30, 14, 0.75)');
+  c.fillStyle = rama;
+  c.fillRect(-w / 2, -h / 2, w, h);
+  c.globalAlpha = 1;
   c.restore();
 }
 
@@ -1184,7 +1397,10 @@ function pornestePiesa(p, acum) {
   p.zvac = 1;
 
   if (p.fel === 'ziar') {
-    p.incretit = Math.min(1, p.incretit + 0.55);
+    /* Un clic mototolește foaia **de tot**. Întâi adăuga jumătate, iar cine atingea
+       o dată vedea o hârtie pe jumătate strânsă și n-avea de unde ști că mai are de
+       apăsat: piesa se și aprindea la prima atingere. Ce se aprinde e gata. */
+    p.incretit = Math.max(p.incretit, 0.001);
     if (audio) {
       sunetFosnetHartie();
       /* Știrea vine numai o dată de fiecare bucată de ziar, și numai dacă n-a
@@ -1310,6 +1526,10 @@ function actualizeazaColaj(acum) {
 
   for (const p of s10.piese) {
     if (p.zvac > 0) p.zvac = Math.max(0, p.zvac - dt / 420);
+    // hârtia atinsă se strânge în vreo jumătate de secundă, nu dintr-un cadru
+    if (p.fel === 'ziar' && p.incretit > 0 && p.incretit < 1) {
+      p.incretit = Math.min(1, p.incretit + dt / 480);
+    }
     if (p.fel === 'sfoara' && s10.sfoaraInMana !== p.i) {
       p.arc += (p.arcTinta - p.arc) * Math.min(1, dt / 90);
     }
