@@ -504,6 +504,29 @@ return {
   PUNCTE_FOAIE: typeof PUNCTE_FOAIE !== "undefined" ? PUNCTE_FOAIE : null,
   OCHIURI_FOAIE: typeof OCHIURI_FOAIE !== "undefined" ? OCHIURI_FOAIE : null,
   ploaiaScena9: function () { return typeof ploaiaScena9 !== "undefined" ? ploaiaScena9 : null; },
+
+  s10: typeof s10 !== "undefined" ? s10 : null,
+  intraInColaj: typeof intraInColaj !== "undefined" ? intraInColaj : null,
+  iesiDinColaj: typeof iesiDinColaj !== "undefined" ? iesiDinColaj : null,
+  click10: typeof click10 !== "undefined" ? click10 : null,
+  trageDeScena10: typeof trageDeScena10 !== "undefined" ? trageDeScena10 : null,
+  actualizeazaColaj: typeof actualizeazaColaj !== "undefined" ? actualizeazaColaj : null,
+  deseneazaScena10: typeof deseneazaScena10 !== "undefined" ? deseneazaScena10 : null,
+  piesaDeSub: typeof piesaDeSub !== "undefined" ? piesaDeSub : null,
+  cutiaPiesei: typeof cutiaPiesei !== "undefined" ? cutiaPiesei : null,
+  liniaSforii: typeof liniaSforii !== "undefined" ? liniaSforii : null,
+  pregatestePeretele: typeof pregatestePeretele !== "undefined" ? pregatestePeretele : null,
+  cursorulScenei10: typeof cursorulScenei10 !== "undefined" ? cursorulScenei10 : null,
+  peClapa: typeof peClapa !== "undefined" ? peClapa : null,
+  PIESE_PERETE: typeof PIESE_PERETE !== "undefined" ? PIESE_PERETE : null,
+  DARE_CLEI: typeof DARE_CLEI !== "undefined" ? DARE_CLEI : null,
+  SPOTURI: typeof SPOTURI !== "undefined" ? SPOTURI : null,
+  atelierulScena10: function () { return typeof atelierulScena10 !== "undefined" ? atelierulScena10 : null; },
+  culorileSalii10: (function () {
+    if (typeof IUTA === "undefined") return null;
+    return { IUTA, IUTA_UMBRA, CARTON, CARTON_FATA, CARTON_MUCHIE, ZIAR, ZIAR_UMBRA,
+             CERNEALA, SFOARA, SFOARA_UMBRA, OS, LEMN, CLEI, SEPIA, OCRU_CALD };
+  })(),
   vinilScena9: function () { return typeof vinilScena9 !== "undefined" ? vinilScena9 : null; },
   actualizeazaUleiul: typeof actualizeazaUleiul !== "undefined" ? actualizeazaUleiul : null,
   stratul: typeof stratul !== "undefined" ? stratul : null,
@@ -2416,6 +2439,8 @@ function ruleaza() {
        verificat aici, în testul care umblă tot drumul: e singurul loc din suită
        care ar prinde o sală adăugată fără ieșire. */
     j.iesiDinAcuarela(j.ceas.t);
+    egal(j.stare(), "colaj", "ziarul nu duce în sala a zecea");
+    j.iesiDinColaj(j.ceas.t);
     adevarat(j.s3.vizitat, "galeria prin care am trecut n-a rămas însemnată");
   });
 
@@ -4285,6 +4310,275 @@ function ruleaza() {
     inAcuarela(j);
     j.iesiDinAcuarela(j.ceas.t);
     egal(j.ploaiaScena9(), null, "ploaia a ramas sa cada peste sala urmatoare");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a zecea: memoria obiectelor, si peretele care se destrama");
+
+  function inColaj(j) {
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    j.avanseazaUsor(4000);       // trece scrisul la masina si stinsul luminii
+    return j.s10;
+  }
+
+  function atinge10(j, x, y) {
+    j.cursor.x = x; j.cursor.y = y;
+    j.click10(j.ceas.t);
+  }
+
+  // porneste o piesa, indiferent de fel: la sfori se trage, la restul se apasa
+  function porneste10(j, p) {
+    const c = j.cutiaPiesei(p);
+    if (p.fel === "sfoara") {
+      atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+      j.cursor.apasat = true;
+      j.cursor.x = p.u * j.W() + j.W() * 0.14;
+      j.trageDeScena10();
+      j.cursor.apasat = false;
+      j.trageDeScena10();
+    } else {
+      atinge10(j, c.cx, c.cy);
+    }
+  }
+
+  function porneste10Tot(j) {
+    for (const p of j.s10.piese) porneste10(j, p);
+    j.avanseazaUsor(200);
+  }
+
+  test("ziarul din sala acuarelei duce in sala a zecea", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("acuarela");
+    j.intraInAcuarela(j.ceas.t);
+    j.iesiDinAcuarela(j.ceas.t);
+    egal(j.stare(), "colaj", "ziarul nu duce in sala a zecea");
+  });
+
+  test("la intrare textul se bate la masina, litera cu litera", function () {
+    /* Un text care apare dintr-odata e o notificare; unul care se bate in fata
+       ta e cineva care scrie. Sala e despre memoria obiectelor, iar masina de
+       scris e obiectul care tine minte cel mai bine. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    adevarat(j.s10.scris !== null, "nu se scrie nimic la intrare");
+    egal(j.s10.scris.litere, 0, "textul era deja scris cand am intrat");
+    j.avanseazaUsor(700);
+    const putine = j.s10.scris.litere;
+    adevarat(putine > 0 && putine < j.s10.scris.text.length,
+      "textul n-a aparut treptat: " + putine + " din " + j.s10.scris.text.length);
+    j.avanseazaUsor(4000);
+    adevarat(/Inchide|\u00cenchide/.test(j.s10.scris ? j.s10.scris.text : ""),
+      "nu scrie sa inchizi ochii");
+  });
+
+  test("sala se stinge, si lumina ramane numai in pete", function () {
+    /* „Inchide ochii si simte texturile" n-ar insemna nimic intr-o camera
+       luminata. Aici chiar nu vezi decat ce atingi. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    egal(j.s10.intuneric, 0, "sala era deja stinsa la intrare");
+    j.avanseazaUsor(4000);
+    adevarat(j.s10.intuneric > 0.95, "sala nu s-a stins: " + j.s10.intuneric);
+    adevarat(j.SPOTURI !== null && j.SPOTURI.length >= 3, "lipsesc petele de lumina");
+  });
+
+  test("peretele are toate cele patru materiale, si niciunul drept", function () {
+    /* Un colaj dadaist e haotic, dar haosul lui e ales. Daca toate bucatile ar
+       sta drepte, ar fi un panou de afisaj, nu un asamblaj. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const feluri = {};
+    for (const p of j.s10.piese) feluri[p.fel] = (feluri[p.fel] || 0) + 1;
+    for (const f of ["ziar", "carton", "sfoara", "nasturi"]) {
+      adevarat(feluri[f] >= 3, "prea putine bucati de " + f + ": " + (feluri[f] || 0));
+    }
+    const stramb = j.s10.piese.filter(function (p) {
+      return p.fel !== "sfoara" && p.fel !== "nasturi" && Math.abs(p.unghi) > 0.03;
+    });
+    egal(stramb.length, 6, "sunt bucati de hartie sau carton asezate drept");
+  });
+
+  test("o piesa atinsa ramane pornita, si nu se numara de doua ori", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const p = j.s10.piese.filter(function (x) { return x.fel === "carton"; })[0];
+    const c = j.cutiaPiesei(p);
+    atinge10(j, c.cx, c.cy);
+    adevarat(p.activat, "cartonul atins n-a ramas pornit");
+    egal(j.s10.activate, 1, "prima atingere n-a fost numarata o data");
+    atinge10(j, c.cx, c.cy);
+    egal(j.s10.activate, 1, "aceeasi piesa s-a numarat de doua ori");
+  });
+
+  test("ziarul se increteste si nu se descreteste inapoi", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const p = j.s10.piese.filter(function (x) { return x.fel === "ziar"; })[0];
+    const c = j.cutiaPiesei(p);
+    egal(p.incretit, 0, "ziarul era mototolit inainte sa-l ating");
+    atinge10(j, c.cx, c.cy);
+    adevarat(p.incretit > 0, "ziarul nu s-a increţit");
+    const dupa = p.incretit;
+    j.avanseazaUsor(3000);
+    adevarat(p.incretit >= dupa, "hartia mototolita s-a intins la loc");
+  });
+
+  test("sfoara nu se porneste dintr-o atingere: trebuie trasa", function () {
+    /* Sunt manete de alarma, nu butoane. O maneta trasa cu un clic nu e o
+       maneta — aceeasi regula ca la pictatul din sala uleiului. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const p = j.s10.piese.filter(function (x) { return x.fel === "sfoara"; })[0];
+    atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+    adevarat(!p.activat, "sfoara s-a pornit dintr-un simplu clic");
+    egal(j.s10.sfoaraInMana, p.i, "sfoara n-a ramas in mana");
+
+    // o smucitura mica nu ajunge
+    j.cursor.apasat = true;
+    j.cursor.x = p.u * j.W() + j.W() * 0.03;
+    j.trageDeScena10();
+    adevarat(!p.activat, "o smucitura mica a pornit sfoara");
+
+    // trasa pana la capat, se incordeaza si ramane asa
+    j.cursor.x = p.u * j.W() + j.W() * 0.14;
+    j.trageDeScena10();
+    adevarat(p.activat, "sfoara trasa pana la capat nu s-a incordat");
+    j.cursor.apasat = false;
+    j.trageDeScena10();
+    j.avanseazaUsor(1200);
+    adevarat(Math.abs(p.arc) > 0.05,
+      "sfoara incordata s-a intors slobod la loc: " + p.arc);
+  });
+
+  test("sfoara neincordata se intoarce la loc cand ii dai drumul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const p = j.s10.piese.filter(function (x) { return x.fel === "sfoara"; })[0];
+    atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+    j.cursor.apasat = true;
+    j.cursor.x = p.u * j.W() + j.W() * 0.05;
+    j.trageDeScena10();
+    adevarat(Math.abs(p.arc) > 0.02, "sfoara nu s-a curbat sub mana");
+    j.cursor.apasat = false;
+    j.trageDeScena10();
+    j.avanseazaUsor(1500);
+    adevarat(Math.abs(p.arc) < 0.01, "sfoara slobozita a ramas curbata: " + p.arc);
+  });
+
+  test("cleiul crapa in jurul piesei de care s-a tras", function () {
+    /* Legatura e falsa — cleiul nu tine nimic in cod — dar e legatura pe care o
+       vede ochiul: daca ai tras de ceva si n-a cedat nimic in jur, n-ai tras. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const p = j.s10.piese.filter(function (x) { return x.fel === "nasturi"; })[0];
+    const c = j.cutiaPiesei(p);
+    atinge10(j, c.cx, c.cy);
+    const crapate = j.s10.crapaturi.filter(function (x) { return x > 0; });
+    adevarat(crapate.length > 0, "n-a crapat niciun clei in jur");
+  });
+
+  test("coltul de desprins apare abia dupa ce toate au fost pornite", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    for (let k = 0; k < j.s10.piese.length - 1; k++) porneste10(j, j.s10.piese[k]);
+    j.avanseazaUsor(200);
+    egal(j.s10.faza, "explorare", "coltul s-a desprins cu o piesa nepornita");
+    porneste10(j, j.s10.piese[j.s10.piese.length - 1]);
+    j.avanseazaUsor(200);
+    egal(j.s10.faza, "desprindere", "toate pornite, si coltul tot nu s-a desprins");
+    // indiciul se bate la masina, deci are nevoie de timp ca sa apara pe ecran
+    j.avanseazaUsor(9000);
+    const d = j.doar(function () { j.deseneazaScena10(j.ceas.t, j.ceas.t); });
+    /* Masina de scris pune fiecare litera separat — fiecare ciocanel bate putin
+       altfel, si tocmai asta o face masina si nu font. Deci scrisul iese din
+       `totScrisul` cu spatii intre litere, si trebuie strans inainte de citit. */
+    const strans = totScrisul(d).replace(/\s+/g, "");
+    adevarat(/Desprindestraturile/.test(strans),
+      "lipseste indiciul de iesire: " + strans.slice(0, 90));
+  });
+
+  test("orice bucata ramane de atins, oricum ai luat-o", function () {
+    /* Sala se termina numai daca toate cele douasprezece bucati pot fi pornite.
+       O sfoara incordata ramane arcuita peste perete si poate cadea fix peste un
+       palc de nasturi — iar daca ea continua sa prinda atingerile, nasturii aceia
+       nu se mai pot porni niciodata si sala ramane de netrecut. Se vedea numai
+       daca trageai sforile inaintea nasturilor, deci aici se trag intai. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    for (const p of j.s10.piese) if (p.fel === "sfoara") porneste10(j, p);
+    for (const p of j.s10.piese) {
+      if (p.fel === "sfoara") continue;
+      const c = j.cutiaPiesei(p);
+      let ajuns = false;
+      for (let i = 0; i < 5 && !ajuns; i++) {
+        for (let k = 0; k < 5 && !ajuns; k++) {
+          const rx = (i / 4 - 0.5) * c.w * 0.8, ry = (k / 4 - 0.5) * c.h * 0.8;
+          const cs = Math.cos(p.unghi), sn = Math.sin(p.unghi);
+          if (j.piesaDeSub(c.cx + rx * cs - ry * sn, c.cy + rx * sn + ry * cs) === p) {
+            ajuns = true;
+          }
+        }
+      }
+      adevarat(ajuns, "bucata " + p.i + " (" + p.fel + ") nu se poate atinge nicaieri");
+    }
+  });
+
+  test("desprinderea coltului rupe peretele si preda stafeta", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    porneste10Tot(j);
+    egal(j.s10.faza, "desprindere", "n-am ajuns la desprindere");
+    adevarat(j.peClapa(10, 10), "coltul din stanga sus nu e de apucat");
+    atinge10(j, 10, 10);
+    adevarat(j.s10.clapaInMana, "coltul n-a ramas in mana");
+    j.cursor.apasat = true;
+    j.cursor.y = j.H() * 0.95;
+    j.trageDeScena10();
+    j.avanseazaUsor(200);
+    egal(j.s10.faza, "rupere", "coltul tras pana jos n-a rupt peretele");
+    j.avanseazaUsor(4000);
+    adevarat(j.s10.rupere >= 1 && j.s10.fasii.length > 4,
+      "peretele nu s-a destramat in fasii");
+    j.avanseazaUsor(3000);
+    adevarat(j.stare() !== "colaj", "sala a zecea nu preda stafeta nimanui");
+  });
+
+  test("peretele e o stampila: nu se picteaza din nou la fiecare cadru", function () {
+    /* Asamblajul e static — tesatura de iuta singura are mii de fire. Pictat de
+       saizeci de ori pe secunda ar fi lagul din sala a doua, din nou. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const d = j.doar(function () { j.deseneazaScena10(j.ceas.t, j.ceas.t); });
+    const puse = d.filter(function (x) { return x.op === "imagine"; });
+    adevarat(puse.length >= 1, "peretele nu vine dintr-o stampila");
+    adevarat(d.length < 400,
+      "un cadru al salii deseneaza prea mult: " + d.length + " operatii");
+  });
+
+  test("in sala a zecea se aude atelierul, si se opreste la iesire", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inColaj(j);
+    adevarat(j.atelierulScena10() !== null, "in atelierul retro nu se aude nimic");
+    j.iesiDinColaj(j.ceas.t);
+    egal(j.atelierulScena10(), null, "atelierul a ramas sa toarca peste sala urmatoare");
+  });
+
+  test("in sala a zecea nu intra nicio culoare rece", function () {
+    /* Paleta e densa, opaca si pur analogica: sepia, maro-murdar, ocru,
+       gri-carton. Un albastru strecurat din neatentie ar strica exact aerul de
+       fotografie veche pentru care exista sala. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.culorileSalii10 !== null, "lipsesc culorile salii a zecea");
+    for (const nume of Object.keys(j.culorileSalii10)) {
+      const h = j.culorileSalii10[nume];
+      const n = parseInt(String(h).slice(1), 16);
+      const r = (n >> 16) & 255, b = n & 255;
+      adevarat(r > b, "culoarea " + nume + " (" + h + ") e rece");
+    }
   });
 
   /* ---------------------------------------------------------------- */

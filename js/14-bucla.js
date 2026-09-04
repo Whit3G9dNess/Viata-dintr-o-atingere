@@ -187,6 +187,13 @@ function cadru(t) {
     actualizeazaAcuarela(acum);
     deseneazaScena9(t, acum);
   }
+  else if (stare === 'colaj') {
+    /* La fel și aici: de sfoară se trage, colțul de colaj se desprinde. Sunt
+       manete, iar o manetă trasă cu un clic nu e o manetă. */
+    trageDeScena10();
+    actualizeazaColaj(acum);
+    deseneazaScena10(t, acum);
+  }
 
   deseneazaCursorul();
   requestAnimationFrame(cadru);

@@ -47,6 +47,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 27 | Un pumn de îndreptări cerute la fața locului | ✅ gata |
 | 28 | Sala a opta, refăcută: desenul necolorat, trusa și cercul cromatic | ✅ gata |
 | 29 | Scena 9 — sala acuarelei: hazardul fluid, lacul-oglindă, plonjonul | ✅ gata |
+| 30 | Scena 10 — sala colajului: memoria obiectelor, și peretele care se destramă | ✅ gata |
 
 ---
 
@@ -1021,11 +1022,16 @@ lucruri care nu mai există.
 - **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
   dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
   sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
-- **Ce urmează după ziar.** Sedimentarea din sala a noua se încheie cu un ziar
-  îngălbenit și cu pârâit de vinil — începutul sălii a zecea, care încă nu e
-  făcută. Până va fi, `iesiDinAcuarela` te scoate înapoi la custode, ca la
-  arsură, ca la vârtej și ca la trapa uleiului — și tot ca acolo, când va fi, se
-  schimbă un singur rând.
+- **Ce urmează după ruptură.** Peretele de colaj se destramă în fâșii și lasă să
+  intre lumina din sala a unsprezecea, care încă nu e făcută. Până va fi,
+  `iesiDinColaj` te scoate înapoi la custode — ca la arsură, ca la vârtej, ca la
+  trapa uleiului și ca la ziar. Și tot ca acolo, când va fi, se schimbă un singur
+  rând.
+- **Știrea de radio din sala a zecea** nu spune cuvinte: e o voce sintetizată,
+  adică ritmul și banda unui crainic, fără text. Regula casei e că nu intră
+  niciun fișier de sunet în jucărie, iar vorbirea românească sintetizată din
+  oscilatoare ar suna a robot, nu a 1930. Dacă vreodată se schimbă regula, aici
+  se schimbă și asta.
 - **Șevaletul** e văzut drept din față. Piciorul din spate îl sprijină, dar sala
   e rotundă și lucrarea stă în mijlocul ei: la un moment dat ar merita văzut
   puțin din trei sferturi, cum îl vezi când intri pe ușă.

@@ -666,6 +666,364 @@ function opresteVinilul() {
   } catch (e) { /* deja oprit */ }
 }
 
+/* ==========================================================================
+   SALA A ZECEA — MEMORIA OBIECTELOR
+
+   Aici sunetul nu îmbracă scena, el **e** scena. Sala a zecea e despre pipăit,
+   iar pipăitul nu se poate desena: aspru, uscat, scrâșnit și înfundat arată toate
+   la fel pe un ecran. Se aud însă imediat, și se deosebesc între ele fără să le
+   explice nimeni. De-aia fiecare material de pe perete are sunetul lui, și de-aia
+   sunt șase, nu unul cu șase înălțimi.
+   ========================================================================== */
+
+/* Zgomot cu **dinte**: trecut printr-un filtru înalt și tăiat în sfărâmături
+   scurte și inegale. Toate materialele uscate din sală — hârtia, iuta, cleiul —
+   pleacă de aici. Ce le deosebește nu e culoarea zgomotului, ci **cât de mărunt e
+   tăiat**: hârtia e fărâmițată des și neregulat, iuta e o singură zgârietură
+   lungă, cleiul e o singură fărâmă. */
+function zgomotUscat(cand, durata, volum, f0, f1, ascutime) {
+  if (!audio) return;
+  if (!bufferZgomot) pregatesteZgomotul();
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  const taie = audio.createBiquadFilter();
+  taie.type = 'highpass';
+  taie.frequency.setValueAtTime(f0, cand);
+  taie.frequency.exponentialRampToValueAtTime(Math.max(80, f1), cand + durata);
+  const forma = audio.createBiquadFilter();
+  forma.type = 'peaking';
+  forma.frequency.setValueAtTime(f0 * 1.8, cand);
+  forma.Q.setValueAtTime(1.2, cand);
+  forma.gain.setValueAtTime(ascutime === undefined ? 8 : ascutime, cand);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, cand);
+  vol.gain.exponentialRampToValueAtTime(volum, cand + 0.008);
+  vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
+
+  sursa.connect(taie).connect(forma).connect(vol).connect(audio.destination);
+  sursa.start(cand);
+  sursa.stop(cand + durata + 0.05);
+}
+
+/* 1. HÂRTIA DE ZIAR — foșnetul.
+
+   O foaie mototolită nu face un sunet, face **vreo treizeci**, unul pentru
+   fiecare cută care cedează, la răstimpuri inegale. De-aia un singur fâșâit
+   lung sună a val de mare, nu a hârtie: hârtia e discontinuă. */
+function sunetFosnetHartie() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  let cand = t;
+  for (let k = 0; k < 34; k++) {
+    const d = 0.012 + Math.random() * 0.03;
+    zgomotUscat(cand, d, 0.05 + Math.random() * 0.05,
+                2600 + Math.random() * 2600, 1800, 9);
+    cand += 0.012 + Math.random() * 0.045;
+  }
+}
+
+/* 1b. ȘTIREA DE LA RADIO, 1930.
+
+   Nu e o înregistrare — în jucăria asta nu intră niciun fișier de sunet, tot ce
+   se aude e făcut din cod. Deci nu se spun cuvinte: se face **vocea**, adică
+   exact ce rămâne dintr-un crainic când nu-l mai înțelegi. Trei lucruri, și
+   toate trei trebuie să fie acolo:
+
+   - **silabele.** Vorbirea e ritm, nu ton continuu. Un ton care ură și coboară
+     fără să se oprească sună a sirenă; tăiat în bucăți de o zecime de secundă,
+     cu pauze, sună a om.
+   - **banda telefonică.** Un radio vechi taie tot sub 300 și tot peste 3000 Hz.
+     Fără tăietura asta, orice voce sintetică sună a jucărie de plastic, nu a
+     aparat cu lămpi.
+   - **parațiții.** Un fond de zgomot care se mișcă, cu pârâituri peste el. Ei
+     sunt cei care spun „departe" și „demult". */
+function stireRadio() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const DURATA = 4.2;
+
+  // fondul de parațiți, tot atât cât ține știrea
+  const paraziti = audio.createBufferSource();
+  if (!bufferZgomot) pregatesteZgomotul();
+  paraziti.buffer = bufferZgomot;
+  paraziti.loop = true;
+  const bandaP = audio.createBiquadFilter();
+  bandaP.type = 'bandpass';
+  bandaP.frequency.setValueAtTime(1500, t);
+  bandaP.Q.setValueAtTime(0.6, t);
+  const volP = audio.createGain();
+  volP.gain.setValueAtTime(0.0001, t);
+  volP.gain.exponentialRampToValueAtTime(0.030, t + 0.25);
+  volP.gain.setValueAtTime(0.030, t + DURATA - 0.5);
+  volP.gain.exponentialRampToValueAtTime(0.0001, t + DURATA);
+  paraziti.connect(bandaP).connect(volP).connect(audio.destination);
+  paraziti.start(t);
+  paraziti.stop(t + DURATA + 0.1);
+
+  // pârâituri răzlețe peste fond, ca praful de pe un disc
+  for (let k = 0; k < 26; k++) {
+    zgomotUscat(t + 0.2 + Math.random() * (DURATA - 0.5),
+                0.008 + Math.random() * 0.012, 0.03 + Math.random() * 0.04,
+                2000 + Math.random() * 3000, 1200, 6);
+  }
+
+  /* Vocea: silabe. Fiecare e un ton dublu (fundamentala și o cvintă stinsă,
+     ca să nu sune a fluier), cu înălțimea puțin alta de fiecare dată — așa se
+     face melodia unei fraze. La capăt de frază, înălțimea coboară. */
+  const banda = audio.createBiquadFilter();
+  banda.type = 'bandpass';
+  banda.frequency.setValueAtTime(1150, t);
+  banda.Q.setValueAtTime(1.15, t);
+  const gura = audio.createBiquadFilter();      // formanta care face „a"-ul
+  gura.type = 'peaking';
+  gura.frequency.setValueAtTime(760, t);
+  gura.Q.setValueAtTime(2.4, t);
+  gura.gain.setValueAtTime(11, t);
+  const volV = audio.createGain();
+  volV.gain.setValueAtTime(0.0001, t);
+  banda.connect(gura).connect(volV).connect(audio.destination);
+
+  let cand = t + 0.45;
+  let inaltime = 132;
+  while (cand < t + DURATA - 0.35) {
+    const silaba = 0.09 + Math.random() * 0.11;
+    const capatDeFraza = Math.random() < 0.18;
+    inaltime = capatDeFraza ? 104 + Math.random() * 14
+                            : 118 + Math.random() * 46;
+
+    const glas = audio.createOscillator();
+    glas.type = 'sawtooth';
+    glas.frequency.setValueAtTime(inaltime, cand);
+    glas.frequency.linearRampToValueAtTime(inaltime * (capatDeFraza ? 0.82 : 1.06),
+                                           cand + silaba);
+    const g2 = audio.createGain();
+    g2.gain.setValueAtTime(0.0001, cand);
+    g2.gain.exponentialRampToValueAtTime(0.055, cand + silaba * 0.22);
+    g2.gain.exponentialRampToValueAtTime(0.0001, cand + silaba);
+    glas.connect(g2).connect(banda);
+    glas.start(cand);
+    glas.stop(cand + silaba + 0.02);
+
+    cand += silaba + (capatDeFraza ? 0.26 + Math.random() * 0.2
+                                   : 0.02 + Math.random() * 0.05);
+  }
+  volV.gain.setValueAtTime(1, t);
+  volV.gain.setValueAtTime(1, t + DURATA - 0.3);
+  volV.gain.linearRampToValueAtTime(0.0001, t + DURATA);
+}
+
+/* 2. CARTONUL ONDULAT — bătaia înfundată.
+
+   O cutie goală nu pocnește, **bubuie scurt**: are aer înăuntru și pereți moi.
+   Deci un ton jos care moare repede, cu un pâc uscat deasupra lui — degetul care
+   atinge cartonul înainte ca aerul dinăuntru să răspundă. */
+function sunetCarton() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(96 + Math.random() * 26, t, 0.16, 0.13, 'sine', 52);
+  nota(158 + Math.random() * 30, t, 0.10, 0.06, 'triangle', 70);
+  zgomotUscat(t, 0.045, 0.06, 1300, 400, 4);
+}
+
+/* 3. SFOARA DE CÂNEPĂ — pârâitul de funie întinsă.
+
+   Se cheamă în timp ce tragi, nu la sfârșit, iar `tensiune` (0..1) o face tot
+   mai ascuțită și mai deasă. O funie sub sarcină nu sună mai **tare** când o
+   tragi mai mult, sună mai **înalt**: firele se strâng și scrâșnesc unul în
+   altul mai des. */
+function sunetSfoaraIncordata(tensiune) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const q = Math.max(0, Math.min(1, tensiune));
+  zgomotUscat(t, 0.06 + Math.random() * 0.05, 0.035 + q * 0.05,
+              420 + q * 900, 260 + q * 500, 10);
+  nota(70 + q * 90, t, 0.09, 0.02 + q * 0.03, 'sawtooth', 46 + q * 40);
+}
+
+/* 3b. CLOPOȚELUL DE BICICLETă.
+
+   Două parțiale care nu se împart una la alta (aici, un raport de vreo 2,7) și
+   care se sting în ritmuri diferite. Un clopoțel cu parțiale armonioase sună a
+   clopot de biserică; ce face tabla ieftină să sune a bicicletă e tocmai
+   neînțelegerea dintre ele. */
+function sunetClopotelBicicleta() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const baza = 1780 + Math.random() * 180;
+  nota(baza, t, 0.9, 0.075, 'sine');
+  nota(baza * 2.71, t, 0.55, 0.040, 'sine');
+  nota(baza * 5.4, t, 0.22, 0.018, 'sine');
+  // ciocănelul care lovește tabla, înainte de sunet
+  zgomotUscat(t, 0.02, 0.05, 3600, 2000, 6);
+  // și încă o lovitură, cum face soneria când îți scapi degetul de pe ea
+  nota(baza * 1.01, t + 0.11, 0.7, 0.05, 'sine');
+  nota(baza * 2.71, t + 0.11, 0.4, 0.025, 'sine');
+}
+
+/* 4. NASTURII — zdrăngănit uscat într-o cutie de tablă.
+
+   Fiecare nasture e un păcănit înalt și foarte scurt. Ce-i adună într-o cutie e
+   **ecoul de tablă** de sub ei: un ton metalic care sună câtă vreme se ciocnesc.
+   Fără el, ar fi niște pietricele căzute pe masă. */
+function sunetNasturi() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const cate = 7 + Math.floor(Math.random() * 6);
+  for (let k = 0; k < cate; k++) {
+    const cand = t + Math.random() * 0.30;
+    nota(1500 + Math.random() * 1500, cand, 0.035, 0.05, 'triangle', 700);
+    zgomotUscat(cand, 0.014, 0.045, 3200 + Math.random() * 2000, 1600, 5);
+  }
+  // cutia de tablă în care cad
+  nota(690, t, 0.42, 0.030, 'sine');
+  nota(690 * 1.94, t, 0.30, 0.018, 'sine');
+}
+
+/* 5. PÂNZA DE SAC — zgârietura de la trecerea mâinii.
+
+   Nu se cheamă la clic, ci la trecere: iuta e fundalul, nu un obiect. O
+   zgârietură lungă și înaltă, foarte scurtă, care se îneacă imediat — și **nu
+   trebuie să se audă la fiecare pixel**, altfel devine un șuierat continuu.
+   Cine cheamă sunetul îl rărește. */
+function sunetIuta(tarie) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const q = Math.max(0.2, Math.min(1, tarie === undefined ? 1 : tarie));
+  zgomotUscat(t, 0.07 + Math.random() * 0.05, 0.028 * q,
+              3400 + Math.random() * 1800, 2400, 12);
+}
+
+/* 6. CLEIUL DE OASE — „crack".
+
+   Cleiul uscat nu se întinde, se **rupe**: o singură fărâmă de zgomot, foarte
+   scurtă și foarte înaltă, cu un ton sub ea care îi dă lemn. */
+function sunetCrackClei() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomotUscat(t, 0.022, 0.075, 4200 + Math.random() * 2400, 2200, 10);
+  nota(560 + Math.random() * 320, t, 0.05, 0.035, 'triangle', 220);
+}
+
+/* 7. RUPTURA — RIIIIP.
+
+   Sunetul cel mai mare din toată jucăria, și singurul care trebuie să sperie
+   puțin. O ruptură lungă nu e un zgomot lung: e o **înșiruire foarte deasă** de
+   rupturi mici, care se îndesește la mijloc și se rarește la capăt — exact cum
+   se rupe pânza când o tragi, cu smucituri. Sub ea, un bubuit care coboară:
+   peretele însuși, care se lasă. */
+function sunetRupturaMare() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const D = 2.3;
+
+  let cand = t;
+  while (cand < t + D) {
+    const q = (cand - t) / D;                    // unde suntem în ruptură
+    const des = 0.004 + Math.abs(q - 0.45) * 0.035;   // des la mijloc, rar la capete
+    zgomotUscat(cand, 0.02 + Math.random() * 0.03,
+                0.05 + (1 - Math.abs(q - 0.45) * 1.6) * 0.09,
+                1400 + Math.random() * 3600, 900, 8);
+    cand += des;
+  }
+  // pânza groasă de dedesubt: o bandă largă care coboară
+  zgomot(t, D * 0.8, 0.10, 2600, 380);
+  // și peretele care se lasă
+  nota(88, t + 0.25, 1.9, 0.14, 'sine', 34);
+  nota(132, t + 0.30, 1.4, 0.07, 'triangle', 44);
+  // bucățile care cad, după aceea
+  for (let k = 0; k < 14; k++) {
+    const c = t + 0.7 + Math.random() * 2.0;
+    nota(90 + Math.random() * 160, c, 0.18, 0.035, 'sine', 50);
+    zgomotUscat(c, 0.06, 0.04, 900 + Math.random() * 900, 400, 4);
+  }
+}
+
+/* 8. Încăperea însăși: un tors gros de atelier, cu pocnete de tablă din când în
+   când. Nu e muzică și nu e melodie — e **tăcerea unei case vechi**, care nu e
+   niciodată tăcere. Fără ea, sala pare oprită între două atingeri. */
+let atelierulScena10 = null;
+
+function pornesteAtelierRetro() {
+  if (!audio || atelierulScena10) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const jos = audio.createBiquadFilter();
+  jos.type = 'lowpass';
+  jos.frequency.setValueAtTime(240, t);
+  jos.Q.setValueAtTime(3.5, t);
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.030, t + 2.2);
+
+  // torsul respiră, foarte încet
+  const val = audio.createOscillator();
+  val.type = 'sine';
+  val.frequency.setValueAtTime(0.07, t);
+  const adancime = audio.createGain();
+  adancime.gain.setValueAtTime(0.010, t);
+  val.connect(adancime).connect(vol.gain);
+  val.start(t);
+
+  sursa.connect(jos).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  atelierulScena10 = { sursa, val, vol, panaLa: t + 1 };
+}
+
+function tineAtelierRetro() {
+  if (!audio || !atelierulScena10) return;
+  const acum = audio.currentTime;
+  while (atelierulScena10.panaLa < acum + 2) {
+    const cand = atelierulScena10.panaLa;
+    // un pocnet de tablă sau o scârțâitură de lemn, rar
+    if (Math.random() < 0.5) {
+      nota(210 + Math.random() * 260, cand, 0.14, 0.016, 'triangle', 90);
+    } else {
+      zgomotUscat(cand, 0.10 + Math.random() * 0.1, 0.014,
+                  600 + Math.random() * 700, 300, 6);
+    }
+    atelierulScena10.panaLa = cand + 2.4 + Math.random() * 4.5;
+  }
+}
+
+function opresteAtelierRetro() {
+  if (!atelierulScena10) return;
+  const a = atelierulScena10;
+  atelierulScena10 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    a.vol.gain.cancelScheduledValues(t);
+    a.vol.gain.setValueAtTime(Math.max(0.0001, a.vol.gain.value), t);
+    a.vol.gain.exponentialRampToValueAtTime(0.0001, t + 1.0);
+    a.sursa.stop(t + 1.1);
+    a.val.stop(t + 1.1);
+  } catch (e) { /* deja oprit */ }
+}
+
+/* 9. Mașina de scris, pentru textul de la intrare. O tastă e un ciocănel care
+   lovește hârtia peste o cutie de metal: păcănit înalt, ton scurt dedesubt. */
+function sunetTastaMasina() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomotUscat(t, 0.012, 0.045, 3000 + Math.random() * 1800, 1400, 7);
+  nota(280 + Math.random() * 180, t, 0.035, 0.030, 'triangle', 140);
+}
+
+function sunetCaretMasina() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(1400, t, 0.10, 0.05, 'sine', 900);
+  nota(1400 * 2.2, t, 0.07, 0.025, 'sine');
+  zgomotUscat(t + 0.10, 0.16, 0.05, 900, 400, 4);   // caruțul care se întoarce
+}
+
 function sunetAtingere() {
   if (!audio) return;
   nota(1600, audio.currentTime, 0.045, 0.022, 'sine', 900);

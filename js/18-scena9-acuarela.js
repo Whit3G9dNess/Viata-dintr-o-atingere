@@ -1321,17 +1321,14 @@ function intraInAcuarela(acum) {
 }
 
 function iesiDinAcuarela(acum) {
-  /* Ziarul duce în sala a zecea. Ea încă nu e făcută, așa că deocamdată te scoate
-     înapoi la custode — dar drumul e croit, ca la arsură, ca la vârtej și ca la
-     trapă, și când va fi, aici se schimbă un singur rând. */
+  /* Ziarul duce în sala a zecea, a colajului. Aici era rândul care te scotea
+     înapoi la custode fiindcă sala nu exista încă — și tot aici scria că, atunci
+     când va exista, se schimbă un singur rând. Ăsta e rândul.
+
+     Trecerea are un sens: culorile s-au uscat în fibre, iar fibrele s-au adunat
+     într-o hârtie. De aici înainte, hârtia nu mai e suport, e material. */
   oprestePloaia();
-  opresteVinilul();
-  s3.vizitat = true;
-  stare = 'muzeu';
-  faza3('usaDeschisa');
-  s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
-  actiune3(acum);
-  pornesteNatura(false);
+  intraInColaj(acum);
 }
 
 /* ---------- CE SE ÎNTÂMPLĂ LA ATINGERE ---------- */

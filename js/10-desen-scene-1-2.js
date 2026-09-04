@@ -695,6 +695,7 @@ function deseneazaCursorul() {
      să-i pună o aură de foc unui bloc de gheață. */
   if (typeof cursorulScenei7 === 'function' && cursorulScenei7()) return;
   if (typeof cursorulScenei8 === 'function' && cursorulScenei8()) return;
+  if (typeof cursorulScenei10 === 'function' && cursorulScenei10()) return;
   const calm = factorCalm();
   const raza = 4 + cursor.viteza * 5;
   const lumina = ctx.createRadialGradient(cursor.x, cursor.y, 0, cursor.x, cursor.y, raza * 3);

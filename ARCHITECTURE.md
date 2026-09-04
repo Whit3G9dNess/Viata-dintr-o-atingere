@@ -353,6 +353,34 @@ Iar suportul trebuie să se vadă: pasta stă în ostroave groase, și între el
 zărește ce e dedesubt. Acoperit peste tot, suportul dispare cu totul — și atunci
 nu mai e o suprafață pictată, ci un covor de vopsea.
 
+### Sunetul ține locul pipăitului (sala a zecea)
+
+Sala a zecea e singura din toată jucăria în care sunetul nu îmbracă scena, ci
+**este** scena. Tema ei e memoria obiectelor, iar experiența cerută e tactilă:
+aspru, uscat, înfundat, scrâșnit. Niciuna dintre astea nu se poate desena — pe un
+ecran arată toate la fel. Se aud însă imediat și se deosebesc fără să le explice
+nimeni: `sunetFosnetHartie`, `sunetCarton`, `sunetSfoaraIncordata`, `sunetNasturi`,
+`sunetIuta`, `sunetCrackClei`. Șase materiale, șase glasuri.
+
+De-aceea sala se și stinge la intrare, după textul bătut la mașină („Închide ochii
+și simte texturile"): rămâne o umbră sepia și o pată de lumină care merge cu mâna.
+Într-o cameră luminată, îndemnul n-ar însemna nimic.
+
+Știrea de radio din 1930 nu e o înregistrare — în jucărie nu intră niciun fișier
+de sunet. `stireRadio` face **vocea**, adică exact ce rămâne dintr-un crainic când
+nu-l mai înțelegi: silabe tăiate cu pauze (vorbirea e ritm, nu ton continuu),
+totul trecut prin banda îngustă a unui aparat cu lămpi, peste un fond de parațiți.
+
+Vizual, tot ce contează e **relieful**: umbra proprie a fiecărei bucăți și muchia
+ei luminată dinspre stânga sus (`umbraPiesei`, `muchiaPiesei`). Fără ele,
+spoturile calde luminează o suprafață plată și „simte texturile" rămâne o vorbă
+goală: pe un ecran, relief înseamnă o dungă de lumină lângă una de umbră, nimic
+altceva. Restul — țesătura de iută, unda cartonului, răsucirea funiei — sunt
+amănunte care confirmă ce a spus deja muchia.
+
+Peretele stă pe o ștampilă (`pregatestePeretele`): douăzeci și una de bucăți peste
+o țesătură de câteva mii de fire, pictate o dată și puse dintr-o mutare.
+
 ### Apa duce pigmentul (sala a noua)
 
 Sala a opta și sala a noua sunt două fețe ale aceleiași întrebări: cât din
@@ -413,6 +441,7 @@ flowchart TB
     B16["16-scena7-gheata.js · 2133<br/>sala de gheață, costumul, portalul"]
     B17["17-scena8-ulei.js · 2820<br/>sala în linie, trusa, cercul cromatic, postamentul"]
     B18["18-scena9-acuarela.js · 1439<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
+    B19["19-scena10-colaj.js · 1453<br/>iuta, ziarul, cartonul, sforile, ruptura"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 155<br/>ce face fiecare atingere"]
