@@ -472,6 +472,7 @@ return {
   iesiDinUlei: typeof iesiDinUlei !== "undefined" ? iesiDinUlei : null,
   click8: typeof click8 !== "undefined" ? click8 : null,
   geomSala8: typeof geomSala8 !== "undefined" ? geomSala8 : null,
+  drumulTabloului: typeof drumulTabloului !== "undefined" ? drumulTabloului : null,
   puneTusa: typeof puneTusa !== "undefined" ? puneTusa : null,
   zonaAtinsa: typeof zonaAtinsa !== "undefined" ? zonaAtinsa : null,
   USTENSILE: typeof USTENSILE !== "undefined" ? USTENSILE : null,
@@ -4093,9 +4094,37 @@ function ruleaza() {
     egal(j.s8.faza, "scurgere", "trapa nu s-a deschis");
     adevarat(j.s8.perdea !== null, "nu s-a luat poza vopselei de pe pelerina");
     j.avanseaza(5000);
-    egal(j.s8.faza, "diluare", "scurgerea nu duce la diluare");
+    egal(j.s8.faza, "coborare", "scurgerea nu duce la coborare");
     j.avanseaza(7000);
-    adevarat(j.stare() !== "ulei", "diluarea nu duce mai departe");
+    adevarat(j.stare() !== "ulei", "coborarea nu duce mai departe");
+  });
+
+  test("odata inramat, tabloul ramane pe perete pana la ultimul cadru", function () {
+    /* Sfarsitul salii a fost, o vreme, gresit: la coborare sala se stingea si pe
+       ecran ramanea numai stratul pictat de jucator, care se dizolva — adica
+       tabloul venea cu tine, dupa ce tocmai fusese agatat in mijlocul discului.
+
+       Un tablou agatat sta pe perete. Tu esti cel care pleaca. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inUlei(j);
+    acoperaPelerinaToata(j);
+    j.avanseaza(3200);
+    egal(j.s8.faza, "postament", "lucrarea nu s-a inramat");
+    const locul = j.drumulTabloului(j.geomSala8());
+    const disc = locul.disc;
+    aproape(locul.cx, disc.cx, 1, "tabloul nu s-a asezat in mijlocul discului");
+    aproape(locul.cy, disc.cy, 1, "tabloul nu s-a asezat in mijlocul discului");
+
+    j.cursor.x = g.podiumCx; j.cursor.y = g.podiumCy;
+    j.click8(j.ceas.t);
+    for (const cat of [2900, 5200, 3000]) {
+      j.avanseaza(cat);
+      if (j.stare() !== "ulei") break;
+      const acum = j.drumulTabloului(j.geomSala8());
+      aproape(acum.cx, locul.cx, 1, "tabloul s-a mutat in faza " + j.s8.faza);
+      aproape(acum.cy, locul.cy, 1, "tabloul s-a mutat in faza " + j.s8.faza);
+      aproape(acum.scara, locul.scara, 0.001, "tabloul si-a schimbat marimea in faza " + j.s8.faza);
+    }
   });
 
   test("pe perete scrie ce e pigmentul", function () {

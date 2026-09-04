@@ -129,7 +129,7 @@ const USTENSILE = [
 const OCHIURI_PELERINA = 26;      // cât de fin se socotește acoperirea pelerinei
 
 const s8 = {
-  faza: 'intrare',      // intrare → pictezi → viata → trapa → scurgere → diluare → iesire
+  faza: 'intrare',      // intrare → pictezi → inramare → postament → trapa → scurgere → coborare → iesire
   viata: 0,             // cât a prins viață și a plecat manechinul
   trapa: 0,             // cât s-a deschis capacul rotund al podiumului
   t0: 0, ultimulCadru: 0,
@@ -140,11 +140,13 @@ const s8 = {
   acoperit: 0,          // cât din pelerină s-a acoperit, 0..1
   picaturi: [],
   tuseFacute: 0,
+  deUnde: null,         // de unde venea mâna la ultima tușă
+  unghiulTusei: undefined,
   inramare: 0,          // cât a urcat lucrarea pe perete și s-a înrămat
   chemarePostament: 0,  // cât de tare cheamă postamentul, după ce a rămas gol
   scurgere: 0,          // cât s-a deschis trapa și s-a scurs culoarea
   perdea: null,
-  diluare: 0,
+  coborare: 0,
   aSpusTrapa: false,
   vorba: null,
   ultimaTusa: 0
@@ -1972,7 +1974,7 @@ function actualizeazaPicaturile(dt) {
   for (let k = s8.picaturi.length - 1; k >= 0; k--) {
     const p = s8.picaturi[k];
     if (p.stat > 0) { p.stat -= dt; continue; }
-    p.mers += p.viteza * dt * (1 + s8.diluare * 6);
+    p.mers += p.viteza * dt * (1 + s8.coborare * 6);
     if (Math.random() < 0.004) p.stat = 200 + Math.random() * 900;
     if (p.mers >= 1) s8.picaturi.splice(k, 1);
   }
@@ -1983,7 +1985,7 @@ function deseneazaPicaturile() {
   for (const p of s8.picaturi) {
     const cap = p.y + p.lung * p.mers;
     ctx.strokeStyle = p.culoare;
-    ctx.globalAlpha = (1 - p.mers * 0.4) * (1 - s8.diluare * 0.6);
+    ctx.globalAlpha = (1 - p.mers * 0.4) * (1 - s8.coborare * 0.6);
     ctx.lineWidth = p.lat;
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -2026,10 +2028,15 @@ function traseulUneltei(c, forma, L, G, z) {
     c.quadraticCurveTo(-L * 0.35, G * (0.9 + z(9) * 0.35),
                        -L * (1 + z(0) * 0.1), G * (z(1) - 0.5) * 0.3);
   } else if (forma === 'patrat') {
-    c.moveTo(-L, -G * (0.9 + z(0) * 0.2));
-    c.lineTo(L * (0.96 + z(1) * 0.08), -G * (0.86 + z(2) * 0.24));
-    c.lineTo(L * (1.0 + z(3) * 0.06), G * (0.9 + z(4) * 0.2));
-    c.lineTo(-L * (0.98 + z(5) * 0.06), G * (0.86 + z(6) * 0.24));
+    /* La pensula lată, muchiile lungi stau **drepte**, și numai capetele șovăie.
+       Câtă vreme șovăiau și laturile, fiecare atingere ieșea altfel de lată și o
+       dâră trasă lin se făcea zimțată pe toată lungimea, ca un rând de solzi. O
+       pensulă cu vârf pătrat lasă o bandă cu marginile drepte — asta o și
+       deosebește de una ascuțită. */
+    c.moveTo(-L * (1 + z(0) * 0.10), -G * 0.97);
+    c.lineTo(L * (1 + z(1) * 0.10), -G * 0.97);
+    c.lineTo(L * (1 + z(2) * 0.10), G * 0.97);
+    c.lineTo(-L * (1 + z(3) * 0.10), G * 0.97);
     c.closePath();
   } else {
     c.moveTo(-L * (1 + z(0) * 0.12), -G * (0.55 + z(1) * 0.3));
@@ -2044,6 +2051,22 @@ function traseulUneltei(c, forma, L, G, z) {
 
 /* O pată de pastă pusă cu o unealtă anume. E soră cu `pataDePasta` din sala
    focului, dar cu conturul ales după unealtă și cu creasta pe măsura ei. */
+/* URMA UNEI UNELTE.
+
+   Trei lucruri fac o ușă de vopsea groasă, și niciunul nu e forma petei:
+
+   1. **Striurile în lungul mișcării.** Fiecare fir de păr al pensulei sapă un
+      șanț și împinge o creastă alături de el. Ele sunt textura, și merg toate
+      într-o singură direcție: încotro ai tras.
+   2. **Luciul.** Vopseaua grasă e lucioasă, iar lumina se prinde de creste în
+      dungi lungi și subțiri, aproape albe. Fără ele, orice pată arată a mată,
+      adică a acuarelă uscată sau a plastilină.
+   3. **Marginea zdrențuită**, unde firele au împins pasta în lături.
+
+   Întâi le făcusem pe toate greșit: pete scurte, lobate, fiecare la un unghi luat
+   la întâmplare, cu câteva fire negre și albe peste ele. Rezultatul, pe rochie,
+   arăta a boabe de orez presărate — fiindcă exact asta era. O tușă nu e o pată
+   care are și niște dungi: **e o panglică făcută din dungi.** */
 function pastaCuUnealta(c, x, y, lung, gros, unghi, culoare, forma, relief) {
   const L = Math.max(1, lung / 2), G = Math.max(0.6, gros / 2);
   const z = function (i) { return zvacnet(x, y, i); };
@@ -2056,32 +2079,85 @@ function pastaCuUnealta(c, x, y, lung, gros, unghi, culoare, forma, relief) {
   c.fillStyle = culoare;
   c.fill();
 
-  /* Creasta și umbra stau înăuntrul petei, ca să urmeze muchia ei strâmbă. Se
-     fac din același contur, mutat puțin, trasat gros și tăiat la forma petei:
-     din tot conturul mutat rămâne numai dunga care cade pe muchie. */
   c.save();
   traseulUneltei(c, forma, L, G, z);
   c.clip();
+
+  /* Striurile. Câte — după cât e de lată urma: o pensulă subțire lasă două-trei
+     șanțuri, una lată lasă cincisprezece. Unele nu merg până la capăt, fiindcă
+     firul a rămas fără vopsea pe drum. */
+  const cate = Math.max(3, Math.min(22, Math.round(G * 0.85)));
+  c.lineCap = 'round';
+  for (let k = 0; k < cate; k++) {
+    const f = (k + 0.5) / cate;
+    /* Firele stau **în aceleași locuri pe toată tușa**, fiindcă sunt aceleași fire:
+       așezarea lor pe lățime, adâncimea și grosimea fiecăruia se iau din numărul
+       firului, nu din locul atins.
+
+       Câtă vreme le-am luat din loc, fiecare atingere își punea șanțurile în altă
+       parte, iar o dâră lungă ieșea un zid de cărămidă: bucăți scurte, cu rosturi
+       verticale între ele. Pensula nu-și schimbă firele pe drum. */
+    const s1 = samanta(k * 7.13 + 3.7), s2 = samanta(k * 11.9 + 1.3);
+    const y0 = (f * 2 - 1) * G * 0.96;
+    const groapa = s1 > 0.42;                     // șanț sau creastă
+
+    c.strokeStyle = groapa ? amesteca(culoare, '#1a1006', 0.34 * relief)
+                           : amesteca(culoare, '#ffffff', 0.30 * relief);
+    /* Șanțurile se trag aproape opac. Sunt un desen care se repetă identic la
+       fiecare atingere, deci suprapunerile nu se văd; puse transparent, ele se
+       adunau unde două atingeri se calcă și rămâneau dungi de-a curmezișul
+       tușei — exact rosturile de cărămidă pe care le tot vânam. */
+    c.globalAlpha = 0.80 + s2 * 0.20;
+    c.lineWidth = Math.max(0.6, G * (0.07 + s1 * 0.13));
+    /* Trec de capetele urmei, ca să se îmbuce cu șanțurile atingerii următoare și
+       să se facă o singură linie lungă. */
+    c.beginPath();
+    c.moveTo(-L * 1.2, y0);
+    c.quadraticCurveTo(0, y0 + (s2 - 0.5) * G * 0.16, L * 1.2, y0);
+    c.stroke();
+  }
+
+  /* Luciul: două-patru dungi aproape albe, scurte, pe crestele cele mai înalte.
+     Nu de-a lungul întregii urme — lumina nu prinde toată creasta deodată, prinde
+     bucăți din ea, și tocmai întreruperea le face să pară lucioase. */
+  const luciri = 1 + Math.round(Math.min(2, G * 0.04));
+  for (let k = 0; k < luciri; k++) {
+    const y0 = (z(200 + k * 9) - 0.5) * G * 1.5;
+    const mij = (z(230 + k * 7) - 0.5) * L * 1.1;
+    const jum = L * (0.20 + z(260 + k * 5) * 0.35);
+    c.strokeStyle = amesteca(culoare, '#ffffff', 0.75);
+    c.globalAlpha = (0.22 + z(290 + k) * 0.24) * Math.min(1, relief);
+    c.lineWidth = Math.max(0.7, G * 0.10);
+    c.beginPath();
+    c.moveTo(mij - jum, y0);
+    c.quadraticCurveTo(mij, y0 - G * 0.10, mij + jum, y0 + (z(320 + k) - 0.5) * G * 0.2);
+    c.stroke();
+  }
+
+  /* Creasta și umbra de pe muchiile lungi: pasta e groasă, deci urma are grosime.
+     Se fac din același contur, mutat puțin și tăiat la forma urmei — din tot
+     conturul mutat rămâne numai dunga care cade pe muchie. */
+  c.globalAlpha = 1;
   c.save();
-  c.translate(0, G * 0.55);
+  c.translate(0, G * 0.5);
   traseulUneltei(c, forma, L, G, z);
   c.restore();
-  c.strokeStyle = 'rgba(255, 255, 255, ' + (0.30 * relief).toFixed(3) + ')';
-  c.lineWidth = G * 0.36;
+  c.strokeStyle = 'rgba(255, 255, 255, ' + (0.26 * relief).toFixed(3) + ')';
+  c.lineWidth = G * 0.34;
   c.stroke();
   c.save();
-  c.translate(0, -G * 0.55);
+  c.translate(0, -G * 0.5);
   traseulUneltei(c, forma, L, G, z);
   c.restore();
-  c.strokeStyle = 'rgba(20, 12, 6, ' + (0.24 * relief).toFixed(3) + ')';
+  c.strokeStyle = 'rgba(20, 12, 6, ' + (0.26 * relief).toFixed(3) + ')';
   c.lineWidth = G * 0.30;
   c.stroke();
-  c.restore();
 
+  c.restore();
   c.restore();
 }
 
-function lasaTusa(x, y, unghi, marime, zona) {
+function lasaTusa(x, y, unghi, marime, zona, lungFortat) {
   const c = stratul().getContext('2d');
   /* Vopseaua se pune **numai pe costum**, și numai în forma atinsă.
 
@@ -2102,8 +2178,18 @@ function lasaTusa(x, y, unghi, marime, zona) {
   const u = USTENSILE[s8.unealta % USTENSILE.length];
   const culoare = CERC_CROMATIC[s8.culoare % CERC_CROMATIC.length];
 
-  const lung = marime * u.lung * (0.85 + Math.random() * 0.3);
-  const gros = marime * u.gros * (0.85 + Math.random() * 0.3);
+  /* Lungimea vine de la mână, lățimea de la unealtă. Pare o nimica toată și e
+     chiar deosebirea dintre o tușă și o ștampilă: când tragi mai mult, urma e mai
+     lungă — dar pensula rămâne la fel de lată, fiindcă nu i-a crescut nimeni
+     firele între timp. */
+  const lung = lungFortat !== undefined ? lungFortat
+                                        : marime * u.lung * (0.85 + Math.random() * 0.3);
+  /* Lățimea nu tremură de la o atingere la alta. Am lăsat-o o vreme să varieze cu
+     cincisprezece la sută, „ca să fie viu", și din asta ieșeau tocmai rosturile
+     de cărămidă: când se schimbă lățimea, se schimbă și câte fire încap pe ea, deci
+     șanțurile nu se mai îmbucă cu ale atingerii de dinainte. Pensula are lățimea
+     ei, și n-o schimbă în timp ce tragi. */
+  const gros = marime * u.gros;
 
   c.save();
   c.globalAlpha = 1;
@@ -2123,22 +2209,11 @@ function lasaTusa(x, y, unghi, marime, zona) {
         lung * (0.55 + Math.random() * 0.55), gros * (0.55 + Math.random() * 0.6),
         unghi + (Math.random() - 0.5) * 0.35, culoare, u.forma, u.relief);
     }
-  } else {
-    // firele de păr: dâre subțiri de-a lungul tușei
-    c.globalAlpha = 0.5;
-    for (let k = -u.fire; k <= u.fire; k += 2) {
-      const d = k * gros * 0.1;
-      c.strokeStyle = k % 4 ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.14)';
-      c.lineWidth = Math.max(0.7, gros * 0.06);
-      c.beginPath();
-      c.moveTo(x - Math.cos(unghi) * lung * 0.42 - Math.sin(unghi) * d,
-               y - Math.sin(unghi) * lung * 0.42 + Math.cos(unghi) * d);
-      c.lineTo(x + Math.cos(unghi) * lung * 0.42 - Math.sin(unghi) * d,
-               y + Math.sin(unghi) * lung * 0.42 + Math.cos(unghi) * d);
-      c.stroke();
-    }
-    c.globalAlpha = 1;
   }
+  /* Aici se trăgeau, până acum, „firele de păr": câteva linii negre și albe peste
+     pată. Au ieșit de unde erau — striurile se fac acum înăuntrul urmei, din
+     culoarea ei, și sunt chiar materia din care e făcută urma, nu un desen peste
+     ea. */
   c.restore();
 
   s8.tuseFacute++;
@@ -2367,7 +2442,8 @@ function intraInUlei(acum) {
   s8.faza = 'intrare'; s8.t0 = acum; s8.ultimulCadru = acum;
   s8.vapori = 1; s8.unealta = 1; s8.culoare = 4;
   s8.acoperit = 0; s8.scurgere = 0; s8.perdea = null;
-  s8.picaturi.length = 0; s8.tuseFacute = 0; s8.diluare = 0;
+  s8.picaturi.length = 0; s8.tuseFacute = 0; s8.coborare = 0;
+  s8.deUnde = null; s8.unghiulTusei = undefined;
   s8.aSpusTrapa = false; s8.vorba = null; s8.ultimaTusa = 0;
   const c = stratul().getContext('2d');
   c.clearRect(0, 0, W, H);
@@ -2427,7 +2503,7 @@ function peCerc(x, y) {
 
 function click8(acum) {
   const x = cursor.x, y = cursor.y;
-  if (s8.faza === 'scurgere' || s8.faza === 'diluare' || s8.faza === 'iesire') return;
+  if (s8.faza === 'scurgere' || s8.faza === 'coborare' || s8.faza === 'iesire') return;
   /* Pe postament se urcă. E singurul lucru de făcut în faza asta, deci orice
      atingere pe el pornește drumul mai departe. */
   if (s8.faza === 'postament') {
@@ -2466,10 +2542,46 @@ function click8(acum) {
   puneTusa(x, y, acum);
 }
 
+/* O tușă merge **încotro tragi**.
+
+   Până acum își lua unghiul dintr-o sămânță legată de locul atins — adică la
+   întâmplare. Fiecare atingere pica altfel întoarsă, iar rochia se acoperea cu
+   sute de urme răsuflate în toate direcțiile: boabe de orez presărate, nu vopsea
+   întinsă. Și nu se putea trage o dâră, oricât de încet ai fi mișcat mâna.
+
+   Acum urma se pune **între unde erai și unde ești**: atât de lungă cât ai tras și
+   întoarsă încotro ai tras. Așa două atingeri alăturate se leagă într-o singură
+   panglică, și așa se și astupă golurile când mâna fuge repede. */
 function puneTusa(x, y, acum) {
   const g = geomSala8();
-  const unghi = (samanta(Math.round(x) * 3.1 + Math.round(y) * 7.7) - 0.5) * 3.14;
-  lasaTusa(x, y, unghi, g.S * 0.055);
+  const u = USTENSILE[s8.unealta % USTENSILE.length];
+  const inainte = s8.deUnde;
+  let unghi, lung, cx = x, cy = y;
+
+  /* Se leagă de atingerea dinainte numai dacă a fost **de curând și de aproape**.
+     O săritură mare nu e o tușă: e o ridicare a pensulei și o punere în alt loc.
+     Fără măsura asta, două atingeri depărtate se uneau într-o dâră trasă de-a
+     curmezișul sălii, iar urma cădea la mijlocul drumului — adică putea să cadă
+     în afara rochiei, unde nu se pune nimic, și clicul rămânea fără răspuns. */
+  const proaspat = inainte && acum - inainte.cand < 320;
+  const dus = proaspat ? Math.hypot(x - inainte.x, y - inainte.y) : 0;
+
+  if (proaspat && dus > g.S * 0.004 && dus < g.S * 0.09) {
+    unghi = Math.atan2(y - inainte.y, x - inainte.x);
+    // urma acoperă tot drumul, plus cât lasă unealta în plus la capete
+    lung = dus + g.S * 0.055 * u.lung * 0.55;
+    cx = (x + inainte.x) / 2;
+    cy = (y + inainte.y) / 2;
+  } else {
+    unghi = s8.unghiulTusei !== undefined ? s8.unghiulTusei : -0.55;
+    lung = g.S * 0.055 * u.lung * (0.85 + Math.random() * 0.3);
+  }
+  s8.unghiulTusei = unghi;
+  s8.deUnde = { x: x, y: y, cand: acum };
+
+  /* Zona se hotărăște după **locul atins**, nu după mijlocul urmei: degetul e la
+     `x, y`, acolo ai vrut să pui vopsea. */
+  lasaTusa(cx, cy, unghi, g.S * 0.055, zonaAtinsa(x, y), lung);
   s8.ultimaTusa = acum;
   if (audio) {
     if (s8.tuseFacute % 3 === 0) sunetSlosh(); else sunetCleios();
@@ -2481,7 +2593,7 @@ function puneTusa(x, y, acum) {
    însemnat o sută de clicuri — o corvoadă, nu o libertate. */
 function pensuleazaScena8() {
   if (stare !== 'ulei' || !cursor.apasat) return;
-  if (s8.faza === 'scurgere' || s8.faza === 'diluare' || s8.faza === 'iesire') return;
+  if (s8.faza === 'scurgere' || s8.faza === 'coborare' || s8.faza === 'iesire') return;
   const acum = performance.now();
   if (acum - s8.ultimaTusa < 45) return;
   if (peTrusa(cursor.x, cursor.y) >= 0 || peCerc(cursor.x, cursor.y) >= 0) return;
@@ -2557,7 +2669,7 @@ function actualizeazaUleiul(acum) {
                   g.S * (0.02 + Math.random() * 0.05));
     }
     if (s8.scurgere >= 1) {
-      s8.faza = 'diluare'; s8.t0 = acum;
+      s8.faza = 'coborare'; s8.t0 = acum;
       if (audio) { opresteAtelierUlei(); pornesteClipocitul(); }
       /* Aici nu se mai scrie nimic. Culoarea curge prin trapă, se aude apa, iar
          imaginea se înmoaie sub ochii tăi — un rând care ar spune „cobori în apă,
@@ -2566,9 +2678,9 @@ function actualizeazaUleiul(acum) {
     }
   }
 
-  if (s8.faza === 'diluare') {
-    s8.diluare = Math.min(1, s8.diluare + dt / 4200);
-    if (s8.diluare >= 1) { s8.faza = 'iesire'; s8.t0 = acum; }
+  if (s8.faza === 'coborare') {
+    s8.coborare = Math.min(1, s8.coborare + dt / 4200);
+    if (s8.coborare >= 1) { s8.faza = 'iesire'; s8.t0 = acum; }
   }
   if (s8.faza === 'iesire' && acum - s8.t0 > 900) iesiDinUlei(acum);
 }
@@ -2618,39 +2730,74 @@ function scanteileDespletirii(acum) {
    Se face cu o singură unealtă: pânza pictată se micșorează pe o pânză de lucru
    și se întinde la loc. Fiecare trecere pierde muchiile — asta **e** înmuierea,
    nu o imitație a ei. */
-const panzaDiluata = { panza: null, latime: 0, inaltime: 0 };
 
-function deseneazaDiluarea(acum) {
-  const p = atenuare(Math.min(1, s8.diluare));
-  const lw = Math.max(2, Math.round(W / (1 + p * 22)));
-  const lh = Math.max(2, Math.round(H / (1 + p * 22)));
-  const q = panzaDeLucru(panzaDiluata, lw, lh);
-  const qc = q.getContext('2d');
-  qc.clearRect(0, 0, lw, lh);
-  qc.drawImage(stratul(), 0, 0, lw, lh);
+function deseneazaCoborarea(acum) {
+  /* Aici mersul se ia **așa cum e**, fără atenuare. Atenuarea împingând sfârșitul
+     înainte (la trei sferturi de drum era deja la nouă zecimi), sala se stingea cu
+     mult înainte de vreme — iar cu ea se stingea și lucrul care trebuie văzut:
+     tabloul rămas agățat pe perete, în timp ce tu cobori pe lângă el. */
+  const p = Math.min(1, s8.coborare);
+  const g = geomSala8();
+  const cx = g.podiumCx, cy = g.podiumCy;
 
+  /* Coborârea prin trapă, văzută din ochii tăi: sala nu dispare și nu se dizolvă,
+     ci **se îndepărtează și se întunecă pe la margini**, câtă vreme gura
+     podiumului crește și lumina de apă din ea urcă să te acopere. Tabloul rămâne
+     agățat în spatele tău, tot mai departe, până când nu se mai vede nimic în
+     afară de apă.
+
+     De-aia întunericul se strânge **spre trapă**, nu spre mijlocul ecranului: acolo
+     te duci. Un întuneric centrat pe ecran ar fi un capac de aparat de fotografiat;
+     unul centrat pe gaură e o coborâre. */
   ctx.save();
-  ctx.drawImage(q, 0, 0, W, H);
 
-  const PASTEL = ['#f6c9c0', '#cfe0f0', '#dff0e2', '#f6e6c0', '#e4d6f0'];
-  for (let k = 0; k < 26; k++) {
+  // întunericul care se strânge în jurul găurii
+  const raza = Math.max(W, H) * (1.25 - p * 0.95);
+  const colt = ctx.createRadialGradient(cx, cy, raza * 0.34, cx, cy, raza);
+  colt.addColorStop(0, 'rgba(18, 13, 6, 0)');
+  colt.addColorStop(1, 'rgba(18, 13, 6, ' + (0.22 + p * 0.70).toFixed(3) + ')');
+  ctx.fillStyle = colt;
+  ctx.fillRect(0, 0, W, H);
+
+  /* Lumina de apă care urcă din gură. Ea e sala următoare, văzută de sus înainte
+     să ajungi în ea — de-aia e rece, singura culoare rece din toată sala uleiului. */
+  /* Lumina crește cu **pătratul** coborârii, nu liniar. Pusă liniar, la jumătatea
+     drumului acoperea deja tot ecranul și sala dispărea — adică, din nou, nu se
+     mai vedea că tabloul rămâne agățat. Iar dacă nu se vede, degeaba rămâne.
+
+     Așa, gura stă multă vreme o pată de lumină în podea și te ia abia la urmă,
+     când chiar ai ajuns în ea. */
+  const q = p * p;
+  const lumina = ctx.createRadialGradient(cx, cy, 0, cx, cy,
+                                          Math.max(W, H) * (0.09 + q * 1.05));
+  lumina.addColorStop(0, 'rgba(226, 240, 248, ' + (0.22 + q * 0.76).toFixed(3) + ')');
+  lumina.addColorStop(0.35, 'rgba(150, 194, 220, ' + (0.13 + q * 0.62).toFixed(3) + ')');
+  lumina.addColorStop(1, 'rgba(90, 140, 176, 0)');
+  ctx.fillStyle = lumina;
+  ctx.fillRect(0, 0, W, H);
+
+  /* Culorile care se duc odată cu tine: dungi care fug spre gură, tot mai
+     repezi. Nu sunt tabloul — el a rămas pe perete — sunt vopseaua scursă prin
+     trapă, aceeași pe care ai văzut-o curgând. */
+  for (let k = 0; k < 22; k++) {
     const a = samanta(11900 + k * 3.7), b = samanta(11970 + k * 6.1);
-    const e = samanta(12030 + k * 4.3);
-    const x = W * a + Math.sin(acum * 0.0004 + k) * W * 0.05 * p;
-    const y = H * b + Math.cos(acum * 0.0003 + k * 1.7) * H * 0.05 * p;
-    const raza = Math.min(W, H) * (0.1 + e * 0.3) * (0.3 + p);
-    const bal = ctx.createRadialGradient(x, y, 0, x, y, raza);
-    const cul = PASTEL[Math.floor(e * PASTEL.length)];
-    bal.addColorStop(0, cul);
-    bal.addColorStop(1, cul + '00');
-    ctx.globalAlpha = 0.16 * p;
-    ctx.fillStyle = bal;
+    const un = a * Math.PI * 2;
+    const de = Math.max(W, H) * (0.15 + b * 0.55) * (1 - p * 0.85);
+    const x0 = cx + Math.cos(un) * de, y0 = cy + Math.sin(un) * de * 0.6;
+    ctx.globalAlpha = 0.35 * p * (1 - p * 0.4);
+    ctx.strokeStyle = CERC_CROMATIC[Math.floor(a * CERC_CROMATIC.length)];
+    ctx.lineWidth = Math.max(1.5, g.S * 0.008 * (0.4 + b));
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.arc(x, y, raza, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x0, y0);
+    ctx.quadraticCurveTo(intre(x0, cx, 0.5), intre(y0, cy, 0.35),
+                         intre(x0, cx, 0.88), intre(y0, cy, 0.88));
+    ctx.stroke();
   }
-  ctx.globalAlpha = Math.pow(p, 2.2) * 0.9;
-  ctx.fillStyle = '#f4f1e8';
+
+  // la capăt, apa acoperă tot: aici începe sala a noua
+  ctx.globalAlpha = Math.pow(p, 5.5);
+  ctx.fillStyle = '#eef4f6';
   ctx.fillRect(0, 0, W, H);
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -2766,7 +2913,17 @@ function deseneazaScena8(t, acum) {
   /* Cât timp lucrarea urcă spre perete, locul ei de pe podium trebuie șters din
      ștampilă și desenat din nou acolo unde a ajuns. Ștampila e o singură imagine:
      nu se poate muta o bucată din ea. */
-  const inDrum = s8.inramare > 0 && s8.faza !== 'diluare' && s8.faza !== 'iesire';
+  /* Odată înrămată, lucrarea **rămâne înrămată**, până la ultimul cadru al sălii.
+
+     Aici era greșeala: la coborâre sala se stingea de tot și pe ecran rămânea
+     numai stratul pictat de jucător, care se dizolva. Adică tabloul venea cu
+     tine — după ce tocmai fusese agățat pe perete, în mijlocul discului
+     portocaliu. Sfârșitul ăsta rămăsese de pe când sala se termina cu „culorile
+     se scurg și te iau cu ele"; când s-a schimbat în „lucrarea se înramează și
+     rămâne, tu treci mai departe", el a rămas și le-a contrazis pe amândouă.
+
+     Un tablou agățat stă pe perete. Tu ești cel care pleacă. */
+  const inDrum = s8.inramare > 0;
   const dr = inDrum ? drumulTabloului(g) : null;
   if (inDrum) {
     stergeExponatulDeJos(g);
@@ -2779,26 +2936,28 @@ function deseneazaScena8(t, acum) {
     ctx.restore();
   }
 
-  if (s8.faza === 'diluare' || s8.faza === 'iesire') {
-    deseneazaDiluarea(acum);
-  } else {
-    /* Ce a pictat jucătorul, peste desenul în linie. Când manechinul prinde
-       viață, stratul lui se ridică odată cu el și se stinge — pictura pleacă
-       împreună cu rochia, fiindcă ea **e** rochia. */
-    ctx.save();
-    if (inDrum) {
-      ctx.translate(dr.cx, dr.cy);
-      ctx.scale(dr.scara, dr.scara);
-      ctx.translate(-g.pelCx, -(g.pelSus + g.pelInalt * 0.5));
-    }
-    ctx.drawImage(stratul(), 0, 0);
-    ctx.restore();
-    if (inDrum && dr.p < 1) scanteileDespletirii(acum);
-    chemareaPostamentului(ctx, g, acum);
-    deseneazaTrapa(acum);
-    deseneazaPicaturile();
+  /* Ce a pictat jucătorul, peste desenul în linie. Când lucrarea urcă pe perete,
+     stratul se duce odată cu ea — pictura **e** rochia, deci merge unde merge
+     rochia și rămâne unde rămâne ea. */
+  ctx.save();
+  if (inDrum) {
+    ctx.translate(dr.cx, dr.cy);
+    ctx.scale(dr.scara, dr.scara);
+    ctx.translate(-g.pelCx, -(g.pelSus + g.pelInalt * 0.5));
+  }
+  ctx.drawImage(stratul(), 0, 0);
+  ctx.restore();
+  if (inDrum && dr.p < 1) scanteileDespletirii(acum);
+  chemareaPostamentului(ctx, g, acum);
+  deseneazaTrapa(acum);
+  deseneazaPicaturile();
+
+  const cobori = s8.faza === 'coborare' || s8.faza === 'iesire';
+  if (!cobori) {
     deseneazaTrusa(acum);
     deseneazaCercul(acum);
+  } else {
+    deseneazaCoborarea(acum);
   }
 
   deseneazaVaporii(acum);
