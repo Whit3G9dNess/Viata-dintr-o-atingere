@@ -64,15 +64,25 @@ const PIESE_PERETE = [
   // ziare interbelice
   { fel: 'ziar',    u: 0.120, v: 0.300, w: 0.255, h: 0.300, unghi: -0.38, sam: 11 },
   { fel: 'ziar',    u: 0.615, v: 0.155, w: 0.230, h: 0.265, unghi:  0.42, sam: 23 },
-  { fel: 'ziar',    u: 0.430, v: 0.800, w: 0.270, h: 0.245, unghi: -0.16, sam: 37 },
+  { fel: 'ziar',    u: 0.430, v: 0.818, w: 0.270, h: 0.245, unghi: -0.16, sam: 37 },
   // carton ondulat
   { fel: 'carton',  u: 0.340, v: 0.185, w: 0.295, h: 0.345, unghi:  0.19, sam: 51 },
   { fel: 'carton',  u: 0.860, v: 0.505, w: 0.255, h: 0.400, unghi: -0.31, sam: 67 },
   { fel: 'carton',  u: 0.110, v: 0.705, w: 0.250, h: 0.320, unghi:  0.52, sam: 83 },
-  // sfori de cânepă, întinse de sus până jos
-  { fel: 'sfoara',  u: 0.245, v: 0.5, w: 0.0130, h: 1, unghi: 0, sam: 97 },
-  { fel: 'sfoara',  u: 0.545, v: 0.5, w: 0.0155, h: 1, unghi: 0, sam: 109 },
-  { fel: 'sfoara',  u: 0.735, v: 0.5, w: 0.0115, h: 1, unghi: 0, sam: 127 },
+  /* Sforile, cu capetele lor. Nu mai sunt toate verticale: una traversează
+     peretele de-a latul și una în diagonală. Trei linii paralele împart peretele
+     în coloane și îl așază la loc în rânduri — exact ce nu vrea un colaj. */
+  { fel: 'sfoara', ax: 0.245, ay: -0.02, bx: 0.222, by: 1.02, w: 0.0130, sam: 97 },
+  { fel: 'sfoara', ax: 0.735, ay: -0.02, bx: 0.762, by: 1.02, w: 0.0115, sam: 127 },
+  // de asta atârnă biletețele, cu cleștișori
+  /* Traseele lor sunt alese ca să **nu treacă prin mijlocul niciunei bucăți**.
+     Prima oară nu erau: funia de-a latul ținea mijlocul unui ziar, iar cea în
+     diagonală mijlocul altuia. Cum funia se apucă înaintea bucății de dedesubt,
+     acele două ziare nu se mai puteau porni cu un clic în centrul lor — iar sala
+     nu se mai termina. Se putea și din cod, lărgind regula de apucat; dar o
+     așezare care nu încurcă nimic nu are nevoie de nicio regulă. */
+  { fel: 'sfoara', nume: 'rufe', ax: -0.02, ay: 0.255, bx: 1.02, by: 0.205, w: 0.0165, sam: 109 },
+  { fel: 'sfoara', ax: -0.02, ay: 0.620, bx: 1.02, by: 0.985, w: 0.0125, sam: 131 },
   // nasturi de os, de corn și de lemn
   { fel: 'nasturi', u: 0.490, v: 0.405, w: 0.135, h: 0.135, unghi: 0, sam: 139 },
   { fel: 'nasturi', u: 0.700, v: 0.775, w: 0.120, h: 0.120, unghi: 0, sam: 151 },
@@ -92,6 +102,19 @@ const PIESE_PERETE = [
    ochiul se plimba cuminte. Junk Art înseamnă altceva — bucăți de mărimi care nu
    se aseamănă, întoarse care încotro, unele fâșii înguste, unele lespezi
    întregi, călcându-se una pe alta și lăsând între ele crăpături întunecate. */
+/* Bucățile de la mijloc sunt **mai închise decât restul**: carton gătuit, hârtie
+   afumată, cerneală groasă. Un colaj întins uniform pe tot peretele n-are unde să
+   odihnească ochiul: te uiți peste el ca peste un tapet. Un cuib mai întunecat și
+   mai bătut la mijloc strânge privirea acolo, iar restul devine, dintr-odată,
+   marginea a ceva. */
+const INTUNECATE = [
+  { fel: 'carton', u: 0.470, v: 0.545, w: 0.230, h: 0.290, unghi:  0.28, sam: 281, cat: 0.62 },
+  { fel: 'ziar',   u: 0.560, v: 0.455, w: 0.185, h: 0.230, unghi: -0.44, sam: 283, cat: 0.50 },
+  { fel: 'carton', u: 0.395, v: 0.400, w: 0.165, h: 0.245, unghi:  0.55, sam: 293, cat: 0.68 },
+  { fel: 'ziar',   u: 0.610, v: 0.610, w: 0.150, h: 0.180, unghi:  0.18, sam: 307, cat: 0.44 },
+  { fel: 'carton', u: 0.500, v: 0.660, w: 0.120, h: 0.135, unghi: -0.62, sam: 311, cat: 0.72 }
+];
+
 const FUNDAL_COLAJ = [
   { fel: 'carton', u: 0.065, v: 0.430, w: 0.265, h: 0.385, unghi:  0.62, sam: 211 },
   { fel: 'ziar',   u: 0.270, v: 0.520, w: 0.230, h: 0.115, unghi: -0.58, sam: 223 },
@@ -133,15 +156,139 @@ const TEXT_COLAJ = 'Colajul este o tehnică artistică prin care se combină și
   'lipesc pe o suprafață diferite materiale, imagini sau fragmente pentru a forma ' +
   'o compoziție nouă.';
 
-/* Așezate **între sfori**, nu sub ele. Sforile trec peste tot ce e pe perete, și
-   așa și trebuie — dar o funie groasă căzută fix peste mijlocul unui rând îneacă
-   două cuvinte, iar două cuvinte lipsă dintr-o definiție o fac de nefolosit. */
+/* Biletețele nu mai sunt lipite pe perete: atârnă de sfoara de-a latul, prinse cu
+   cleștișori de rufe. Și, dacă tragi de sfoara aceea, se desprind și cad.
+
+   E singurul lucru din sală pe care **îl poți strica**, și tocmai de-aia merită
+   să existe: până acum tot ce atingeai se aprindea, se mototolea sau se încorda —
+   adică mergea înainte. Aici, o mișcare prea hotărâtă face două hârtii să cadă pe
+   jos. Nu se pierde nimic, se pot citi și de-acolo; dar sala îţi răspunde și când
+   ești brusc, nu numai când ești cuminte. */
 const FISE_COLAJ = [
-  { fel: 'ziar',   u: 0.128, v: 0.468, w: 0.272, h: 0.218, unghi: -0.10, sam: 301,
-    titlu: 'JUNK ART', scris: TEXT_JUNK },
-  { fel: 'carton', u: 0.872, v: 0.838, w: 0.258, h: 0.222, unghi:  0.07, sam: 313,
-    titlu: 'COLAJUL',  scris: TEXT_COLAJ }
+  { fel: 'ziar',   peSfoara: 'rufe', t: 0.255, w: 0.252, h: 0.210, unghi: -0.045, sam: 301,
+    titlu: 'JUNK ART', scris: TEXT_JUNK, cazut: 0, leagan: 0.0 },
+  { fel: 'carton', peSfoara: 'rufe', t: 0.700, w: 0.250, h: 0.215, unghi:  0.035, sam: 313,
+    titlu: 'COLAJUL',  scris: TEXT_COLAJ, cazut: 0, leagan: 1.9 }
 ];
+
+/* Unde stă un bilet acum: atârnat de funie, sau căzut pe jos. */
+/* Numele e `undeAtarnaBiletul`, nu `loculBiletului`, și asta nu e mofț: muzeul din
+   sala a treia are de mult o funcție `loculBiletului`, pentru bilețelele lui. Toate
+   cele nouăsprezece fișiere ale jucăriei se încarcă în același domeniu, ca scripturi
+   obișnuite, deci a doua declarație o șterge pe prima — fără nicio plângere.
+
+   S-a văzut ca unsprezece teste căzute în muzeu, la o schimbare făcută în sala a
+   zecea. Un test nou păzește acum lucrul ăsta pentru toată jucăria.
+
+   Sfoara de care atârnă biletele se caută **după nume**, nu după numărul ei de
+   ordine. Prima oară scrisesem numărul, și când am adăugat sforile noi el a ajuns
+   să arate spre un ziar: biletele au încercat să atârne de o bucată de hârtie și
+   au ieșit din ecran. Un număr de ordine ține minte o listă; un nume ține minte
+   un lucru. */
+function sfoaraDupaNume(nume) {
+  for (const p of s10.piese) if (p.nume === nume) return p;
+  return null;
+}
+
+function undeAtarnaBiletul(f, acum) {
+  const sf = sfoaraDupaNume(f.peSfoara);
+  if (!sf) return null;
+  const sus = punctulSforii(sf, f.t);
+  const cq = Math.min(1, f.cazut);
+  if (cq <= 0) {
+    /* Atârnat: se leagănă abia-abia. O hârtie prinsă în cleștișori nu stă
+       niciodată perfect nemișcată — și mișcarea asta e tot ce spune „atârnă". */
+    const val = Math.sin(acum * 0.0011 + f.leagan) * 0.035;
+    return { x: sus.x, y: sus.y + f.h * H * 0.5, unghi: f.unghi + val,
+             prins: true, sus: sus };
+  }
+  // căzut: coboară legănându-se, și rămâne rezemat pe podea
+  const e = atenuare(cq);
+  const jos = H * 0.965 - f.h * H * 0.5;
+  return {
+    x: sus.x + Math.sin(cq * 5.5 + f.leagan) * W * 0.045 * (1 - cq * 0.5),
+    y: intre(sus.y + f.h * H * 0.5, jos, e),
+    unghi: f.unghi + Math.sin(cq * 7 + f.leagan) * 0.6 * (1 - cq) + (f.leagan - 1) * 0.22 * e,
+    prins: false, sus: sus
+  };
+}
+
+/* Un cleștișor de rufe, de lemn: două fălci și sârma dintre ele. */
+function clestisor(c, x, y, unghi, marime) {
+  c.save();
+  c.translate(x, y);
+  c.rotate(unghi);
+  const w = marime * 0.42, h = marime;
+  c.fillStyle = '#3a2c14';
+  c.globalAlpha = 0.35;
+  c.fillRect(-w * 0.5 + marime * 0.09, -h * 0.42 + marime * 0.09, w, h * 0.9);
+  c.globalAlpha = 1;
+  const lemn = c.createLinearGradient(-w * 0.5, 0, w * 0.5, 0);
+  lemn.addColorStop(0, '#c9a875');
+  lemn.addColorStop(0.45, '#e0c193');
+  lemn.addColorStop(1, '#9a7c4e');
+  c.fillStyle = lemn;
+  dreptunghiIn(c, -w * 0.5, -h * 0.42, w, h * 0.9, w * 0.22);
+  c.fill();
+  c.strokeStyle = '#7a5f39';
+  c.lineWidth = Math.max(0.6, marime * 0.045);
+  c.stroke();
+  // sârma
+  c.strokeStyle = '#8d8f92';
+  c.lineWidth = Math.max(0.7, marime * 0.07);
+  c.beginPath();
+  c.moveTo(-w * 0.5, h * 0.02);
+  c.lineTo(w * 0.5, h * 0.02);
+  c.stroke();
+  // crăpătura dintre fălci
+  c.strokeStyle = 'rgba(60, 44, 20, 0.55)';
+  c.lineWidth = Math.max(0.5, marime * 0.035);
+  c.beginPath();
+  c.moveTo(0, -h * 0.42);
+  c.lineTo(0, h * 0.30);
+  c.stroke();
+  c.restore();
+}
+
+/* Biletele se desenează **viu**, nu în ștampilă: ele se leagănă și pot să cadă. */
+function deseneazaBiletele(c, acum) {
+  for (const f of FISE_COLAJ) {
+    const loc = undeAtarnaBiletul(f, acum);
+    if (!loc) continue;
+    const w = f.w * W, h = f.h * H;
+
+    if (loc.prins) {
+      // ața de la cleștișori până la colțurile de sus ale biletului
+      c.save();
+      c.strokeStyle = 'rgba(60, 46, 22, 0.55)';
+      c.lineWidth = Math.max(0.8, Math.min(W, H) * 0.0022);
+      c.beginPath();
+      c.moveTo(loc.sus.x - w * 0.30, loc.sus.y);
+      c.lineTo(loc.x - w * 0.30, loc.y - h * 0.46);
+      c.moveTo(loc.sus.x + w * 0.30, loc.sus.y);
+      c.lineTo(loc.x + w * 0.30, loc.y - h * 0.46);
+      c.stroke();
+      c.restore();
+    }
+
+    c.save();
+    c.translate(loc.x, loc.y);
+    c.rotate(loc.unghi);
+    const fals = { fel: f.fel, sam: f.sam, scris: f.scris, titlu: f.titlu };
+    umbraPiesei(c, fals, w, h);
+    if (f.fel === 'ziar') bucataDeZiar(c, fals, w, h);
+    else bucataDeCarton(c, fals, w, h);
+    muchiaPiesei(c, fals, w, h);
+    fisaScrisa(c, f, w, h);
+    c.restore();
+
+    if (loc.prins) {
+      const m = Math.min(W, H) * 0.042;
+      clestisor(c, loc.x - w * 0.30, loc.y - h * 0.46, loc.unghi + 0.06, m);
+      clestisor(c, loc.x + w * 0.30, loc.y - h * 0.46, loc.unghi - 0.05, m);
+    }
+  }
+}
 
 /* Scrisul de pe o bucată, îndoit pe lățimea ei. Nu se poate folosi `textIncadrat`
    al muzeului: acela scrie pe pânza de pe ecran, iar aici scriem pe ștampila
@@ -186,10 +333,13 @@ function pregatestePiesele() {
   s10.piese = PIESE_PERETE.map(function (p, i) {
     return {
       i: i, fel: p.fel, u: p.u, v: p.v, w: p.w, h: p.h,
-      unghi: p.unghi, sam: p.sam,
+      unghi: p.unghi, sam: p.sam, nume: p.nume,
+      // capetele sforii; la celelalte bucăți rămân nedefinite și nu le caută nimeni
+      ax: p.ax, ay: p.ay, bx: p.bx, by: p.by,
       activat: false,
       zvac: 0,          // cât de proaspătă e atingerea, 1 → 0
       incretit: 0,      // numai la ziar: cât s-a mototolit
+      gauri: [],        // numai la carton: găurile sparte cu degetul
       arc: 0,           // numai la sfoară: cât e trasă acum
       arcTinta: 0       // și unde rămâne după ce i-ai dat drumul
     };
@@ -208,21 +358,8 @@ function cutiaPiesei(p) {
 
 /* Ce piesă e sub deget. Sforile au o socoteală a lor: sunt subțiri și lungi, iar
    o cutie în jurul lor ar acoperi o coloană întreagă de perete. */
-function piesaDeSub(x, y) {
-  /* Întâi sforile: ele stau deasupra tuturor — dar numai câtă vreme mai au ceva
-     de dat. O sfoară deja încordată rămâne arcuită peste perete și poate ajunge
-     fix peste un pâlc de nasturi; câtă vreme continua să prindă atingerile, acele
-     nasturi nu se mai puteau porni niciodată și sala rămânea de netrecut. Se
-     vedea numai la joc, și numai dacă trăgeai sforile înainte de nasturi.
-
-     O manetă deja trasă nu mai cere nimic de la mână — deci nici n-are de ce să
-     i-o ia. */
-  for (const p of s10.piese) {
-    if (p.fel !== 'sfoara' || p.activat) continue;
-    const lat = Math.max(W * 0.02, p.w * W * 1.6);
-    if (Math.abs(x - liniaSforii(p, y)) < lat) return p;
-  }
-  // pe urmă restul, de la cea mai de sus spre cea de dedesubt
+/* Ce bucată de hârtie, carton sau nasturi e sub deget — cea mai de deasupra. */
+function bucataDeSub(x, y) {
   for (let k = s10.piese.length - 1; k >= 0; k--) {
     const p = s10.piese[k];
     if (p.fel === 'sfoara') continue;
@@ -235,12 +372,68 @@ function piesaDeSub(x, y) {
   return null;
 }
 
-/* Unde trece sfoara la înălțimea `y`: dreaptă când e slobodă, arcuită sub mâna
-   care trage. Arcul e o parabolă cu vârful la mijloc — o funie prinsă la ambele
-   capete nu se îndoaie într-un colț, se umflă. */
-function liniaSforii(p, y) {
-  const q = Math.max(0, Math.min(1, y / H));
-  return p.u * W + p.arc * W * Math.sin(Math.PI * q);
+function piesaDeSub(x, y) {
+  const bucata = bucataDeSub(x, y);
+
+  /* Sforile stau deasupra tuturor — dar numai câtă vreme mai au ceva de dat, și
+     numai cât țin ele de late.
+
+     Două stricăciuni au ieșit de aici, amândouă făcând sala de netrecut. Întâi: o
+     sfoară deja încordată rămâne arcuită peste perete și poate cădea fix peste un
+     pâlc de nasturi. Apoi, când am pus sfori de-a latul: o funie cu zonă de apucat
+     lată taie peretele într-o dâră de patruzeci de pixeli în care nu se mai poate
+     atinge nimic — iar două dintre bucăți își aveau chiar mijlocul acolo.
+
+     Deci: pe funie se apucă doar de pe funie. Pe pânza goală, unde n-are ce
+     încurca, zona de apucat e largă — acolo o sfoară subțire ar fi altfel greu de
+     nimerit. */
+  for (const p of s10.piese) {
+    if (p.fel !== 'sfoara' || p.activat) continue;
+    const departe = catDeAproapeDeSfoara(p, x, y).departe;
+    const gros = Math.max(Math.min(W, H) * 0.010, p.w * W * 0.75);
+    if (departe < gros) return p;
+    if (!bucata && departe < gros * 2.4) return p;
+  }
+  return bucata;
+}
+
+/* Sfoara, de la un capăt la altul.
+
+   Întâi erau toate verticale, și o funie verticală se putea scrie cu un singur
+   număr: `x`-ul ei. Când am pus una de-a latul și una în diagonală, numărul acela
+   n-a mai însemnat nimic — deci fiecare sfoară are acum două capete, iar arcul se
+   umflă **pe perpendiculara ei**, nu pe orizontală. O funie trasă se umflă într-o
+   parte, oricum ar fi întinsă; încotro anume, hotărăște felul în care stă. */
+function capeteleSforii(p) {
+  return { ax: p.ax * W, ay: p.ay * H, bx: p.bx * W, by: p.by * H };
+}
+
+function perpendicularaSforii(p) {
+  const c = capeteleSforii(p);
+  const dx = c.bx - c.ax, dy = c.by - c.ay;
+  const L = Math.hypot(dx, dy) || 1;
+  return { nx: -dy / L, ny: dx / L };
+}
+
+function punctulSforii(p, t) {
+  const c = capeteleSforii(p);
+  const n = perpendicularaSforii(p);
+  const q = Math.max(0, Math.min(1, t));
+  const umflat = (p.arc || 0) * Math.min(W, H) * Math.sin(Math.PI * q);
+  return { x: c.ax + (c.bx - c.ax) * q + n.nx * umflat,
+           y: c.ay + (c.by - c.ay) * q + n.ny * umflat };
+}
+
+/* Cât de departe e degetul de funie, și pe unde. Se caută pe câteva zeci de pași:
+   funia e curbată, deci nu se poate socoti dintr-o formulă de dreaptă. */
+function catDeAproapeDeSfoara(p, x, y) {
+  let cel = 1e9, undeva = 0;
+  for (let k = 0; k <= 28; k++) {
+    const t = k / 28, q = punctulSforii(p, t);
+    const d = Math.hypot(x - q.x, y - q.y);
+    if (d < cel) { cel = d; undeva = t; }
+  }
+  return { departe: cel, t: undeva };
 }
 
 /* ---------- TEXTURILE ---------- */
@@ -659,12 +852,13 @@ function palcDeNasturi(c, p, w, h, luminat) {
    ca o bară netedă rămâne o bară, oricâtă umbră i-ai pune. */
 function franghia(c, p, luminat) {
   const gros = Math.max(3, p.w * W);
-  const PASI = 30;
+  const PASI = 34;
   const puncte = [];
   for (let k = 0; k <= PASI; k++) {
-    const y = (k / PASI) * H;
-    puncte.push([liniaSforii(p, y), y]);
+    const q = punctulSforii(p, k / PASI);
+    puncte.push([q.x, q.y]);
   }
+  const nperp = perpendicularaSforii(p);
   const traseu = function () {
     c.beginPath();
     for (let k = 0; k < puncte.length; k++) {
@@ -697,7 +891,12 @@ function franghia(c, p, luminat) {
 
   // corpul, cu muchiile bine întunecate: o funie e rotundă, deci se stinge repede
   c.globalAlpha = 1;
-  const fir = c.createLinearGradient(p.u * W - gros / 2, 0, p.u * W + gros / 2, 0);
+  /* Degradeul de-a curmezișul funiei merge tot pe perpendiculara ei: la o funie
+     de-a latul, unul orizontal ar fi întins-o pe toată lungimea și n-ar mai fi
+     rotunjit nimic. */
+  const mij = punctulSforii(p, 0.5);
+  const fir = c.createLinearGradient(mij.x - nperp.nx * gros / 2, mij.y - nperp.ny * gros / 2,
+                                     mij.x + nperp.nx * gros / 2, mij.y + nperp.ny * gros / 2);
   fir.addColorStop(0, '#4e4022');
   fir.addColorStop(0.22, SFOARA_UMBRA);
   fir.addColorStop(0.48, '#b9a271');
@@ -722,27 +921,29 @@ function franghia(c, p, luminat) {
      mult decât tot restul încăperii la un loc. Un `stroke` poate trage oricâte
      linii deodată dacă au aceeași culoare și aceeași grosime, iar aici au. */
   c.lineCap = 'butt';
+  const cap = capeteleSforii(p);
+  const lungime = Math.hypot(cap.bx - cap.ax, cap.by - cap.ay) || 1;
   const pasR = gros * 0.95;
-  c.globalAlpha = 0.55;
-  c.strokeStyle = '#43371c';
-  c.lineWidth = Math.max(0.8, gros * 0.16);
-  c.beginPath();
-  for (let y = -pasR; y < H + pasR; y += pasR) {
-    const x = liniaSforii(p, y);
-    c.moveTo(x - gros * 0.48, y + pasR * 0.62);
-    c.quadraticCurveTo(x, y + pasR * 0.06, x + gros * 0.48, y - pasR * 0.58);
-  }
-  c.stroke();
-  c.globalAlpha = 0.38;
-  c.strokeStyle = '#e0c894';
-  c.lineWidth = Math.max(0.6, gros * 0.11);
-  c.beginPath();
-  for (let y = -pasR; y < H + pasR; y += pasR) {
-    const x = liniaSforii(p, y);
-    c.moveTo(x - gros * 0.34, y + pasR * 0.76);
-    c.quadraticCurveTo(x + gros * 0.06, y + pasR * 0.18, x + gros * 0.42, y - pasR * 0.36);
-  }
-  c.stroke();
+  const cateR = Math.max(4, Math.round(lungime / pasR));
+  const tx = (cap.bx - cap.ax) / lungime, ty = (cap.by - cap.ay) / lungime;
+
+  const rasuceste = function (culoare, latime, dinPart, panaLa, alfa) {
+    c.globalAlpha = alfa;
+    c.strokeStyle = culoare;
+    c.lineWidth = latime;
+    c.beginPath();
+    for (let k = 0; k <= cateR; k++) {
+      const q = punctulSforii(p, k / cateR);
+      c.moveTo(q.x - nperp.nx * gros * 0.48 + tx * pasR * dinPart,
+               q.y - nperp.ny * gros * 0.48 + ty * pasR * dinPart);
+      c.quadraticCurveTo(q.x + tx * pasR * 0.06, q.y + ty * pasR * 0.06,
+                         q.x + nperp.nx * gros * 0.48 + tx * pasR * panaLa,
+                         q.y + nperp.ny * gros * 0.48 + ty * pasR * panaLa);
+    }
+    c.stroke();
+  };
+  rasuceste('#43371c', Math.max(0.8, gros * 0.16), 0.62, -0.58, 0.55);
+  rasuceste('#e0c894', Math.max(0.6, gros * 0.11), 0.76, -0.36, 0.38);
 
   // scamele de cânepă care ies din răsucire
   c.lineCap = 'round';
@@ -752,10 +953,10 @@ function franghia(c, p, luminat) {
   c.beginPath();
   for (let k = 0; k < 26; k++) {
     const a = samanta(p.sam * 3.1 + k * 5.7), b = samanta(p.sam * 7.3 + k * 3.3);
-    const y = a * H, x = liniaSforii(p, y);
+    const q = punctulSforii(p, a);
     const lat = (b > 0.5 ? 1 : -1) * gros * (0.5 + b * 0.9);
-    c.moveTo(x, y);
-    c.lineTo(x + lat, y + (b - 0.5) * gros * 1.6);
+    c.moveTo(q.x, q.y);
+    c.lineTo(q.x + nperp.nx * lat, q.y + nperp.ny * lat);
   }
   c.stroke();
 
@@ -915,18 +1116,23 @@ function pregatestePeretele() {
      stingerea asta, un colaj cu douăzeci de bucăți n-are adâncime, are numai
      înghesuială. */
   for (const pi of FUNDAL_COLAJ) puneBucata(pi, 0.72);
-  for (const pi of s10.piese) {
-    if (pi.fel === 'sfoara') continue;              // sforile se mișcă, stau deasupra
+  for (const pi of INTUNECATE) {
     puneBucata(pi, 1);
-  }
-  for (const pi of FISE_COLAJ) {
-    puneBucata(pi, 1);
+    // și peste ele, o spălare închisă, tăiată la forma bucății
     const cut = cutiaPiesei(pi);
     c.save();
     c.translate(cut.cx, cut.cy);
     c.rotate(pi.unghi);
-    fisaScrisa(c, pi, cut.w, cut.h);
+    conturRupt(c, cut.w, cut.h, pi.sam, pi.fel === 'carton' ? 0.022 : 0.035);
+    c.clip();
+    c.globalAlpha = pi.cat;
+    c.fillStyle = '#2a1f0c';
+    c.fillRect(-cut.w, -cut.h, cut.w * 2, cut.h * 2);
     c.restore();
+  }
+  for (const pi of s10.piese) {
+    if (pi.fel === 'sfoara') continue;              // sforile se mișcă, stau deasupra
+    puneBucata(pi, 1);
   }
   c.globalAlpha = 1;
 
@@ -1073,6 +1279,101 @@ function increteste(c, p, cut, cat) {
   c.fillStyle = rama;
   c.fillRect(-w / 2, -h / 2, w, h);
   c.globalAlpha = 1;
+  c.restore();
+}
+
+/* Găurile sparte în carton. O gaură nu e un cerc negru: e o **margine ruptă** cu
+   fibre în lături, un strat de undă la vedere pe muchie, și întuneric dedesubt —
+   fiindcă sub carton e gol, iar golul nu are culoare.
+
+   Și cartonul rupt scoate limbi înăuntru, nu bucăți curate: partea de sus a foii
+   se despică și rămâne atârnată peste gaură. După ele se cunoaște că a fost spartă
+   cu degetul, nu tăiată. */
+function sparge(c, p, cut) {
+  c.save();
+  c.translate(cut.cx, cut.cy);
+  c.rotate(p.unghi);
+  conturRupt(c, cut.w, cut.h, p.sam, 0.022);
+  c.clip();
+
+  for (const g of p.gauri) {
+    const x = g.u * cut.w, y = g.v * cut.h;
+    const r = Math.min(cut.w, cut.h) * g.r;
+    const contur = function (cat) {
+      c.beginPath();
+      for (let k = 0; k <= 20; k++) {
+        const a = (k / 20) * Math.PI * 2;
+        const val = 1 + 0.30 * Math.sin(a * 2 + g.sam)
+                      + 0.20 * Math.sin(a * 3.7 + g.sam * 1.3)
+                      + 0.12 * Math.sin(a * 6.1 + g.sam * 0.7);
+        const px = x + Math.cos(a) * r * val * cat;
+        const py = y + Math.sin(a) * r * val * cat;
+        if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.closePath();
+    };
+
+    // golul de dedesubt
+    const adanc = c.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, r * 1.1);
+    adanc.addColorStop(0, '#0d0a04');
+    adanc.addColorStop(0.7, '#1d1608');
+    adanc.addColorStop(1, '#3b2d13');
+    c.fillStyle = adanc;
+    contur(1);
+    c.fill();
+
+    // unda de pe muchie: se vede grosimea cartonului
+    c.save();
+    contur(1.28);
+    c.clip();
+    c.globalCompositeOperation = 'destination-over';
+    c.strokeStyle = CARTON_MUCHIE;
+    c.lineWidth = Math.max(0.8, r * 0.10);
+    const pasU = Math.max(2.5, r * 0.22);
+    for (let a = 0; a < Math.PI * 2; a += pasU / r) {
+      c.beginPath();
+      c.moveTo(x + Math.cos(a) * r * 0.95, y + Math.sin(a) * r * 0.95);
+      c.lineTo(x + Math.cos(a) * r * 1.26, y + Math.sin(a) * r * 1.26);
+      c.stroke();
+    }
+    c.restore();
+
+    // limbile de carton, răsfrânte peste gaură
+    for (let k = 0; k < 4; k++) {
+      const a = samanta(g.sam + k * 5.3) * Math.PI * 2;
+      const lung = r * (0.5 + samanta(g.sam + k * 7.1) * 0.7);
+      c.save();
+      c.globalAlpha = 0.9;
+      c.fillStyle = k % 2 ? '#b49269' : '#9a7c52';
+      c.beginPath();
+      c.moveTo(x + Math.cos(a - 0.4) * r * 1.05, y + Math.sin(a - 0.4) * r * 1.05);
+      c.quadraticCurveTo(x + Math.cos(a) * lung * 0.4, y + Math.sin(a) * lung * 0.4,
+                         x + Math.cos(a + 0.1) * lung * 0.3, y + Math.sin(a + 0.1) * lung * 0.3);
+      c.quadraticCurveTo(x + Math.cos(a + 0.3) * r * 0.9, y + Math.sin(a + 0.3) * r * 0.9,
+                         x + Math.cos(a + 0.45) * r * 1.05, y + Math.sin(a + 0.45) * r * 1.05);
+      c.closePath();
+      c.fill();
+      c.globalAlpha = 0.5;
+      c.strokeStyle = '#5d4a26';
+      c.lineWidth = Math.max(0.6, r * 0.055);
+      c.stroke();
+      c.restore();
+    }
+
+    // fibrele scămoșate de pe margine
+    c.globalAlpha = 0.7;
+    c.strokeStyle = '#c9ab7e';
+    c.lineWidth = Math.max(0.5, r * 0.04);
+    c.beginPath();
+    for (let k = 0; k < 22; k++) {
+      const a = samanta(g.sam * 3.1 + k * 2.7) * Math.PI * 2;
+      const z = samanta(g.sam * 5.9 + k * 3.3);
+      c.moveTo(x + Math.cos(a) * r * 1.0, y + Math.sin(a) * r * 1.0);
+      c.lineTo(x + Math.cos(a) * r * (1.1 + z * 0.3), y + Math.sin(a) * r * (1.1 + z * 0.3));
+    }
+    c.stroke();
+    c.globalAlpha = 1;
+  }
   c.restore();
 }
 
@@ -1370,6 +1671,7 @@ function intraInColaj(acum) {
   s10.rupere = 0; s10.fasii = []; s10.crapaturi = [];
   s10.sfoaraInMana = -1; s10.ultimaIuta = 0; s10.ultimulFosnet = 0;
   pregatestePiesele();
+  for (const f of FISE_COLAJ) f.cazut = 0;
   stampaPeretelui.latime = 0;         // peretele se face din nou, cu piese noi
   pregatestePeretele();
   batLaMasina('Închide ochii și simte texturile.', 1400);
@@ -1412,6 +1714,14 @@ function pornestePiesa(p, acum) {
       }
     }
   } else if (p.fel === 'carton') {
+    /* Cartonul se **sparge** sub deget. La fiecare apăsare se face o gaură nouă,
+       până la cinci: dincolo de atât bucata n-ar mai fi carton, ar fi dantelă. */
+    if (p.gauri.length < 5) {
+      p.gauri.push({ u: (Math.random() - 0.5) * 0.72,
+                     v: (Math.random() - 0.5) * 0.72,
+                     r: 0.05 + Math.random() * 0.07,
+                     sam: 400 + p.gauri.length * 37 + p.sam });
+    }
     if (audio) sunetCarton();
   } else if (p.fel === 'nasturi') {
     if (audio) sunetNasturi();
@@ -1474,7 +1784,11 @@ function trageDeScena10() {
 
   if (s10.sfoaraInMana >= 0) {
     const p = s10.piese[s10.sfoaraInMana];
-    const dorit = (cursor.x - p.u * W) / W;
+    /* Cât de tare e umflată: cât de departe a plecat degetul de la linia dreaptă
+       dintre capete, măsurat pe perpendiculara ei. */
+    const cap = capeteleSforii(p), n = perpendicularaSforii(p);
+    const dorit = ((cursor.x - cap.ax) * n.nx + (cursor.y - cap.ay) * n.ny) /
+                  Math.min(W, H);
     p.arc = Math.max(-0.16, Math.min(0.16, dorit));
     if (audio && Math.random() < 0.4) {
       sunetSfoaraIncordata(Math.abs(p.arc) / 0.16);
@@ -1485,6 +1799,13 @@ function trageDeScena10() {
       s10.activate++;
       crapaCleiulDinJur(p);
       if (audio) sunetClopotelBicicleta();
+      // ce era prins pe funia asta se desprinde și cade
+      for (const f of FISE_COLAJ) {
+        if (f.peSfoara === p.nume && f.cazut === 0) {
+          f.cazut = 0.001;
+          if (audio) sunetCrackClei();
+        }
+      }
     }
     return;
   }
@@ -1534,6 +1855,9 @@ function actualizeazaColaj(acum) {
       p.arc += (p.arcTinta - p.arc) * Math.min(1, dt / 90);
     }
   }
+  for (const f of FISE_COLAJ) {
+    if (f.cazut > 0 && f.cazut < 1) f.cazut = Math.min(1, f.cazut + dt / 1500);
+  }
 
   if (s10.faza === 'intrare') {
     s10.intuneric = Math.min(1, s10.intuneric + dt / 2600);
@@ -1575,8 +1899,8 @@ function deseneazaScena10(t, acum) {
 
   // ce s-a schimbat de la atingeri: mototolelile, cleiul crăpat, sforile
   for (const p of s10.piese) {
-    if (p.fel !== 'ziar' || p.incretit <= 0) continue;
-    increteste(ctx, p, cutiaPiesei(p), p.incretit);
+    if (p.fel === 'ziar' && p.incretit > 0) increteste(ctx, p, cutiaPiesei(p), p.incretit);
+    if (p.fel === 'carton' && p.gauri.length) sparge(ctx, p, cutiaPiesei(p));
   }
   for (let k = 0; k < DARE_CLEI.length; k++) {
     const cat = s10.crapaturi[k] || 0;
@@ -1587,6 +1911,7 @@ function deseneazaScena10(t, acum) {
   for (const p of s10.piese) {
     if (p.fel === 'sfoara') franghia(ctx, p, p.activat ? 0.55 : 0);
   }
+  deseneazaBiletele(ctx, acum);
 
   /* Piesele pornite luminează pe la spate. Ele sunt tabla de bord a sălii: după
      ce nu mai rămâne niciuna stinsă, se desprinde colțul. Fără semnul ăsta,

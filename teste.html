@@ -492,6 +492,8 @@ return {
   click9: typeof click9 !== "undefined" ? click9 : null,
   geomSala9: typeof geomSala9 !== "undefined" ? geomSala9 : null,
   stropesteCuApa: typeof stropesteCuApa !== "undefined" ? stropesteCuApa : null,
+  loculPulverizatorului: typeof loculPulverizatorului !== "undefined" ? loculPulverizatorului : null,
+  pePulverizator: typeof pePulverizator !== "undefined" ? pePulverizator : null,
   udaFoaia: typeof udaFoaia !== "undefined" ? udaFoaia : null,
   udarealaFoaie: typeof udarealaFoaie !== "undefined" ? udarealaFoaie : null,
   raspandesteApa: typeof raspandesteApa !== "undefined" ? raspandesteApa : null,
@@ -515,7 +517,10 @@ return {
   deseneazaScena10: typeof deseneazaScena10 !== "undefined" ? deseneazaScena10 : null,
   piesaDeSub: typeof piesaDeSub !== "undefined" ? piesaDeSub : null,
   cutiaPiesei: typeof cutiaPiesei !== "undefined" ? cutiaPiesei : null,
-  liniaSforii: typeof liniaSforii !== "undefined" ? liniaSforii : null,
+  punctulSforii: typeof punctulSforii !== "undefined" ? punctulSforii : null,
+  perpendicularaSforii: typeof perpendicularaSforii !== "undefined" ? perpendicularaSforii : null,
+  undeAtarnaBiletul: typeof undeAtarnaBiletul !== "undefined" ? undeAtarnaBiletul : null,
+  INTUNECATE: typeof INTUNECATE !== "undefined" ? INTUNECATE : null,
   pregatestePeretele: typeof pregatestePeretele !== "undefined" ? pregatestePeretele : null,
   cursorulScenei10: typeof cursorulScenei10 !== "undefined" ? cursorulScenei10 : null,
   peClapa: typeof peClapa !== "undefined" ? peClapa : null,
@@ -4199,6 +4204,54 @@ function ruleaza() {
     egal(j.s9.faza, "uscat", "stropirea a sarit peste faza in care se lucreaza");
   });
 
+  test("intai iei sticla de jos, si abia pe urma stropesti", function () {
+    /* Se putea si fara: apasai oriunde pe foaie si apa venea de nicaieri. Merge,
+       dar e o sala despre atins, iar apa care apare din senin nu se atinge de
+       nimeni. Iar cine apasa pe hartie fara sticla nu ramane cu mana goala:
+       sticla tresare, jos, la locul ei. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    adevarat(!j.s9.pulvInMana, "sticla era deja in mana la intrare");
+
+    j.cursor.x = g.foaieX + g.foaieLat * 0.5;
+    j.cursor.y = g.foaieY + g.foaieInalt * 0.5;
+    j.click9(j.ceas.t);
+    egal(j.s9.udare, 0, "am udat hartia fara sa fi luat sticla");
+    adevarat(j.s9.pulvTresarire > 0, "sticla n-a tresarit ca sa arate unde e");
+
+    j.cursor.x = g.pulvX; j.cursor.y = g.pulvY - g.pulvInalt * 0.4;
+    j.click9(j.ceas.t);
+    adevarat(j.s9.pulvInMana, "clicul pe sticla n-a ridicat-o");
+    j.avanseazaUsor(900);
+    adevarat(j.s9.pulvRidicat > 0.9, "sticla nu s-a ridicat de tot: " + j.s9.pulvRidicat);
+
+    // si acum, cu ea in mana, apa curge
+    j.cursor.x = g.foaieX + g.foaieLat * 0.5;
+    j.cursor.y = g.foaieY + g.foaieInalt * 0.5;
+    j.click9(j.ceas.t);
+    j.raspandesteApa();
+    adevarat(j.s9.udare > 0, "cu sticla in mana, stropirea tot n-a udat nimic");
+  });
+
+  test("sticla luata din mana urmeaza degetul, cu duza in varful lui", function () {
+    /* Duza ajunge unde iti pui degetul, fiindca de acolo iese apa — iar apa
+       trebuie sa ude exact locul atins. Un obiect tinut de mijloc ar stropi
+       alaturi de unde te uiti. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inAcuarela(j);
+    j.cursor.x = g.pulvX; j.cursor.y = g.pulvY - g.pulvInalt * 0.4;
+    j.click9(j.ceas.t);
+    j.cursor.x = g.foaieX + g.foaieLat * 0.3;
+    j.cursor.y = g.foaieY + g.foaieInalt * 0.3;
+    j.avanseazaUsor(900);
+    const loc = j.loculPulverizatorului(g);
+    const lat = g.pulvInalt * 0.36;
+    aproape(loc.x + lat * 0.62, j.cursor.x, 1, "duza nu ajunge sub deget, pe orizontala");
+    aproape(loc.y - g.pulvInalt * 0.75, j.cursor.y, 1, "duza nu ajunge sub deget, pe verticala");
+    adevarat(Math.hypot(j.s9.pulvX - loc.x, j.s9.pulvY - loc.y) < g.S * 0.02,
+      "sticla n-a apucat sa ajunga in mana");
+  });
+
   test("apa uda unde ai stropit, nu toata foaia deodata", function () {
     /* Daca o singura stropire ar uda coala intreaga, n-ar mai exista nicio
        legatura intre mana ta si ce se intampla pe perete, si tocmai legatura
@@ -4359,13 +4412,23 @@ function ruleaza() {
   }
 
   // porneste o piesa, indiferent de fel: la sfori se trage, la restul se apasa
+  /* Sforile nu mai sunt toate verticale, deci nu se mai poate trage "spre
+     dreapta": se trage **pe perpendiculara funiei**, oricum ar fi ea intinsa. */
+  function trageSfoara(j, p, cat) {
+    const mij = j.punctulSforii(p, 0.5);
+    const n = j.perpendicularaSforii(p);
+    j.cursor.x = mij.x + n.nx * Math.min(j.W(), j.H()) * cat;
+    j.cursor.y = mij.y + n.ny * Math.min(j.W(), j.H()) * cat;
+    j.trageDeScena10();
+  }
+
   function porneste10(j, p) {
     const c = j.cutiaPiesei(p);
     if (p.fel === "sfoara") {
-      atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+      const mij = j.punctulSforii(p, 0.5);
+      atinge10(j, mij.x, mij.y);
       j.cursor.apasat = true;
-      j.cursor.x = p.u * j.W() + j.W() * 0.14;
-      j.trageDeScena10();
+      trageSfoara(j, p, 0.14);
       j.cursor.apasat = false;
       j.trageDeScena10();
     } else {
@@ -4463,19 +4526,18 @@ function ruleaza() {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inColaj(j);
     const p = j.s10.piese.filter(function (x) { return x.fel === "sfoara"; })[0];
-    atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+    const mij = j.punctulSforii(p, 0.5);
+    atinge10(j, mij.x, mij.y);
     adevarat(!p.activat, "sfoara s-a pornit dintr-un simplu clic");
     egal(j.s10.sfoaraInMana, p.i, "sfoara n-a ramas in mana");
 
     // o smucitura mica nu ajunge
     j.cursor.apasat = true;
-    j.cursor.x = p.u * j.W() + j.W() * 0.03;
-    j.trageDeScena10();
+    trageSfoara(j, p, 0.03);
     adevarat(!p.activat, "o smucitura mica a pornit sfoara");
 
     // trasa pana la capat, se incordeaza si ramane asa
-    j.cursor.x = p.u * j.W() + j.W() * 0.14;
-    j.trageDeScena10();
+    trageSfoara(j, p, 0.14);
     adevarat(p.activat, "sfoara trasa pana la capat nu s-a incordat");
     j.cursor.apasat = false;
     j.trageDeScena10();
@@ -4488,10 +4550,10 @@ function ruleaza() {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inColaj(j);
     const p = j.s10.piese.filter(function (x) { return x.fel === "sfoara"; })[0];
-    atinge10(j, j.liniaSforii(p, j.H() * 0.5), j.H() * 0.5);
+    const mij = j.punctulSforii(p, 0.5);
+    atinge10(j, mij.x, mij.y);
     j.cursor.apasat = true;
-    j.cursor.x = p.u * j.W() + j.W() * 0.05;
-    j.trageDeScena10();
+    trageSfoara(j, p, 0.05);
     adevarat(Math.abs(p.arc) > 0.02, "sfoara nu s-a curbat sub mana");
     j.cursor.apasat = false;
     j.trageDeScena10();
@@ -4598,10 +4660,10 @@ function ruleaza() {
     egal(j.atelierulScena10(), null, "atelierul a ramas sa toarca peste sala urmatoare");
   });
 
-  test("pe perete stau lipite cele doua definitii, si se pot citi", function () {
+  test("cele doua definitii atarna de sfoara, cu clestisori", function () {
     /* In celelalte sali fisa sta intr-o caseta pe perete; aici sala **e** un
-       colaj, deci fisa se lipeste pe el ca orice altceva. Doua materii, doua
-       definitii — una pe hartie, una pe carton. */
+       colaj, deci fisele atarna de sfoara de rufe, prinse cu clestisori. Doua
+       materii, doua definitii \u2014 una pe hartie, una pe carton. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     inColaj(j);
     adevarat(j.FISE_COLAJ !== null && j.FISE_COLAJ.length === 2, "lipsesc fisele");
@@ -4612,16 +4674,65 @@ function ruleaza() {
     adevarat(/Junk Art este un curent artistic/.test(tot), "lipseste definitia Junk Art");
     adevarat(/Colajul este o tehnic/.test(tot), "lipseste definitia colajului");
 
-    /* Sforile trec peste tot ce e pe perete — dar o funie cazuta fix peste
-       mijlocul unui rand ineaca doua cuvinte, iar doua cuvinte lipsa dintr-o
-       definitie o fac de nefolosit. Deci fisele stau **intre** sfori. */
     for (const f of j.FISE_COLAJ) {
-      const de = f.u - f.w * 0.42, pana = f.u + f.w * 0.42;
-      for (const p of j.s10.piese) {
-        if (p.fel !== "sfoara") continue;
-        adevarat(p.u < de || p.u > pana,
-          "sfoara de la " + p.u + " trece prin mijlocul fisei " + f.titlu);
-      }
+      const loc = j.undeAtarnaBiletul(f, j.ceas.t);
+      adevarat(loc !== null, "biletul " + f.titlu + " nu-si gaseste sfoara");
+      adevarat(loc.prins, "biletul " + f.titlu + " nu atarna de nimic");
+      adevarat(loc.x > 0 && loc.x < j.W() && loc.y > 0 && loc.y < j.H(),
+        "biletul " + f.titlu + " a iesit din ecran");
+    }
+  });
+
+  test("daca tragi de sfoara de rufe, biletele se desprind si cad", function () {
+    /* Singurul lucru din sala pe care il poti strica, si tocmai de-aia merita sa
+       existe: pana aici tot ce atingeai mergea inainte. O miscare prea hotarata
+       face doua hartii sa cada pe jos. Nu se pierde nimic, se citesc si de-acolo. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const rufe = j.s10.piese.filter(function (p) { return p.nume === "rufe"; })[0];
+    adevarat(rufe !== undefined, "lipseste sfoara de rufe");
+    const inainte = j.FISE_COLAJ.map(function (f) {
+      return j.undeAtarnaBiletul(f, j.ceas.t).y;
+    });
+
+    porneste10(j, rufe);
+    j.avanseazaUsor(2500);
+    for (let k = 0; k < j.FISE_COLAJ.length; k++) {
+      const f = j.FISE_COLAJ[k];
+      const loc = j.undeAtarnaBiletul(f, j.ceas.t);
+      adevarat(!loc.prins, "biletul " + f.titlu + " a ramas prins dupa ce am tras");
+      adevarat(loc.y > inainte[k] + j.H() * 0.15,
+        "biletul " + f.titlu + " n-a cazut: " + inainte[k] + " -> " + loc.y);
+      adevarat(loc.y < j.H(), "biletul " + f.titlu + " a cazut sub podea");
+    }
+  });
+
+  test("cartonul se sparge sub deget, si gaurile raman", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    const ct = j.s10.piese.filter(function (p) { return p.fel === "carton"; })[0];
+    const c = j.cutiaPiesei(ct);
+    egal(ct.gauri.length, 0, "cartonul era deja spart");
+    for (let k = 0; k < 8; k++) atinge10(j, c.cx, c.cy);
+    adevarat(ct.gauri.length > 0, "apasat de opt ori, cartonul n-a crapat deloc");
+    adevarat(ct.gauri.length <= 5,
+      "cartonul s-a facut dantela: " + ct.gauri.length + " gauri");
+    j.avanseazaUsor(2000);
+    adevarat(ct.gauri.length > 0, "gaurile s-au inchis la loc");
+  });
+
+  test("mijlocul peretelui e mai inchis decat marginile", function () {
+    /* Un colaj intins uniform n-are unde sa odihneasca ochiul: te uiti peste el ca
+       peste un tapet. Un cuib mai intunecat la mijloc strange privirea acolo, iar
+       restul devine, dintr-odata, marginea a ceva. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inColaj(j);
+    adevarat(j.INTUNECATE !== null && j.INTUNECATE.length >= 3,
+      "lipseste cuibul intunecat din mijloc");
+    for (const p of j.INTUNECATE) {
+      adevarat(p.u > 0.30 && p.u < 0.70 && p.v > 0.30 && p.v < 0.75,
+        "bucata intunecata de la " + p.u + "," + p.v + " nu e la mijloc");
+      adevarat(p.cat > 0.3, "bucata de la mijloc nu e mai inchisa: " + p.cat);
     }
   });
 
@@ -4855,6 +4966,28 @@ function ruleaza() {
     for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     j.avanseaza(1000);
     egal(j.s5.faza, "viu", "țăranii nu prind viață după cei zece pași");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Nicio funcție nu șterge altă funcție");
+
+  test("nu exista doua functii cu acelasi nume in toata jucaria", function () {
+    /* Toate cele nouasprezece fisiere se incarca in acelasi domeniu, ca scripturi
+       obisnuite — asa trebuie, ca jocul sa mearga si cu dublu-clic, de pe file://.
+       Pretul e ca a doua declaratie a unui nume o sterge pe prima, in tacere.
+
+       S-a intamplat: sala a zecea si-a numit o functie `loculBiletului`, ca aceea
+       a muzeului din sala a treia, si a sters-o. Unsprezece teste au cazut in
+       muzeu, dupa o schimbare facuta cu totul in alta parte, iar mesajul spunea
+       doar „Cannot read properties of null". Un nume prost pus costa o ora. */
+    const nume = {};
+    const dublate = [];
+    const potriveste = /^function\s+([A-Za-z_$][\w$]*)\s*\(/gm;
+    let g;
+    while ((g = potriveste.exec(sursa)) !== null) {
+      if (nume[g[1]]) dublate.push(g[1]); else nume[g[1]] = true;
+    }
+    egal(dublate.length, 0, "functii declarate de doua ori: " + dublate.join(", "));
   });
 
   /* ---------------------------------------------------------------- */

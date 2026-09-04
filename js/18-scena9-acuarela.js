@@ -38,6 +38,10 @@ const s9 = {
   celule: [],          // udarea, ochi cu ochi: 0 uscat, 1 leoarcă
   udare: 0,            // cât din foaie e udă, 0..1
   stropiri: 0,
+  pulvInMana: false,    // ai luat sticla de jos?
+  pulvX: 0, pulvY: 0,   // unde stă acum baza ei
+  pulvRidicat: 0,       // 0 pe podea, 1 sus în mână
+  pulvTresarire: 0,     // cât tresărește, când ai atins foaia fără ea în mână
   stropi: [],          // stropii care zboară acum prin aer
   siroaie: [],         // șiroaiele care se preling de pe foaie pe perete
   inundare: 0,         // cât a inundat marea podeaua
@@ -76,7 +80,7 @@ function geomSala9() {
        îndemână, arată a unealtă lăsată acolo pentru tine. */
     pulvX: Math.min(W - S * 0.10, foaieX + foaieLat + S * 0.17),
     pulvY: podea + H * 0.055,
-    pulvInalt: Math.min(H * 0.24, S * 0.30)
+    pulvInalt: Math.min(H * 0.20, S * 0.25)
   };
 }
 
@@ -800,8 +804,17 @@ function panzaLucrarii(acum) {
 
 /* ---------- PULVERIZATORUL ---------- */
 function deseneazaPulverizatorul(c, g, acum) {
-  const x = g.pulvX, jos = g.pulvY, h = g.pulvInalt;
-  const lat = h * 0.36;
+  const h = g.pulvInalt, lat = h * 0.36;
+  const x = s9.pulvX, jos = s9.pulvY;
+
+  c.save();
+  /* Când o ții în mână, sticla stă puțin înclinată — nimeni nu ține o sticlă
+     perfect dreaptă — și tresărește când ai atins hârtia fără ea, ca să se vadă
+     unde e ce-ți trebuie. */
+  const tr = s9.pulvTresarire;
+  c.translate(x, jos);
+  c.rotate(intre(0, -0.22, s9.pulvRidicat) + Math.sin(acum * 0.03) * 0.12 * tr);
+  c.translate(-x, -jos - Math.abs(Math.sin(acum * 0.02)) * h * 0.10 * tr);
 
   /* Umbra de sub el. Un obiect fără umbră nu stă pe podea, plutește la un
      centimetru deasupra ei — se vede imediat, chiar dacă nu-ți dai seama de ce. */
@@ -847,7 +860,7 @@ function deseneazaPulverizatorul(c, g, acum) {
 
   /* Cheamă cât timp n-ai stropit încă. Nu clipește: **respiră**. O clipire ar
      zice „apasă aici, repede"; o respirație zice „sunt aici când vrei". */
-  if (s9.stropiri < 3) {
+  if (!s9.pulvInMana) {
     const bat = 0.5 + 0.5 * Math.sin(acum * 0.0028);
     const halo = c.createRadialGradient(x, jos - h * 0.4, 0, x, jos - h * 0.4, h * 0.9);
     halo.addColorStop(0, `rgba(150, 200, 225, ${0.26 * bat})`);
@@ -857,6 +870,32 @@ function deseneazaPulverizatorul(c, g, acum) {
     c.arc(x, jos - h * 0.4, h * 0.9, 0, Math.PI * 2);
     c.fill();
   }
+  c.restore();
+}
+
+/* Unde stă sticla acum. Pe podea, acolo unde a fost lăsată; în mână, cu duza
+   fix în vârful degetului — fiindcă acolo iese apa, și acolo trebuie să se ude.
+
+   Baza se socotește scăzând din cursor unde cade duza față de bază. Pare o
+   întorsătură pe dos, și e chiar lucrul care face obiectul să pară ținut: îl
+   apuci de unde ai nevoie de el, nu de mijloc. */
+function loculPulverizatorului(g) {
+  if (!s9.pulvInMana) return { x: g.pulvX, y: g.pulvY, inclinat: 0 };
+  const h = g.pulvInalt, lat = h * 0.36;
+  /* Duza stă la `lat * 0.62` în dreapta bazei și la `h * 0.75` deasupra ei — se
+     citesc din chiar desenul sticlei. Scăzute din cursor, dau baza. */
+  return {
+    x: cursor.x - lat * 0.62,
+    y: cursor.y + h * 0.75,
+    inclinat: -0.22
+  };
+}
+
+function pePulverizator(x, y, g) {
+  const p = loculPulverizatorului(g);
+  const h = g.pulvInalt, lat = h * 0.36;
+  return x > p.x - lat * 1.1 && x < p.x + lat * 1.0 &&
+         y > p.y - h * 0.95 && y < p.y + h * 0.18;
 }
 
 /* ---------- STROPII ȘI ȘIROAIELE ---------- */
@@ -1309,6 +1348,8 @@ function intraInAcuarela(acum) {
   stare = 'acuarela';
   s9.faza = 'intrare'; s9.t0 = acum; s9.ultimulCadru = acum;
   s9.limpezire = 0; s9.stropiri = 0; s9.udare = 0;
+  s9.pulvInMana = false; s9.pulvRidicat = 0; s9.pulvTresarire = 0;
+  s9.pulvX = 0; s9.pulvY = 0;
   s9.stropi = []; s9.siroaie = []; s9.inundare = 0;
   s9.plonjon = 0; s9.sedimentare = 0; s9.vorba = null;
   pregatesteOchiurileFoii();
@@ -1350,6 +1391,26 @@ function click9(acum) {
     }
   }
 
+  /* Întâi iei sticla de jos, și abia pe urmă stropești.
+
+     Se putea și fără: apăsai oriunde pe foaie și apa venea de nicăieri. Merge, dar
+     e o sală despre atins, iar apa care apare din senin nu se atinge de nimeni.
+     Așa ai un obiect în mână, îl ridici de pe podea, și duza ajunge unde îți pui
+     degetul — tot ce urmează vine din el.
+
+     Iar cine apasă pe hârtie fără ea, nu rămâne cu mâna goală: sticla **tresare**,
+     jos, la locul ei. O sală care nu răspunde deloc pare stricată; una care
+     răspunde arătând cu degetul spre ce-ți trebuie te învață fără să-ți spună. */
+  if (!s9.pulvInMana) {
+    if (pePulverizator(x, y, g)) {
+      s9.pulvInMana = true;
+      if (audio) sunetPoc();
+    } else {
+      s9.pulvTresarire = 1;
+    }
+    return;
+  }
+
   stropesteCuApa(x, y, acum);
 }
 
@@ -1367,7 +1428,7 @@ function stropesteCuApa(x, y, acum) {
 }
 
 function pulverizeazaScena9() {
-  if (stare !== 'acuarela' || !cursor.apasat) return;
+  if (stare !== 'acuarela' || !cursor.apasat || !s9.pulvInMana) return;
   stropesteCuApa(cursor.x, cursor.y, performance.now());
 }
 
@@ -1377,6 +1438,19 @@ function actualizeazaAcuarela(acum) {
   s9.ultimulCadru = acum;
   tinePicaturileDeApa();
   tineVinilul();
+
+  /* Sticla merge spre mână, nu sare în ea. Un obiect care se lipește instantaneu de
+     cursor nu pare luat, pare mutat de altcineva; câteva cadre de întârziere și
+     capătă greutate. */
+  const g10 = geomSala9();
+  if (!s9.pulvX && !s9.pulvY) { s9.pulvX = g10.pulvX; s9.pulvY = g10.pulvY; }
+  const tinta = loculPulverizatorului(g10);
+  const catre = s9.pulvInMana ? Math.min(1, dt / 90) : Math.min(1, dt / 220);
+  s9.pulvX += (tinta.x - s9.pulvX) * catre;
+  s9.pulvY += (tinta.y - s9.pulvY) * catre;
+  s9.pulvRidicat = Math.max(0, Math.min(1, s9.pulvRidicat +
+    (s9.pulvInMana ? dt / 260 : -dt / 380)));
+  if (s9.pulvTresarire > 0) s9.pulvTresarire = Math.max(0, s9.pulvTresarire - dt / 700);
   actualizeazaStropii(dt);
   actualizeazaSiroaiele(dt);
   raspandesteApa();
