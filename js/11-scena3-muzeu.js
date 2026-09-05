@@ -1159,9 +1159,27 @@ function podoabeleHainei(i, w, h, lat) {
 /* Pielea custodelui. Un elefant adevărat nu e o pată de culoare: are lumină pe
    frunte, umbră sub bărbie, cute la încheieturi și pete de pigment. Culorile de
    aici sunt doar capetele degradeurilor — volumul se face din ele. */
-const ELEF_FATA = '#4a7fb5', ELEF_SUS = '#84b4de', ELEF_LATERAL = '#2f5885',
-      ELEF_INCHIS = '#1d3a5c', ELEF_PATA = 'rgba(28, 56, 88, 0.16)',
-      ELEF_MARGINE = 'rgba(196, 228, 255, 0.5)';
+let ELEF_FATA = '#4a7fb5', ELEF_SUS = '#84b4de', ELEF_LATERAL = '#2f5885',
+    ELEF_INCHIS = '#1d3a5c', ELEF_PATA = 'rgba(28, 56, 88, 0.16)',
+    ELEF_MARGINE = 'rgba(196, 228, 255, 0.5)';
+
+/* Se schimbă o singură dată, la reînceput, dacă ai acceptat gluma din vid.
+
+   Rozul nu e albastrul cu nuanța schimbată la întâmplare: păstrează aceeași
+   scară de lumină — față medie, creștet deschis, lateral închis — fiindcă
+   volumul custodelui e făcut din raporturile astea, nu din culoare. Un roz pus
+   fără scară ar turti elefantul, și gluma ar costa forma. */
+function zugravesteElefantul(roz) {
+  if (roz) {
+    ELEF_FATA = '#c2607f'; ELEF_SUS = '#eda6bf'; ELEF_LATERAL = '#95405f';
+    ELEF_INCHIS = '#67243d'; ELEF_PATA = 'rgba(92, 30, 52, 0.16)';
+    ELEF_MARGINE = 'rgba(255, 214, 232, 0.5)';
+  } else {
+    ELEF_FATA = '#4a7fb5'; ELEF_SUS = '#84b4de'; ELEF_LATERAL = '#2f5885';
+    ELEF_INCHIS = '#1d3a5c'; ELEF_PATA = 'rgba(28, 56, 88, 0.16)';
+    ELEF_MARGINE = 'rgba(196, 228, 255, 0.5)';
+  }
+}
 
 // Un aleator cu sămânță fixă: petele de pigment stau pe loc de la un cadru la altul.
 function pigment(i) {

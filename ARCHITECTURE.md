@@ -64,7 +64,7 @@ stateDiagram-v2
   campie --> foc : după cei zece pași,<br/>atingi ușa deschisă din tablou
   foc --> gheata : intri prin arsură
   gheata --> ulei : sari în vârtej
-  ulei --> muzeu : cobori prin chepeng
+  ulei --> acuarela : urci pe postament,<br/>ceata te ia din locul atins
   galerie --> muzeu : ieși din galerie
 ```
 
@@ -120,7 +120,6 @@ ascunsă, și pe urmă se copiază.
 | `salaGheata` | scena 7 | planurile cubiste, vectorii, podeaua, cristalele, fișa |
 | `salaUlei` | scena 8 | sala neoclasică desenată în linie: pereții, vitrinele, podiumul, pelerina, trusa, cercul cromatic, fișa |
 | `stratulDePictura` | scena 8 | **tot ce a pictat jucătorul** — nu se șterge niciodată |
-| `panzaDiluata` | scena 8 | culoarea scursă prin chepeng, întinsă la trecerea spre scena următoare |
 
 Fiecare ștampilă ține minte la ce mărime a fost pictată și se repictează când
 pânza se schimbă. De-aia contează atât de mult ca pânza **să nu se schimbe
@@ -313,10 +312,44 @@ nu o libertate.
 
 #### Croiala pelerinei, scrisă o singură dată
 
-Poți picta oriunde în sală, dar numai **pelerina** deschide drumul mai departe:
-acoperită de tot, sub ea se deschide un chepeng, culoarea se scurge acolo, și pe
-acolo se intră în scena următoare. (Dacă s-ar fi socotit toată sala, ai fi
-deschis chepengul mâzgălind un colț de perete.)
+Poți picta oriunde în sală, dar numai **pelerina** deschide drumul mai departe.
+(Dacă s-ar fi socotit toată sala, ai fi terminat lucrarea mâzgălind un colț de
+perete — și n-ar mai fi fost o lucrare terminată, ci un contor umplut.)
+
+#### Sfârșitul sălii: lucrarea rămâne, tu pleci
+
+Acoperită de tot, pelerina **se înramează și se agață pe peretele din fund**, în
+mijlocul discului portocaliu. De acolo încolo nu se mai mișcă: e un tablou, iar
+un tablou agățat stă pe perete.
+
+Sfârșitul ăsta a fost scris de trei ori, și de fiecare dată greșeala a fost
+aceeași — lucrarea pleca odată cu jucătorul. Întâi manechinul prindea viață și se
+destrăma în lumină; pe urmă podiumul se desfăcea într-o **trapă** și culoarea se
+scurgea prin ea, iar tu coborai după ea în acuarelă. Amândouă arătau bine și
+spuneau același lucru greșit: că pleci **cu** ce ai pictat, dus de lucrare. Dar
+sala tocmai o agățase pe perete. Ce te duce mai departe nu poate să fie tot ea.
+
+Acum drumul are patru pași, și fiecare ia câte ceva din mână:
+
+1. **`inramare`** — lucrarea urcă, se micșorează, primește ramă. Odată cu ea,
+   **raftul de unelte iese din cadru** pe unde a venit, iar ultimele picături de
+   vopsea își termină drumul și se usucă. Vopseaua proaspătă se prelinge; una
+   înrămată nu mai curge — rămâneau atârnate în aer sub tablou, ca și cum pictura
+   ar fi sângerat pe perete.
+2. **`postament`** — podiumul rămas gol te cheamă, și sala ți-o spune o dată:
+   „Ești invitat pe postament." **Unealta îți dispare din mână și rămâne un
+   punct.** N-ai ce picta; o pensulă ținută mai departe ar promite că mai e ceva
+   de făcut cu ea, și ai căuta. Un punct nu promite nimic, și tocmai de-aia te
+   lasă să te uiți în jur.
+3. **`ceata`** — clicul pe postament ține minte **unde anume ai apăsat**
+   (`s8.ceataX/Y`), și de acolo crește ceata: treizeci și patru de rotocoale
+   calde pornite din punctul atins, plus un miez dens chiar sub talpă. Nu e o
+   albire a ecranului, e un lucru care crește dintr-un loc — dintre toate
+   porțile jucăriei, asta e singura pe care o deschizi punând degetul undeva
+   anume, iar locul acela trebuie să se vadă în ce urmează. Altfel ai fi apăsat
+   un buton, nu ai fi urcat.
+4. **`iesire`** — în ceață nu mai e nici rochie, nici vopsea, nici îndemn scris:
+   sala a rămas în urmă cu tot ce era în ea. Numai tu și drumul.
 
 Deci două lucruri trebuie să spună același adevăr: **conturul desenat** și
 **socoteala acoperirii**. Amândouă ies din același tabel, `PROFIL_PELERINEI` —
@@ -490,17 +523,17 @@ flowchart TB
   end
   subgraph S["Scenele"]
     B5["05-scena1-balon.js · 172"]
-    B6["06-scena2-minge.js · 919<br/>mingea, petele, elefantul, grădina"]
-    B11["11-scena3-muzeu.js · 1805<br/>custodele, haina, buzunarul, manualul"]
-    B12["12-scena4-galerie.js · 1438<br/>sala rococo, rama, lupa"]
-    B13["13-scena5-campie.js · 1905<br/>pânza uriașă, țăranii, pantofii"]
+    B6["06-scena2-minge.js · 1001<br/>mingea, petele, elefantul, grădina"]
+    B11["11-scena3-muzeu.js · 1931<br/>custodele, haina, buzunarul, manualul"]
+    B12["12-scena4-galerie.js · 1454<br/>sala rococo, rama, lupa"]
+    B13["13-scena5-campie.js · 2003<br/>pânza uriașă, țăranii, pantofii"]
     B15["15-scena6-foc.js · 1993<br/>sala rotundă, șevaletul, pasta, arsura"]
     B16["16-scena7-gheata.js · 2133<br/>sala de gheață, costumul, portalul"]
-    B17["17-scena8-ulei.js · 2820<br/>sala în linie, trusa, cercul cromatic, postamentul"]
-    B18["18-scena9-acuarela.js · 1439<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
-    B19["19-scena10-colaj.js · 1453<br/>iuta, ziarul, cartonul, sforile, ruptura"]
-    B21["21-scena12-vid.js · 269<br/>vidul, punctul, șoapta, bucla"]
-    B20["20-scena11-carbune.js · 1071<br/>radiera, liniile de lumină, blocul, butonul"]
+    B17["17-scena8-ulei.js · 2893<br/>sala în linie, trusa, cercul cromatic, postamentul"]
+    B18["18-scena9-acuarela.js · 1526<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
+    B19["19-scena10-colaj.js · 2037<br/>iuta, ziarul, cartonul, sforile, ruptura"]
+    B21["21-scena12-vid.js · 274<br/>vidul, punctul, șoapta, bucla"]
+    B20["20-scena11-carbune.js · 1453<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 155<br/>ce face fiecare atingere"]

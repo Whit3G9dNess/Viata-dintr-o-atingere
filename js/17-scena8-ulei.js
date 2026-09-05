@@ -129,9 +129,7 @@ const USTENSILE = [
 const OCHIURI_PELERINA = 26;      // cât de fin se socotește acoperirea pelerinei
 
 const s8 = {
-  faza: 'intrare',      // intrare → pictezi → inramare → postament → trapa → scurgere → coborare → iesire
-  viata: 0,             // cât a prins viață și a plecat manechinul
-  trapa: 0,             // cât s-a deschis capacul rotund al podiumului
+  faza: 'intrare',      // intrare → pictezi → inramare → postament → ceata → iesire
   t0: 0, ultimulCadru: 0,
   vapori: 1,            // aburii calzi de la intrare, cu textul mirosului
   unealta: 1,           // ce ustensilă e în mână
@@ -144,10 +142,8 @@ const s8 = {
   unghiulTusei: undefined,
   inramare: 0,          // cât a urcat lucrarea pe perete și s-a înrămat
   chemarePostament: 0,  // cât de tare cheamă postamentul, după ce a rămas gol
-  scurgere: 0,          // cât s-a deschis trapa și s-a scurs culoarea
-  perdea: null,
-  coborare: 0,
-  aSpusTrapa: false,
+  ceata: 0,             // cât a crescut ceata care te duce mai departe
+  ceataX: 0, ceataY: 0, // din ce loc a pornit — de sub degetul tău
   vorba: null,
   ultimaTusa: 0
 };
@@ -1971,11 +1967,17 @@ function facPicatura(x, y, culoare, lung) {
 }
 
 function actualizeazaPicaturile(dt) {
+  /* De înțărcarea lucrării încolo, ultimele picături își termină drumul și se
+     usucă. Rămâneau atârnate acolo unde le prinsese ridicarea rochiei — în aer,
+     sub tabloul înrămat, ca și cum pictura ar fi sângerat pe perete. Vopseaua
+     proaspătă se prelinge; una înrămată nu mai curge. */
+  const gata = s8.faza !== 'intrare' && s8.faza !== 'pictezi';
+  const graba = gata ? 9 : 1;
   for (let k = s8.picaturi.length - 1; k >= 0; k--) {
     const p = s8.picaturi[k];
-    if (p.stat > 0) { p.stat -= dt; continue; }
-    p.mers += p.viteza * dt * (1 + s8.coborare * 6);
-    if (Math.random() < 0.004) p.stat = 200 + Math.random() * 900;
+    if (p.stat > 0) { if (gata) p.stat = 0; else { p.stat -= dt; continue; } }
+    p.mers += p.viteza * dt * graba * (1 + s8.ceata * 6);
+    if (!gata && Math.random() < 0.004) p.stat = 200 + Math.random() * 900;
     if (p.mers >= 1) s8.picaturi.splice(k, 1);
   }
 }
@@ -1985,7 +1987,7 @@ function deseneazaPicaturile() {
   for (const p of s8.picaturi) {
     const cap = p.y + p.lung * p.mers;
     ctx.strokeStyle = p.culoare;
-    ctx.globalAlpha = (1 - p.mers * 0.4) * (1 - s8.coborare * 0.6);
+    ctx.globalAlpha = (1 - p.mers * 0.4) * (1 - s8.ceata * 0.6);
     ctx.lineWidth = p.lat;
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -2250,108 +2252,6 @@ function acoperaPelerina(x, y, raza) {
   if (audio) sunetPlescait();
 }
 
-/* ---------- TRAPA DE SUB PODIUM ---------- */
-/* Când pelerina e acoperită de tot, vopseaua nu mai stă: podiumul se desface și
-   culoarea se scurge în gaura de sub el.
-
-   E singurul lucru care putea urma. Vopseaua de ulei e grea și udă; dacă pui
-   destulă într-un loc, curge — iar dacă locul e un podium cu o trapă dedesubt,
-   curge acolo. Iar ce e dedesubt e apă: uleiul diluat devine acuarelă, adică
-   sala următoare. */
-function facPerdeaua() {
-  const g = geomSala8();
-  const x = Math.round(g.pelCx - g.pelLat);
-  const y = Math.round(g.pelSus);
-  const w = Math.round(g.pelLat * 2), h = Math.round(g.pelInalt * 1.06);
-  const p = document.createElement('canvas');
-  p.width = Math.max(2, w); p.height = Math.max(2, h);
-  const c = p.getContext('2d');
-  c.drawImage(pregatesteSalaUlei(), x, y, w, h, 0, 0, w, h);
-  c.drawImage(stratul(), x, y, w, h, 0, 0, w, h);
-  s8.perdea = { panza: p, x, y, w, h };
-}
-
-function deseneazaTrapa(acum) {
-  if (s8.scurgere <= 0) return;
-  const g = geomSala8();
-  const p = atenuare(Math.min(1, s8.scurgere));
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(g.podiumCx, g.podiumCy, g.podiumRx * 0.9 * p, g.podiumRy * 0.9 * p,
-              0, 0, Math.PI * 2);
-  ctx.save();
-  ctx.clip();
-  const adanc = ctx.createLinearGradient(0, g.podiumCy - g.podiumRy, 0, g.podiumCy + g.podiumRy);
-  adanc.addColorStop(0, '#14100a');
-  adanc.addColorStop(0.5, '#2a2016');
-  adanc.addColorStop(1, '#0c0906');
-  ctx.fillStyle = adanc;
-  ctx.fillRect(g.podiumCx - g.podiumRx, g.podiumCy - g.podiumRy * 2,
-               g.podiumRx * 2, g.podiumRy * 4);
-
-  /* Apa de dedesubt: pete pastelate care se mișcă încet, tot mai luminoase pe
-     măsură ce trapa se deschide. Ea e chiar începutul sălii a noua, văzut de
-     sus, prin gaură. */
-  const lumina = Math.max(0, p - 0.3) / 0.7;
-  if (lumina > 0) {
-    const PASTEL = ['#cfe0f0', '#dff0e2', '#f6e6c0', '#e4d6f0', '#f6c9c0'];
-    for (let k = 0; k < 12; k++) {
-      const a = samanta(13100 + k * 3.7), b = samanta(13170 + k * 6.1);
-      const x = g.podiumCx + (a - 0.5) * g.podiumRx * 1.4 +
-                Math.sin(acum * 0.0006 + k) * g.podiumRx * 0.1;
-      const y = g.podiumCy + (b - 0.5) * g.podiumRy * 1.4;
-      const raza = g.podiumRx * (0.14 + b * 0.24);
-      const bal = ctx.createRadialGradient(x, y, 0, x, y, raza);
-      const cul = PASTEL[Math.floor(a * PASTEL.length)];
-      bal.addColorStop(0, cul);
-      bal.addColorStop(1, cul + '00');
-      ctx.globalAlpha = 0.55 * lumina;
-      ctx.fillStyle = bal;
-      ctx.beginPath();
-      ctx.arc(x, y, raza, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-  ctx.restore();
-  creion(ctx, Math.max(2, g.S * 0.005));
-  ctx.stroke();
-
-  /* Pelerina, cu vopseaua ta pe ea, se lasă în gaură: poza ei alunecă în jos și
-     se strânge, ca o stofă trasă printr-o pâlnie. Ce curge e chiar munca ta. */
-  if (s8.perdea && p < 1) {
-    const pd = s8.perdea;
-    const dy = Math.pow(p, 1.6) * (g.podiumCy - pd.y);
-    const strans = 1 - Math.pow(p, 1.3) * 0.8;
-    ctx.save();
-    ctx.globalAlpha = 1 - p * 0.25;
-    ctx.drawImage(pd.panza, pd.x + pd.w * (1 - strans) * 0.5, pd.y + dy,
-                  pd.w * strans, pd.h * (1 - Math.pow(p, 1.5) * 0.6));
-    ctx.restore();
-  }
-
-  // firele de culoare care se preling în gaură, înaintea restului
-  for (let k = 0; k < 18; k++) {
-    const z = samanta(13300 + k * 5.7), z2 = samanta(13360 + k * 3.9);
-    const cat = Math.max(0, Math.min(1, (p - z2 * 0.3) / 0.7));
-    if (cat <= 0) continue;
-    const x = g.podiumCx + (z - 0.5) * g.podiumRx * 1.5;
-    const de = g.podiumCy - g.podiumRy * 0.6;
-    const lung = g.podiumRy * (1.2 + z2 * 2) * cat;
-    ctx.strokeStyle = CERC_CROMATIC[Math.floor(z * CERC_CROMATIC.length)];
-    ctx.globalAlpha = 0.9 * (1 - cat * 0.3);
-    ctx.lineWidth = g.podiumRx * (0.014 + z2 * 0.03);
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x, de - lung * 0.2);
-    ctx.lineTo(x, de + lung);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
 /* ---------- CURSORUL ---------- */
 /* Unealta din mână, desenată la vârful degetului, cu culoarea aleasă în capăt.
    Cursorul obișnuit — luminița caldă — n-ar spune nici cu ce lucrezi, nici cu ce
@@ -2360,6 +2260,29 @@ function cursorulScenei8() {
   if (stare !== 'ulei') return false;
   if (cursor.x < -100) return true;
   const g = geomSala8();
+
+  /* După ce lucrarea s-a înrămat, unealta dispare din mână și rămâne un punct.
+
+     Nu mai ai ce picta: pelerina e pe perete. O pensulă ținută mai departe ar
+     spune că mai e ceva de făcut cu ea, și ai căuta — iar singurul lucru de
+     făcut e să urci pe postament. Un punct nu promite nimic, și tocmai de-aia
+     te lasă să te uiți în jur. */
+  if (s8.faza !== 'intrare' && s8.faza !== 'pictezi') {
+    if (s8.faza === 'ceata' || s8.faza === 'iesire') return true;
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = CERC_CROMATIC[s8.culoare % CERC_CROMATIC.length];
+    ctx.beginPath();
+    ctx.arc(cursor.x, cursor.y, Math.max(2, g.S * 0.006), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = '#2b2620';
+    ctx.lineWidth = Math.max(1, g.S * 0.0016);
+    ctx.stroke();
+    ctx.restore();
+    return true;
+  }
+
   const inalt = g.S * 0.11;
 
   ctx.save();
@@ -2414,6 +2337,8 @@ function spuneScena8(text, cat, cursiv) {
 
 function deseneazaVorba8(acum) {
   if (!s8.vorba || acum > s8.vorba.pana) return;
+  // În ceață nu mai vorbește nimeni: sala a rămas în urmă.
+  if (s8.faza === 'ceata' || s8.faza === 'iesire') return;
   const g = geomSala8();
   const stinge = Math.min(1, (s8.vorba.pana - acum) / 700);
   const lat = Math.min(W * 0.46, ecran(500));
@@ -2437,14 +2362,15 @@ function deseneazaVorba8(acum) {
 
 /* ---------- INTRAREA ---------- */
 function intraInUlei(acum) {
-  s8.inramare = 0; s8.chemarePostament = 0; s8.trapa = 0;
+  s8.inramare = 0; s8.chemarePostament = 0;
   stare = 'ulei';
   s8.faza = 'intrare'; s8.t0 = acum; s8.ultimulCadru = acum;
   s8.vapori = 1; s8.unealta = 1; s8.culoare = 4;
-  s8.acoperit = 0; s8.scurgere = 0; s8.perdea = null;
-  s8.picaturi.length = 0; s8.tuseFacute = 0; s8.coborare = 0;
+  s8.acoperit = 0;
+  s8.picaturi.length = 0; s8.tuseFacute = 0;
   s8.deUnde = null; s8.unghiulTusei = undefined;
-  s8.aSpusTrapa = false; s8.vorba = null; s8.ultimaTusa = 0;
+  s8.vorba = null; s8.ultimaTusa = 0;
+  s8.ceata = 0; s8.ceataX = 0; s8.ceataY = 0;
   const c = stratul().getContext('2d');
   c.clearRect(0, 0, W, H);
   pregatesteSalaUlei();
@@ -2503,7 +2429,7 @@ function peCerc(x, y) {
 
 function click8(acum) {
   const x = cursor.x, y = cursor.y;
-  if (s8.faza === 'scurgere' || s8.faza === 'coborare' || s8.faza === 'iesire') return;
+  if (s8.faza === 'ceata' || s8.faza === 'iesire') return;
   /* Pe postament se urcă. E singurul lucru de făcut în faza asta, deci orice
      atingere pe el pornește drumul mai departe. */
   if (s8.faza === 'postament') {
@@ -2511,11 +2437,25 @@ function click8(acum) {
     const dx = (cursor.x - g.podiumCx) / (g.podiumRx * 1.15);
     const dy = (cursor.y - g.podiumCy) / (g.podiumRy * 2.6);
     if (dx * dx + dy * dy <= 1) {
-      s8.faza = 'trapa'; s8.t0 = acum; s8.trapa = 0.001;
+      /* Din locul în care ai apăsat crește ceata. Nu din mijlocul ecranului și nu
+         de la marginile lui: dintre toate porțile jucăriei, asta e singura pe care
+         o deschizi punând degetul undeva anume, iar locul acela trebuie să se
+         vadă în ce urmează. Altfel ai fi apăsat un buton, nu ai fi urcat. */
+      s8.ceataX = cursor.x; s8.ceataY = cursor.y;
+      s8.faza = 'ceata'; s8.t0 = acum; s8.ceata = 0.001;
+      /* Îndemnul se stinge în clipa în care îl asculți. „Ești invitat pe
+         postament" scris peste ceață ar cere mai departe un lucru pe care tocmai
+         l-ai făcut — și te-ar face să-l cauți în albă. */
+      s8.vorba = null;
       if (audio) sunetPortal();
     }
     return;
   }
+
+  /* Cât timp lucrarea se înramează, raftul iese din cadru și nu se mai ia nimic
+     din el. Un raft care încă răspunde la atingere, dar din care nu mai poți
+     picta, e mai rău decât unul dispărut: îți dă un sunet și nicio urmare. */
+  if (s8.faza !== 'intrare' && s8.faza !== 'pictezi') return;
 
   const u = peTrusa(x, y);
   if (u >= 0) {
@@ -2593,7 +2533,7 @@ function puneTusa(x, y, acum) {
    însemnat o sută de clicuri — o corvoadă, nu o libertate. */
 function pensuleazaScena8() {
   if (stare !== 'ulei' || !cursor.apasat) return;
-  if (s8.faza === 'scurgere' || s8.faza === 'coborare' || s8.faza === 'iesire') return;
+  if (s8.faza === 'ceata' || s8.faza === 'iesire') return;
   const acum = performance.now();
   if (acum - s8.ultimaTusa < 45) return;
   if (peTrusa(cursor.x, cursor.y) >= 0 || peCerc(cursor.x, cursor.y) >= 0) return;
@@ -2649,38 +2589,20 @@ function actualizeazaUleiul(acum) {
     s8.chemarePostament = Math.min(1, (s8.chemarePostament || 0) + dt / 1400);
   }
 
-  /* Capacul rotund al podiumului se deschide. Podiumul era plin; acum se
-     descoperă că era o gură. */
-  if (s8.faza === 'trapa') {
-    s8.trapa = Math.min(1, s8.trapa + dt / 2400);
-    if (s8.trapa >= 1) {
-      facPerdeaua();
-      s8.faza = 'scurgere'; s8.t0 = acum; s8.scurgere = 0.001;
-      if (audio) { sunetSlosh(); sunetPlescait(); }
-    }
-  }
+  /* Ceata crește din locul atins și acoperă sala.
 
-  if (s8.faza === 'scurgere') {
-    s8.scurgere = Math.min(1, s8.scurgere + dt / 3400);
-    if (Math.random() < dt / 80) {
-      const g = geomSala8();
-      facPicatura(g.podiumCx + (Math.random() - 0.5) * g.podiumRx * 1.6, g.podiumCy,
-                  CERC_CROMATIC[Math.floor(Math.random() * CERC_CROMATIC.length)],
-                  g.S * (0.02 + Math.random() * 0.05));
-    }
-    if (s8.scurgere >= 1) {
-      s8.faza = 'coborare'; s8.t0 = acum;
-      if (audio) { opresteAtelierUlei(); pornesteClipocitul(); }
-      /* Aici nu se mai scrie nimic. Culoarea curge prin trapă, se aude apa, iar
-         imaginea se înmoaie sub ochii tăi — un rând care ar spune „cobori în apă,
-         culorile se desfac" ar traduce în cuvinte exact lucrul pe care tocmai îl
-         vezi întâmplându-se. Ce se poate arăta nu se scrie. */
-    }
-  }
+     Aici a fost, o vreme, o trapă: podiumul se desfăcea, culoarea se scurgea prin
+     el și coborai după ea. Arăta bine și spunea altceva decât trebuia — că pleci
+     **cu** lucrarea, dus de ea. Dar lucrarea tocmai fusese înrămată și agățată pe
+     perete: ea rămâne, tu treci mai departe. Iar ce te duce mai departe nu poate
+     să fie tot ea.
 
-  if (s8.faza === 'coborare') {
-    s8.coborare = Math.min(1, s8.coborare + dt / 4200);
-    if (s8.coborare >= 1) { s8.faza = 'iesire'; s8.t0 = acum; }
+     Așa că nu mai curge nimic și nu se mai deschide nimic. Urci pe postament, iar
+     de sub talpa ta crește o ceață care acoperă încet sala — și în ceața aceea nu
+     mai e nici rochie, nici vopsea. Numai tu și drumul. */
+  if (s8.faza === 'ceata') {
+    s8.ceata = Math.min(1, s8.ceata + dt / 3400);
+    if (s8.ceata >= 1) { s8.faza = 'iesire'; s8.t0 = acum; }
   }
   if (s8.faza === 'iesire' && acum - s8.t0 > 900) iesiDinUlei(acum);
 }
@@ -2731,75 +2653,53 @@ function scanteileDespletirii(acum) {
    și se întinde la loc. Fiecare trecere pierde muchiile — asta **e** înmuierea,
    nu o imitație a ei. */
 
-function deseneazaCoborarea(acum) {
-  /* Aici mersul se ia **așa cum e**, fără atenuare. Atenuarea împingând sfârșitul
-     înainte (la trei sferturi de drum era deja la nouă zecimi), sala se stingea cu
-     mult înainte de vreme — iar cu ea se stingea și lucrul care trebuie văzut:
-     tabloul rămas agățat pe perete, în timp ce tu cobori pe lângă el. */
-  const p = Math.min(1, s8.coborare);
-  const g = geomSala8();
-  const cx = g.podiumCx, cy = g.podiumCy;
+function deseneazaCeata(acum) {
+  const p = Math.min(1, s8.ceata);
+  const S = Math.min(W, H);
+  const x = s8.ceataX || W * 0.5, y = s8.ceataY || H * 0.75;
 
-  /* Coborârea prin trapă, văzută din ochii tăi: sala nu dispare și nu se dizolvă,
-     ci **se îndepărtează și se întunecă pe la margini**, câtă vreme gura
-     podiumului crește și lumina de apă din ea urcă să te acopere. Tabloul rămâne
-     agățat în spatele tău, tot mai departe, până când nu se mai vede nimic în
-     afară de apă.
+  /* Ceata nu e o albire a ecranului: e **un lucru care crește dintr-un punct**.
+     De-aia se face din multe rotocoale, fiecare pornit din locul atins și dus în
+     altă parte, nu dintr-un singur degrade. Un degrade crește; niște rotocoale se
+     **revărsă**, și asta e purtarea ceții.
 
-     De-aia întunericul se strânge **spre trapă**, nu spre mijlocul ecranului: acolo
-     te duci. Un întuneric centrat pe ecran ar fi un capac de aparat de fotografiat;
-     unul centrat pe gaură e o coborâre. */
+     Și e alb-cald, nu alb-rece: sala mirosea a ulei de in și a terebentină, iar
+     ce iese din podeaua ei nu poate să fie aer de gheață. */
   ctx.save();
-
-  // întunericul care se strânge în jurul găurii
-  const raza = Math.max(W, H) * (1.25 - p * 0.95);
-  const colt = ctx.createRadialGradient(cx, cy, raza * 0.34, cx, cy, raza);
-  colt.addColorStop(0, 'rgba(18, 13, 6, 0)');
-  colt.addColorStop(1, 'rgba(18, 13, 6, ' + (0.22 + p * 0.70).toFixed(3) + ')');
-  ctx.fillStyle = colt;
-  ctx.fillRect(0, 0, W, H);
-
-  /* Lumina de apă care urcă din gură. Ea e sala următoare, văzută de sus înainte
-     să ajungi în ea — de-aia e rece, singura culoare rece din toată sala uleiului. */
-  /* Lumina crește cu **pătratul** coborârii, nu liniar. Pusă liniar, la jumătatea
-     drumului acoperea deja tot ecranul și sala dispărea — adică, din nou, nu se
-     mai vedea că tabloul rămâne agățat. Iar dacă nu se vede, degeaba rămâne.
-
-     Așa, gura stă multă vreme o pată de lumină în podea și te ia abia la urmă,
-     când chiar ai ajuns în ea. */
-  const q = p * p;
-  const lumina = ctx.createRadialGradient(cx, cy, 0, cx, cy,
-                                          Math.max(W, H) * (0.09 + q * 1.05));
-  lumina.addColorStop(0, 'rgba(226, 240, 248, ' + (0.22 + q * 0.76).toFixed(3) + ')');
-  lumina.addColorStop(0.35, 'rgba(150, 194, 220, ' + (0.13 + q * 0.62).toFixed(3) + ')');
-  lumina.addColorStop(1, 'rgba(90, 140, 176, 0)');
-  ctx.fillStyle = lumina;
-  ctx.fillRect(0, 0, W, H);
-
-  /* Culorile care se duc odată cu tine: dungi care fug spre gură, tot mai
-     repezi. Nu sunt tabloul — el a rămas pe perete — sunt vopseaua scursă prin
-     trapă, aceeași pe care ai văzut-o curgând. */
-  for (let k = 0; k < 22; k++) {
-    const a = samanta(11900 + k * 3.7), b = samanta(11970 + k * 6.1);
+  for (let k = 0; k < 34; k++) {
+    const a = samanta(12100 + k * 3.1), b = samanta(12160 + k * 7.7);
+    const e = samanta(12220 + k * 5.3);
     const un = a * Math.PI * 2;
-    const de = Math.max(W, H) * (0.15 + b * 0.55) * (1 - p * 0.85);
-    const x0 = cx + Math.cos(un) * de, y0 = cy + Math.sin(un) * de * 0.6;
-    ctx.globalAlpha = 0.35 * p * (1 - p * 0.4);
-    ctx.strokeStyle = CERC_CROMATIC[Math.floor(a * CERC_CROMATIC.length)];
-    ctx.lineWidth = Math.max(1.5, g.S * 0.008 * (0.4 + b));
-    ctx.lineCap = 'round';
+    const departe = S * (0.06 + b * 0.55) * p * (0.6 + e * 0.9);
+    const cx = x + Math.cos(un) * departe;
+    const cy = y + Math.sin(un) * departe * 0.72 - S * 0.30 * p * p * (0.3 + e);
+    const r = S * (0.10 + e * 0.26) * (0.35 + p * 1.15);
+    ctx.globalAlpha = Math.min(1, p * 1.5) * (0.10 + e * 0.16);
+    const g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g2.addColorStop(0, '#fbf6ec');
+    g2.addColorStop(0.45, 'rgba(246, 238, 224, 0.72)');
+    g2.addColorStop(1, 'rgba(240, 232, 216, 0)');
+    ctx.fillStyle = g2;
     ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.quadraticCurveTo(intre(x0, cx, 0.5), intre(y0, cy, 0.35),
-                         intre(x0, cx, 0.88), intre(y0, cy, 0.88));
-    ctx.stroke();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  // la capăt, apa acoperă tot: aici începe sala a noua
-  ctx.globalAlpha = Math.pow(p, 5.5);
-  ctx.fillStyle = '#eef4f6';
-  ctx.fillRect(0, 0, W, H);
+  /* Miezul, chiar sub talpa: acolo e cel mai des. Cine se uită unde a apăsat vede
+     că de acolo a pornit tot — și asta e tot ce trebuie ca gestul să pară al lui. */
+  const rm = S * (0.10 + p * 0.75);
+  const miez = ctx.createRadialGradient(x, y, 0, x, y, rm);
+  miez.addColorStop(0, 'rgba(255, 252, 245, ' + (0.55 + p * 0.45).toFixed(3) + ')');
+  miez.addColorStop(0.5, 'rgba(250, 244, 232, ' + (0.28 + p * 0.5).toFixed(3) + ')');
+  miez.addColorStop(1, 'rgba(246, 238, 222, 0)');
   ctx.globalAlpha = 1;
+  ctx.fillStyle = miez;
+  ctx.fillRect(x - rm, y - rm, rm * 2, rm * 2);
+
+  // la capăt, ceata acoperă tot
+  ctx.globalAlpha = Math.pow(p, 2.6);
+  ctx.fillStyle = '#f7f1e6';
+  ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
 
@@ -2949,16 +2849,30 @@ function deseneazaScena8(t, acum) {
   ctx.restore();
   if (inDrum && dr.p < 1) scanteileDespletirii(acum);
   chemareaPostamentului(ctx, g, acum);
-  deseneazaTrapa(acum);
-  deseneazaPicaturile();
+  /* Picăturile de vopsea nu mai apar după ce ai urcat: în ceață nu se ia nimic
+     din sală cu tine. */
+  if (s8.faza !== 'ceata' && s8.faza !== 'iesire') deseneazaPicaturile();
 
-  const cobori = s8.faza === 'coborare' || s8.faza === 'iesire';
-  if (!cobori) {
+  /* Raftul iese din cadru odată cu înrămarea, pe unde a venit.
+
+     După ce lucrarea a fost agățată pe perete, un raft de pensule rămas pe
+     ecran e o promisiune mincinoasă: pelerina e sub sticlă, unealta ți-a
+     dispărut deja din mână și n-a mai rămas nimic de pictat. Dacă raftul stă
+     acolo, îl cauți — și cauți degeaba. Așa, sala rămâne cu un singur lucru de
+     făcut, și el se vede: postamentul gol. */
+  const pleci = s8.faza === 'ceata' || s8.faza === 'iesire';
+  const retras = (s8.faza === 'intrare' || s8.faza === 'pictezi')
+    ? 0 : Math.min(1, (s8.inramare || 0) * 1.7);
+  if (retras < 1) {
+    const R = geomRegistru();
+    ctx.save();
+    // pătrat: pleacă încet și se duce repede, ca un lucru tras de altcineva
+    ctx.translate(-(R.x + R.lat) * retras * retras, 0);
     deseneazaTrusa(acum);
     deseneazaCercul(acum);
-  } else {
-    deseneazaCoborarea(acum);
+    ctx.restore();
   }
+  if (pleci) deseneazaCeata(acum);
 
   deseneazaVaporii(acum);
   deseneazaVorba8(acum);

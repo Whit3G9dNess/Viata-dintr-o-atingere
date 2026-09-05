@@ -1723,9 +1723,29 @@ function click5(acum) {
      Ceasul ramane, dar ca plasa de siguranta: daca nu-i atingi, tot pleaca — o
      scena nu trebuie sa astepte la nesfarsit un gest pe care jucatorul poate
      sa nu-l gaseasca. */
-  if (s5.faza === 'viu' && peTarani(cursor.x, cursor.y)) {
+  if (s5.faza === 'viu') {
+    /* **Orice** atingere în faza asta îi trimite spre casă, nu numai una nimerită
+       fix pe ei.
+
+       Aici mai rămăsese un blocaj, fratele celui de dinainte: oamenii prind viață,
+       te cheamă cu vorba lor scrisă, tu apeși — și dacă degetul cade la doi
+       centimetri de trupul lor, nu se întâmplă nimic, timp de cinci secunde și
+       ceva. Cine a nimerit o dată crede că așa se joacă; cine n-a nimerit crede că
+       scena s-a stricat, și are dreptate să creadă.
+
+       O țintă mică se cere numai acolo unde alegerea între două lucruri alăturate
+       înseamnă ceva. Aici nu e nimic altceva pe ecran de atins: tabloul întreg e
+       răspunsul la chemarea lor. */
     s5.faza = 'casa'; s5.t0 = acum;
     if (audio) sunetClopotel(660);
+    return;
+  }
+
+  /* Iar câtă vreme pânza încă se strânge în pixeli, la început, atingerea sare
+     peste așteptare. Două secunde și jumătate de nimic sunt puține când te uiți și
+     multe când apeși — iar cine intră a doua oară în sală apeăsă de la primul cadru. */
+  if (s5.faza === 'pixeli') {
+    s5.faza = 'sala'; s5.t0 = acum;
     return;
   }
 

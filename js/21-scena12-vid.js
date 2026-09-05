@@ -12,7 +12,7 @@
 
    Și, fiindcă e ultima, are voie să glumească. Muzeul tocmai a fost supt într-un
    buton; aici cineva îți șoptește că o luăm de la capăt și că data viitoare
-   elefantul va fi albastru. Distrugerea, în locul ăsta, nu e un sfârșit: e
+   elefantul va fi roz. Distrugerea, în locul ăsta, nu e un sfârșit: e
    ocazia de a desena realitatea din nou.
    ========================================================================== */
 
@@ -26,7 +26,7 @@ const s12 = {
   flash: 0
 };
 
-const SOAPTA = 'O luăm de la capăt? Promit că data viitoare elefantul va fi albastru.';
+const SOAPTA = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz.';
 
 /* ---------- UNDE E PUNCTUL ----------
    Fix în mijloc, ca în prima scenă. Nu „aproape la mijloc": deja-vu-ul se face
@@ -62,6 +62,11 @@ function intraInVid(acum) {
 function iesiDinVid(acum) {
   opresteInima();
   s3.vizitat = false;
+  /* Și se ține promisiunea. O glumă spusă jucătorului și neținută e mai rea decât
+     una nespusă: cine se întoarce anume ca să vadă elefantul roz și îl găsește
+     albastru află că sala a mintțit, nu că a glumit. */
+  elefantulERoz = true;
+  if (typeof zugravesteElefantul === 'function') zugravesteElefantul(true);
   incepeJucaria(acum);
 }
 

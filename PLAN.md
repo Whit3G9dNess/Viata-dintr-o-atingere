@@ -50,6 +50,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 30 | Scena 10 — sala colajului: memoria obiectelor, și peretele care se destramă | ✅ gata |
 | 31 | Scena 11 — cărbune și pastă: distrugerea creatoare, și butonul de la capăt | ✅ gata |
 | 32 | Scena 12 — vidul potențial: punctul, șoapta, și bucla care se închide | ✅ gata |
+| 33 | Elefantul roz, câmpia care nu mai amuțește, și ceața din sala a opta | ✅ gata |
 
 ---
 
@@ -987,11 +988,19 @@ altfel alegerea lor ar fi fost un buton fără urmare. Deasupra trusei stă
 Fișa de sală, cea despre pigmenți, s-a mutat sus în dreapta, pe peretele din
 fund — unde stau fișele într-un muzeu adevărat.
 
-**Ce deschide chepengul.** Poți picta oriunde, dar numai **pelerina** deschide
-drumul: acoperită de tot, sub ea se dă la o parte un chepeng, culoarea se scurge
-acolo, și pe acolo se intră mai departe. Dacă s-ar fi socotit toată sala, ai fi
-deschis chepengul mâzgălind un colț de perete — și n-ar mai fi fost o lucrare
+**Ce termină lucrarea.** Poți picta oriunde, dar numai **pelerina** deschide
+drumul: acoperită de tot, ea se înramează și se agață pe peretele din fund, iar
+podiumul rămas gol devine poartă. Dacă s-ar fi socotit toată sala, ai fi
+terminat-o mâzgălind un colț de perete — și n-ar mai fi fost o lucrare
 terminată, ci un contor umplut.
+
+**Cum se pleacă.** Aici a fost, două variante la rând, o trapă: podiumul se
+desfăcea și culoarea se scurgea prin el, iar tu coborai după ea. Arăta bine și
+spunea altceva decât trebuia — că pleci **cu** lucrarea, dusă de ea, după ce
+tocmai fusese agățată pe perete. Acum: raftul de unelte iese din cadru odată cu
+înrămarea, ultimele picături se usucă, unealta din mână se face **un punct**,
+iar la clicul pe postament crește o ceață **din locul în care ai apăsat**. În
+ceața aceea nu mai e nici rochie, nici vopsea. Ea rămâne, tu treci mai departe.
 
 **Croiala, scrisă o singură dată.** Conturul desenat și socoteala acoperirii ies
 amândouă din `PROFIL_PELERINEI` — un tabel care spune, pentru fiecare înălțime,

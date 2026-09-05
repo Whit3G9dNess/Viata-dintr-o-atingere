@@ -8,6 +8,15 @@ let stare = 'intuneric';
 let inceputulCresterii = 0;
 const DURATA_CRESTERII = 4000;
 let inceputulTransformarii = 0;
+
+/* A doua oară prin jucărie, elefantul e roz.
+
+   Șoapta din sala a douăsprezecea promite asta — „promit că data viitoare
+   elefantul va fi roz" — iar o promisiune făcută jucătorului și neținută e mai
+   rea decât o glumă nespusă. Întâi în text scria „albastru", ceea ce nu însemna
+   nimic: elefantul **este** albastru de la bun început, deci gluma promitea că
+   totul rămâne la fel. Roz e altceva — și se și vede. */
+let elefantulERoz = false;
 const DURATA_TRANSFORMARII = 3400;
 
 // atenuare lină (pornește încet, se termină încet)

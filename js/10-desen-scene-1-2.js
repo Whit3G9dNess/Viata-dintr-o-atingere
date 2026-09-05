@@ -392,8 +392,9 @@ function deseneazaElefantul(t, transparenta = 1) {
   const y0 = picioareElefant();
   const leganare = Math.sin(elefant.fazaMers) * 2 * u;
 
-  // Albastru — forma rotundă (sferă) cere albastru (cubul cerea roșu)
-  const fata = '#3f7cc0', sus = '#6fa3da', lateral = '#33639f', inchis = '#264d80', unghii = '#e9eff8';
+  const P = culorileElefantului();
+  const fata = P.fata, sus = P.sus, lateral = P.lateral, inchis = P.inchis;
+  const unghii = '#e9eff8';
 
   // Mișcare de desen animat (squash & stretch): când merge, elefantul face
   // mici sălturi vesele; se întinde pe verticală când urcă și se turtește
@@ -544,6 +545,28 @@ function deseneazaElefantul(t, transparenta = 1) {
 // Trompa: un lanț de cercuri tot mai mici, arcuit spre ținta lui —
 // atârnă și se leagănă când elefantul se plimbă, dar se întinde și se
 // mută de la o pată la alta în timpul aspirării
+/* Culorile elefantului, scrise o singură dată.
+
+   Albastru — forma rotundă (sfera) cere albastru, cum cubul cerea roșu. Afară de
+   turul al doilea, când e roz, fiindcă așa s-a promis în vid: regula culorilor
+   rămâne adevărată, gluma o încalcă dinadins, și tocmai încălcarea e gluma.
+
+   Stă într-un singur loc fiindcă elefantul se desenează în două bucăți: corpul
+   și **trompa**, care merge separat ca să poată urmări petele. Când rozul a fost
+   scris numai la corp, la turul al doilea ieșea un elefant roz cu trompa
+   albastră — adică promisiunea ținută pe jumătate, care e mai rău decât neținută.
+   Rozul păstrează scara de lumină a albastrului (fața medie, creștet deschis,
+   lateral închis), fiindcă volumul lui e făcut din raporturile astea, nu din
+   culoare. */
+function culorileElefantului() {
+  if (elefantulERoz) {
+    return { fata: '#c2607f', sus: '#eda6bf', lateral: '#95405f', inchis: '#67243d',
+             cute: '#8d3a58', nari: '#5a1e33' };
+  }
+  return { fata: '#3f7cc0', sus: '#6fa3da', lateral: '#33639f', inchis: '#264d80',
+           cute: '#2f5b93', nari: '#22406b' };
+}
+
 function deseneazaTrompa(t, transparenta = 1) {
   const g = geometriaTrompei(t);
   const u = g.u;
@@ -570,7 +593,8 @@ function deseneazaTrompa(t, transparenta = 1) {
   ctx.globalAlpha = transparenta;
 
   // corpul trompei — lanț de cercuri care se subțiază lin
-  ctx.fillStyle = '#3f7cc0';
+  const P = culorileElefantului();
+  ctx.fillStyle = P.fata;
   for (let i = 0; i <= 10; i++) {
     const q = pct(i / 10);
     ctx.beginPath();
@@ -579,7 +603,7 @@ function deseneazaTrompa(t, transparenta = 1) {
   }
 
   // cutele (ridurile) trompei — arcuri curbate spre vârf
-  ctx.strokeStyle = '#2f5b93';
+  ctx.strokeStyle = P.cute;
   ctx.lineWidth = 1.5 * u;
   ctx.lineCap = 'round';
   for (let k = 1; k <= 4; k++) {
@@ -598,10 +622,10 @@ function deseneazaTrompa(t, transparenta = 1) {
 
   // vârful rotunjit, cu două nări
   const varfR = pct(1).r;
-  ctx.fillStyle = '#6fa3da';
+  ctx.fillStyle = P.sus;
   ctx.beginPath(); ctx.arc(varfX, varfY, varfR + 1.5 * u, 0, Math.PI * 2); ctx.fill();
   const dirV = Math.atan2(varfY - cY, varfX - cX) + Math.PI / 2;
-  ctx.fillStyle = '#22406b';
+  ctx.fillStyle = P.nari;
   for (const s of [-1, 1]) {
     ctx.beginPath();
     ctx.arc(varfX + Math.cos(dirV) * 1.6 * u * s, varfY + Math.sin(dirV) * 1.6 * u * s, 1.3 * u, 0, Math.PI * 2);

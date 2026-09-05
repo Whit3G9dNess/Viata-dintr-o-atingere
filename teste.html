@@ -521,6 +521,11 @@ return {
   loculPunctului: typeof loculPunctului !== "undefined" ? loculPunctului : null,
   apropiereaDePunct: typeof apropiereaDePunct !== "undefined" ? apropiereaDePunct : null,
   SOAPTA: typeof SOAPTA !== "undefined" ? SOAPTA : null,
+  elefantulERoz: function () { return typeof elefantulERoz !== "undefined" ? elefantulERoz : null; },
+  culoareaCustodelui: function () { return typeof ELEF_FATA !== "undefined" ? ELEF_FATA : null; },
+  culorileElefantului: typeof culorileElefantului !== "undefined" ? culorileElefantului : null,
+  deseneazaTrompa: typeof deseneazaTrompa !== "undefined" ? deseneazaTrompa : null,
+  deseneazaCeata: typeof deseneazaCeata !== "undefined" ? deseneazaCeata : null,
   inimaScena12: function () { return typeof inimaScena12 !== "undefined" ? inimaScena12 : null; },
   intraInCarbune: typeof intraInCarbune !== "undefined" ? intraInCarbune : null,
   iesiDinCarbune: typeof iesiDinCarbune !== "undefined" ? iesiDinCarbune : null,
@@ -2055,6 +2060,35 @@ function ruleaza() {
     egal(j.s5.faza, "casa", "atinsi, taranii n-au plecat spre casa");
     return g;
   }
+
+  test("in campie nicio faza nu ramane surda", function () {
+    /* Doua ferestre moarte au mai fost gasite dupa prima: doua secunde si
+       jumatate cat panza se strange in pixeli, si pana la cinci secunde in faza
+       „viu" daca degetul cade la doi centimetri de tarani. Cine a nimerit o data
+       crede ca asa se joaca; cine n-a nimerit crede ca scena s-a stricat, si are
+       dreptate sa creada.
+
+       O tinta mica se cere numai acolo unde alegerea intre doua lucruri alaturate
+       inseamna ceva. In campie nu e nimic altceva de atins. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(j.ceas.t);
+    j.avanseazaUsor(200);
+    egal(j.s5.faza, "pixeli", "scena n-a inceput cu panza in pixeli");
+    j.cursor.x = j.W() * 0.5; j.cursor.y = j.H() * 0.5;
+    j.click5(j.ceas.t);
+    egal(j.s5.faza, "sala", "atingerea nu sare peste asteptarea de la inceput");
+
+    for (let k = 0; k < 14 && j.s5.faza === "sala"; k++) {
+      j.click5(j.ceas.t); j.avanseazaUsor(120);
+    }
+    egal(j.s5.faza, "viu", "cei zece pasi inapoi n-au trezit tabloul");
+
+    // o atingere **oriunde**, nu numai pe ei
+    j.cursor.x = j.W() * 0.12; j.cursor.y = j.H() * 0.18;
+    j.click5(j.ceas.t);
+    egal(j.s5.faza, "casa", "atins alaturi de tarani, nu se intampla nimic");
+  });
 
   test("cat merg oamenii spre casa, atingerea ii grabeste", function () {
     /* Aici era un blocaj: dupa ce ii atingeai, drumul lor pana la usa tinea doua
@@ -4200,19 +4234,18 @@ function ruleaza() {
     aproape(j.s8.acoperit, 1, 0.01, "pelerina nu s-a acoperit de tot");
   });
 
-  test("acoperita de tot, culoarea se scurge prin trapa de sub podium", function () {
+  test("acoperita de tot, lucrarea se inrameaza si postamentul te cheama", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     const g8 = inUlei(j);
-    /* Drumul de la ultima tusa pana afara din sala are acum trei opriri, nu una:
-       intai **manechinul prinde viata** si se destrama in lumina, abia pe urma se
-       deschide trapa, si abia pe urma se scurge culoarea. Testul cerea „scurgere"
-       la saizeci de milisecunde dupa ce ai terminat de pictat — adica dinainte ca
-       lucrarea sa apuce sa plece. Apara acelasi lucru, dar in ordinea in care se
-       intampla. */
     /* Drumul de la ultima tusa pana afara din sala: lucrarea **se inrameaza si se
        aseaza pe perete**, in mijlocul discului; postamentul ramas gol devine
-       portal si te asteapta; abia cand urci pe el se deschide trapa si se scurge
-       culoarea.
+       portal si te asteapta; abia cand urci pe el creste ceata.
+
+       Aici a fost, doua variante la rand, o trapa: podiumul se desfacea si
+       culoarea se scurgea prin el. Arata bine si spunea altceva decat trebuia —
+       ca pleci **cu** lucrarea, dusa de ea. Dar ea tocmai fusese agatata pe
+       perete. Ea ramane, tu treci mai departe, si ce te duce mai departe nu
+       poate sa fie tot ea.
 
        Postamentul nu se deschide singur — de-aia testul si **urca** pe el, nu doar
        asteapta. Un drum care se face singur nu e un drum, e o filmare. */
@@ -4227,14 +4260,19 @@ function ruleaza() {
     j.cursor.x = g8.podiumCx; j.cursor.y = g8.podiumCy;
     j.click8(j.ceas.t);
     j.avanseaza(60);
-    egal(j.s8.faza, "trapa", "urcat pe postament, podiumul nu se deschide");
+    egal(j.s8.faza, "ceata", "urcat pe postament, nu creste nicio ceata");
+    /* Nu mai e nici trapa, nici culoarea scursa: din locul in care ai apasat
+       creste o ceata, iar in ceata nu mai e nici rochie, nici vopsea. Lucrarea
+       tocmai a fost inramata si agatata pe perete — ea ramane, tu treci mai
+       departe, si ce te duce mai departe nu poate sa fie tot ea. */
     j.avanseaza(2800);
-    egal(j.s8.faza, "scurgere", "trapa nu s-a deschis");
-    adevarat(j.s8.perdea !== null, "nu s-a luat poza vopselei de pe pelerina");
-    j.avanseaza(5000);
-    egal(j.s8.faza, "coborare", "scurgerea nu duce la coborare");
-    j.avanseaza(7000);
-    adevarat(j.stare() !== "ulei", "coborarea nu duce mai departe");
+    egal(j.s8.faza, "ceata", "urcat pe postament, ceata nu creste");
+    adevarat(j.s8.ceataX > 0 && j.s8.ceataY > 0,
+      "ceata nu porneste din locul atins");
+    j.avanseaza(4200);
+    adevarat(j.s8.ceata >= 1, "ceata nu se ridica de tot: " + j.s8.ceata);
+    j.avanseaza(2000);
+    adevarat(j.stare() !== "ulei", "ceata nu duce mai departe");
   });
 
   test("odata inramat, tabloul ramane pe perete pana la ultimul cadru", function () {
@@ -4255,7 +4293,7 @@ function ruleaza() {
 
     j.cursor.x = g.podiumCx; j.cursor.y = g.podiumCy;
     j.click8(j.ceas.t);
-    for (const cat of [2900, 5200, 3000]) {
+    for (const cat of [1800, 2200, 2400]) {
       j.avanseaza(cat);
       if (j.stare() !== "ulei") break;
       const acum = j.drumulTabloului(j.geomSala8());
@@ -4263,6 +4301,53 @@ function ruleaza() {
       aproape(acum.cy, locul.cy, 1, "tabloul s-a mutat in faza " + j.s8.faza);
       aproape(acum.scara, locul.scara, 0.001, "tabloul si-a schimbat marimea in faza " + j.s8.faza);
     }
+  });
+
+  test("după înrămare, raftul iese din cadru și nu mai dă nimic în mână", function () {
+    /* Ea a cerut: „Ustensila din mâna mea dispare, este doar un punct."
+
+       Punctul singur nu ajunge. Dacă raftul de pensule rămâne pe perete, unealta
+       n-a dispărut — a fost pusă jos, și o cauți acolo. Iar dacă raftul mai
+       răspunde la atingere, ți se dă un sunet și nicio urmare: cel mai prost fel
+       de a spune „nu mai e nimic de făcut aici". */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inUlei(j);
+    const unealta = j.locurileUneltelor()[2];
+    acoperaPelerinaToata(j);
+    j.avanseaza(3200);
+    egal(j.s8.faza, "postament", "lucrarea nu s-a înrămat");
+
+    adevarat(!/pânza ta|panza ta/.test(totTextul(j.cadruCurat())),
+      "raftul a rămas pe ecran după ce lucrarea s-a agățat pe perete");
+
+    j.s8.unealta = 0;
+    j.cursor.x = unealta.x; j.cursor.y = unealta.y;
+    j.click8(j.ceas.t);
+    egal(j.s8.unealta, 0, "raftul retras încă dă unelte în mână");
+
+    /* Iar în ceață nu mai vorbește nimeni. „Ești invitat pe postament" rămas
+       scris peste alb ar cere mai departe lucrul pe care tocmai l-ai făcut. */
+    j.cursor.x = g.podiumCx; j.cursor.y = g.podiumCy;
+    j.click8(j.ceas.t);
+    j.avanseaza(400);
+    egal(j.s8.faza, "ceata", "clicul pe postament n-a pornit ceata");
+    adevarat(!/postament/i.test(totTextul(j.cadruCurat())),
+      "îndemnul rămâne scris peste ceață");
+  });
+
+  test("vopseaua nu mai curge după ce lucrarea s-a înrămat", function () {
+    /* Picăturile rămâneau atârnate acolo unde le prinsese ridicarea rochiei —
+       în aer, sub tabloul agățat, ca și cum pictura ar fi sângerat pe perete.
+       Vopseaua proaspătă se prelinge; una înrămată nu mai curge. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inUlei(j);
+    acoperaPelerinaToata(j);
+    j.avanseaza(60);
+    adevarat(j.s8.picaturi.length > 0, "pictura groasă n-a lăsat nicio picătură");
+    j.avanseaza(3200);
+    egal(j.s8.faza, "postament", "lucrarea nu s-a înrămat");
+    egal(j.s8.picaturi.length, 0,
+      "au rămas " + j.s8.picaturi.length + " picături atârnate sub tablou");
   });
 
   test("pe perete scrie ce e pigmentul", function () {
@@ -5399,8 +5484,8 @@ function ruleaza() {
     j.avanseazaUsor(2600);
     adevarat(j.s12.cuvinte > 0.9, "cuvintele n-au ramas: " + j.s12.cuvinte);
     const d = j.doar(function () { j.deseneazaScena12(j.ceas.t, j.ceas.t); });
-    adevarat(/elefantul va fi albastru/.test(totScrisul(d)), "gluma nu se vede scrisa");
-    adevarat(/albastru/.test(j.SOAPTA), "textul soaptei s-a schimbat");
+    adevarat(/elefantul va fi roz/.test(totScrisul(d)), "gluma nu se vede scrisa");
+    adevarat(/roz/.test(j.SOAPTA), "textul soaptei s-a schimbat");
   });
 
   test("clicul pe punct da flasul, iar flasul redeschide jucaria", function () {
@@ -5430,6 +5515,59 @@ function ruleaza() {
     j.cursor.x = p.x + S * 0.10; j.cursor.y = p.y;
     j.click12(j.ceas.t);
     egal(j.s12.faza, "flash", "de la o zecime de ecran, punctul nu se lasa apasat");
+  });
+
+  test("promisiunea se tine: la turul al doilea, elefantul e roz", function () {
+    /* O gluma spusa jucatorului si netinuta e mai rea decat una nespusa: cine se
+       intoarce anume ca sa vada elefantul roz si il gaseste albastru afla ca sala
+       a mintit, nu ca a glumit.
+
+       Si tot de-aia textul nu mai spune „albastru": elefantul **este** albastru de
+       la bun inceput, deci gluma aceea promitea ca totul ramane la fel. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(/roz/.test(j.SOAPTA), "soapta nu mai promite un elefant roz");
+    adevarat(!/albastru/.test(j.SOAPTA), "soapta promite culoarea pe care o are deja");
+    egal(j.elefantulERoz(), false, "elefantul era roz de la primul tur");
+    const albastru = j.culoareaCustodelui();
+
+    inVid(j);
+    j.iesiDinVid(j.ceas.t);
+    egal(j.elefantulERoz(), true, "dupa bucla, elefantul n-a devenit roz");
+    adevarat(j.culoareaCustodelui() !== albastru,
+      "custodele a ramas de aceeasi culoare: " + j.culoareaCustodelui());
+
+    /* Rozul pastreaza scara de lumina a albastrului — fata medie, crestet
+       deschis, lateral inchis — fiindca volumul custodelui e facut din
+       raporturile astea, nu din culoare. Un roz pus fara scara ar turti
+       elefantul, si gluma ar costa forma. */
+    const n = parseInt(String(j.culoareaCustodelui()).slice(1), 16);
+    const r = (n >> 16) & 255, b = n & 255;
+    adevarat(r > b, "culoarea noua nu e mai calda decat albastrul");
+  });
+
+  test("la turul al doilea e roz **tot** elefantul, si trompa", function () {
+    /* Elefantul se deseneaza in doua bucati: corpul, si trompa — care merge
+       separat, ca sa poata urmari petele. Cand rozul a fost scris numai la
+       corp, la turul al doilea iesea un elefant roz cu trompa albastra: adica
+       promisiunea tinuta pe jumatate, care e mai rea decat una netinuta. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const albastru = j.culorileElefantului();
+    const vechi = [albastru.fata, albastru.sus, albastru.lateral,
+                   albastru.inchis, albastru.cute, albastru.nari];
+    const d1 = j.doar(function () { j.deseneazaTrompa(j.ceas.t); });
+    adevarat(d1.some(function (o) { return o.stil === albastru.fata; }),
+      "trompa nu se picteaza cu culoarea elefantului");
+
+    inVid(j);
+    j.iesiDinVid(j.ceas.t);
+    const roz = j.culorileElefantului();
+    adevarat(roz.fata !== albastru.fata, "paleta n-a trecut pe roz");
+    const d2 = j.doar(function () { j.deseneazaTrompa(j.ceas.t); });
+    const ramase = d2.filter(function (o) { return vechi.indexOf(o.stil) >= 0; });
+    egal(ramase.length, 0,
+      "a ramas albastru pe trompa: " + ramase.map(function (o) { return o.stil; }).join(", "));
+    adevarat(d2.some(function (o) { return o.stil === roz.fata; }),
+      "trompa n-a luat culoarea noua");
   });
 
   test("in vid nu se deseneaza nimic in afara de punct", function () {
