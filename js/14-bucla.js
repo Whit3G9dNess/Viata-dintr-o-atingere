@@ -187,6 +187,12 @@ function cadru(t) {
     actualizeazaAcuarela(acum);
     deseneazaScena9(t, acum);
   }
+  else if (stare === 'carbune') {
+    /* Și aici se ține apăsat: și ștersul, și răzuitul sunt mișcări lungi. */
+    freacaScena11();
+    actualizeazaCarbune(acum);
+    deseneazaScena11(t, acum);
+  }
   else if (stare === 'colaj') {
     /* La fel și aici: de sfoară se trage, colțul de colaj se desprinde. Sunt
        manete, iar o manetă trasă cu un clic nu e o manetă. */

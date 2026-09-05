@@ -1722,16 +1722,14 @@ function intraInColaj(acum) {
 }
 
 function iesiDinColaj(acum) {
-  /* Ruptura duce în sala a unsprezecea. Ea încă nu e făcută, așa că deocamdată
-     te scoate înapoi la custode — ca la arsură, ca la vârtej, ca la trapă și ca
-     la ziar. Când va fi, aici se schimbă un singur rând. */
-  opresteAtelierRetro();
-  s3.vizitat = true;
-  stare = 'muzeu';
-  faza3('usaDeschisa');
-  s3.usa = 1; s3.chemare = 0; s3.aSunatChemarea = false;
-  actiune3(acum);
-  pornesteNatura(false);
+  /* Ruptura duce în sala a unsprezecea, a cărbunelui. Aici era rândul care te
+     scotea înapoi la custode fiindcă sala nu exista încă — și tot aici scria că,
+     atunci când va exista, se schimbă un singur rând. Ăsta e rândul, și e ultimul
+     de felul ăsta: după sala a unsprezecea nu mai urmează alta, ci începutul.
+
+     Trecerea are un sens: ai rupt un perete lipit din bucăți, și intri într-unul
+     din care se ia materie. Amândouă fac o lucrare stricând ceva. */
+  intraInCarbune(acum);
 }
 
 /* ---------- CE FACE FIECARE MATERIAL ---------- */

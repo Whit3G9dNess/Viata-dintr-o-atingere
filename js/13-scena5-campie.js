@@ -195,15 +195,36 @@ const marunt = { panza: null };
 /* ---- pictura ---- */
 
 // O tușă: o dâră scurtă de culoare, așezată pe o direcție anume.
-/* Amesteca doua culori scrise in hex. Perspectiva aeriana cere asta la tot
-   pasul: cu cat un lucru e mai departe, cu atat culoarea lui se trage mai mult
-   spre albastrul aerului dintre noi si el. */
+/* Amesteca doua culori. Perspectiva aeriana cere asta la tot pasul: cu cat un
+   lucru e mai departe, cu atat culoarea lui se trage mai mult spre albastrul
+   aerului dintre noi si el.
+
+   Intelege si `#rrggbb`, si `rgb(r, g, b)` — adica **si ce da ea insasi**.
+   Multa vreme a stiut numai hex, si asta a fost o capcana pusa cu mana mea: cine
+   scria `amesteca(x, amesteca(y, z, 0.5), 0.5)` primea negru curat, fara nicio
+   plangere, fiindca `parseInt("rgb(242, 241, 236)".slice(1), 16)` da NaN, iar
+   NaN rotunjit da zero. S-a intamplat in sala a unsprezecea: blocul de ghips alb
+   iesea negru ca smoala, si nimic din cod nu arata gresit.
+
+   O functie care nu-si poate manca propriul rezultat e o capcana, nu o unealta. */
+function citesteCuloarea(c) {
+  if (c[0] === '#') {
+    const n = parseInt(c.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  const p = c.match(/-?\d+(\.\d+)?/g);
+  if (p && p.length >= 3) {
+    return [Math.round(+p[0]), Math.round(+p[1]), Math.round(+p[2])];
+  }
+  return [0, 0, 0];
+}
+
 function amesteca(a, b, cat) {
-  const c1 = parseInt(a.slice(1), 16), c2 = parseInt(b.slice(1), 16);
+  const c1 = citesteCuloarea(a), c2 = citesteCuloarea(b);
   const k = Math.max(0, Math.min(1, cat));
-  const r = Math.round(((c1 >> 16) & 255) * (1 - k) + ((c2 >> 16) & 255) * k);
-  const g = Math.round(((c1 >> 8) & 255) * (1 - k) + ((c2 >> 8) & 255) * k);
-  const b2 = Math.round((c1 & 255) * (1 - k) + (c2 & 255) * k);
+  const r = Math.round(c1[0] * (1 - k) + c2[0] * k);
+  const g = Math.round(c1[1] * (1 - k) + c2[1] * k);
+  const b2 = Math.round(c1[2] * (1 - k) + c2[2] * k);
   return `rgb(${r}, ${g}, ${b2})`;
 }
 

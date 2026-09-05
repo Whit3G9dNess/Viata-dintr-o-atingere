@@ -48,6 +48,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 28 | Sala a opta, refăcută: desenul necolorat, trusa și cercul cromatic | ✅ gata |
 | 29 | Scena 9 — sala acuarelei: hazardul fluid, lacul-oglindă, plonjonul | ✅ gata |
 | 30 | Scena 10 — sala colajului: memoria obiectelor, și peretele care se destramă | ✅ gata |
+| 31 | Scena 11 — cărbune și pastă: distrugerea creatoare, și butonul de la capăt | ✅ gata |
 
 ---
 
@@ -1022,11 +1023,13 @@ lucruri care nu mai există.
 - **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
   dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
   sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
-- **Ce urmează după ruptură.** Peretele de colaj se destramă în fâșii și lasă să
-  intre lumina din sala a unsprezecea, care încă nu e făcută. Până va fi,
-  `iesiDinColaj` te scoate înapoi la custode — ca la arsură, ca la vârtej, ca la
-  trapa uleiului și ca la ziar. Și tot ca acolo, când va fi, se schimbă un singur
-  rând.
+- **Drumul e închis.** Sala a unsprezecea e ultima, și nu duce mai departe, ci
+  înapoi la început: butonul roșu suge muzeul și jucăria o ia de la capăt. Nu mai
+  există niciun rând „de schimbat când va fi" — pentru prima oară de la sala a
+  cincea încoace.
+- **Muzeul uită că a fost văzut** după colaps (`s3.vizitat = false`), fiindcă a
+  fost înghițit cu galerii cu tot. Dacă vreodată se vrea un al doilea tur mai
+  scurt, aici se hotărăște.
 - **Știrea de radio din sala a zecea** nu spune cuvinte: e o voce sintetizată,
   adică ritmul și banda unui crainic, fără text. Regula casei e că nu intră
   niciun fișier de sunet în jucărie, iar vorbirea românească sintetizată din

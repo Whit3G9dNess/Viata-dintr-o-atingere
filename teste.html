@@ -509,6 +509,27 @@ return {
   ploaiaScena9: function () { return typeof ploaiaScena9 !== "undefined" ? ploaiaScena9 : null; },
 
   s10: typeof s10 !== "undefined" ? s10 : null,
+
+  s11: typeof s11 !== "undefined" ? s11 : null,
+  intraInCarbune: typeof intraInCarbune !== "undefined" ? intraInCarbune : null,
+  iesiDinCarbune: typeof iesiDinCarbune !== "undefined" ? iesiDinCarbune : null,
+  click11: typeof click11 !== "undefined" ? click11 : null,
+  freacaCuUnealta: typeof freacaCuUnealta !== "undefined" ? freacaCuUnealta : null,
+  actualizeazaCarbune: typeof actualizeazaCarbune !== "undefined" ? actualizeazaCarbune : null,
+  deseneazaScena11: typeof deseneazaScena11 !== "undefined" ? deseneazaScena11 : null,
+  geomSala11: typeof geomSala11 !== "undefined" ? geomSala11 : null,
+  inZonaBlocului: typeof inZonaBlocului !== "undefined" ? inZonaBlocului : null,
+  liniileAscunse: typeof liniileAscunse !== "undefined" ? liniileAscunse : null,
+  loculButonului: typeof loculButonului !== "undefined" ? loculButonului : null,
+  sapatInMijloc: typeof sapatInMijloc !== "undefined" ? sapatInMijloc : null,
+  pregatesteCarbunele: typeof pregatesteCarbunele !== "undefined" ? pregatesteCarbunele : null,
+  amesteca: typeof amesteca !== "undefined" ? amesteca : null,
+  linisteaScena11: function () { return typeof linisteaScena11 !== "undefined" ? linisteaScena11 : null; },
+  culorileSalii11: (function () {
+    if (typeof CARBUNE === "undefined") return null;
+    return { CARBUNE, CARBUNE_MAT, CARBUNE_PRAF, GHIPS, GHIPS_UMBRA, GHIPS_ADANC,
+             LUMINA_LINIE };
+  })(),
   intraInColaj: typeof intraInColaj !== "undefined" ? intraInColaj : null,
   iesiDinColaj: typeof iesiDinColaj !== "undefined" ? iesiDinColaj : null,
   click10: typeof click10 !== "undefined" ? click10 : null,
@@ -2531,14 +2552,22 @@ function ruleaza() {
     egal(j.stare(), "ulei", "vârtejul nu duce în sala a opta");
     j.iesiDinUlei(j.ceas.t);
     egal(j.stare(), "acuarela", "postamentul nu duce în sala a noua");
-    /* Iar însemnatul galeriei s-a mutat încă o dată, la noul capăt al drumului.
-       Se mută de fiecare dată când se adaugă o sală — și tocmai de-aia merită
-       verificat aici, în testul care umblă tot drumul: e singurul loc din suită
-       care ar prinde o sală adăugată fără ieșire. */
+    /* Drumul nu se mai întoarce la custode după fiecare sală: de la ulei încolo,
+       fiecare ușă duce mai departe. De-aia nu se mai verifică aici însemnatul
+       galeriei — el se punea când sala te scotea înapoi afară, iar acum nu te mai
+       scoate niciuna. Ce se verifică e că fiecare sală **are unde să te ducă**:
+       ăsta e singurul loc din suită care ar prinde o sală adăugată fără ieșire. */
     j.iesiDinAcuarela(j.ceas.t);
     egal(j.stare(), "colaj", "ziarul nu duce în sala a zecea");
     j.iesiDinColaj(j.ceas.t);
-    adevarat(j.s3.vizitat, "galeria prin care am trecut n-a rămas însemnată");
+    egal(j.stare(), "carbune", "ruptura nu duce în sala a unsprezecea");
+    /* Și acolo se încheie drumul: butonul roșu suge muzeul și jucăria o ia de la
+       capăt. De data asta muzeul **uită** că a fost văzut, și asta nu e o scăpare:
+       a fost înghițit cu galerii cu tot. */
+    j.iesiDinCarbune(j.ceas.t);
+    adevarat(j.stare() === "crestere" || j.stare() === "balon",
+      "sala a unsprezecea nu ne întoarce la început: " + j.stare());
+    adevarat(!j.s3.vizitat, "muzeul ține minte că a fost văzut, deși a fost înghițit");
   });
 
   test("din spate, pieptarul bărbatului e o singură foaie neagră", function () {
@@ -5055,6 +5084,228 @@ function ruleaza() {
     for (let k = 0; k < 10; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     j.avanseaza(1000);
     egal(j.s5.faza, "viu", "țăranii nu prind viață după cei zece pași");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a unsprezecea: se ia, nu se pune");
+
+  function inCarbune(j) {
+    j.mergiLaStarea("carbune");
+    j.intraInCarbune(j.ceas.t);
+    j.avanseazaUsor(2400);
+    return j.geomSala11();
+  }
+
+  // freaca peste o linie ascunsa, de la un capat la altul
+  function frecaLinia(j, l) {
+    for (let q = 0; q <= 6; q++) {
+      j.cursor.x = j.intre(l.x0, l.x1, q / 6);
+      j.cursor.y = j.intre(l.y0, l.y1, q / 6);
+      j.freacaCuUnealta(j.ceas.t);
+      j.avanseazaUsor(70);
+    }
+  }
+
+  // curata destul cat sa se inchege rama
+  function curataRama(j) {
+    const linii = j.liniileAscunse();
+    for (let pas = 0; pas < 8 && j.s11.faza === "carbune"; pas++) {
+      for (let k = 0; k < 16; k++) {
+        if (j.s11.aprinse[k]) continue;
+        frecaLinia(j, linii[k]);
+      }
+    }
+  }
+
+  // razuie blocul pana iese butonul
+  function sapaBlocul(j) {
+    const g = j.geomSala11();
+    for (let n = 0; n < 900 && j.s11.faza === "relief"; n++) {
+      const a = Math.sin(n * 0.29) * 0.40 + 0.5, b = Math.cos(n * 0.19) * 0.40 + 0.5;
+      j.cursor.x = g.blocX + a * g.blocLat;
+      j.cursor.y = g.blocY + b * g.blocInalt;
+      j.freacaCuUnealta(j.ceas.t);
+      j.avanseazaUsor(70);
+    }
+  }
+
+  test("ruptura din sala colajului duce in sala a unsprezecea", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    j.iesiDinColaj(j.ceas.t);
+    egal(j.stare(), "carbune", "ruptura nu duce in sala a unsprezecea");
+  });
+
+  test("in sala a unsprezecea nu intra nicio culoare", function () {
+    /* Monocrom înseamna monocrom: negru-taciune, alb-ghips si treptele dintre
+       ele. Singurul lucru colorat e butonul rosu de la sfarsit — si tocmai
+       fiindca e singurul, se vede de la o posta. Un gri cu o umbra de albastru
+       sau de maro ar face-o o sala „aproape" monocroma, adica deloc. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.culorileSalii11 !== null, "lipsesc culorile salii a unsprezecea");
+    for (const nume of Object.keys(j.culorileSalii11)) {
+      const h = j.culorileSalii11[nume];
+      const n = parseInt(String(h).slice(1), 16);
+      const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      const spread = Math.max(r, g, b) - Math.min(r, g, b);
+      adevarat(spread <= 16, "culoarea " + nume + " (" + h + ") e colorata: " + spread);
+    }
+  });
+
+  test("radiera sterge carbunele, si nu atinge blocul", function () {
+    /* Sala e impartita in doua zone fara niciun perete intre ele: periferia se
+       curata, mijlocul se sapa. Daca radiera ar musca si din bloc, cele doua
+       gesturi s-ar amesteca si n-ar mai fi doua zone, ar fi una. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inCarbune(j);
+    egal(j.s11.curatat, 0, "peretele era deja curatat la intrare");
+
+    j.cursor.x = g.blocX - g.S * 0.20; j.cursor.y = g.cy;
+    j.freacaCuUnealta(j.ceas.t);
+    adevarat(j.s11.curatat > 0, "radiera n-a luat nimic de pe perete");
+
+    const inainte = j.s11.pasta[11][11];
+    for (let k = 0; k < 6; k++) {
+      j.cursor.x = g.cx; j.cursor.y = g.cy;
+      j.freacaCuUnealta(j.ceas.t);
+      j.avanseazaUsor(70);
+    }
+    egal(j.s11.pasta[11][11], inainte, "radiera a muscat din blocul de pasta");
+  });
+
+  test("liniile de lumina se aprind numai pe unde ai sters", function () {
+    /* Desenul exista sub carbune de la bun inceput — nu se naste cand freci, se
+       dezveleste. Aia e toata deosebirea dintre a descoperi si a inventa, si
+       e chiar tema salii. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCarbune(j);
+    const linii = j.liniileAscunse();
+    adevarat(linii.length > 40, "prea putine linii ascunse: " + linii.length);
+    egal(j.s11.aprinse.filter(function (a) { return a; }).length, 0,
+      "erau linii aprinse inainte sa fi sters ceva");
+
+    frecaLinia(j, linii[0]);
+    adevarat(j.s11.aprinse[0], "linia frecata nu s-a aprins");
+    adevarat(!j.s11.aprinse[8], "s-a aprins si o linie pe care n-am atins-o");
+  });
+
+  test("rama se inchega din bucatile ei, si abia atunci vine spaclul", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCarbune(j);
+    egal(j.s11.faza, "carbune", "sala n-a inceput cu radiera in mana");
+    curataRama(j);
+    j.avanseazaUsor(120);
+    egal(j.s11.faza, "relief", "rama inchegata n-a adus spaclul");
+    adevarat(j.s11.rama >= 0.85, "rama nu s-a inchegat: " + j.s11.rama);
+  });
+
+  test("butonul iese din mijloc, nu de pe marginile blocului", function () {
+    /* Sapatul pe margini nu descopera nimic: butonul e in miezul volumului. Daca
+       s-ar socoti media pe tot blocul, ai putea razui de jur imprejur si el ar
+       aparea din senin, dintr-o pasta pe care n-ai atins-o. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inCarbune(j);
+    curataRama(j);
+    j.avanseazaUsor(120);
+    egal(j.s11.faza, "relief", "n-am ajuns la spaclu");
+
+    // razui numai marginea de sus a blocului
+    for (let k = 0; k < 60; k++) {
+      j.cursor.x = g.blocX + g.blocLat * (0.1 + (k % 9) * 0.1);
+      j.cursor.y = g.blocY + g.blocInalt * 0.06;
+      j.freacaCuUnealta(j.ceas.t);
+      j.avanseazaUsor(70);
+    }
+    adevarat(j.s11.razuit > 0, "razuitul pe margine n-a luat nimic");
+    egal(j.s11.buton, 0, "butonul a iesit desi n-am sapat in mijloc");
+
+    sapaBlocul(j);
+    egal(j.s11.faza, "buton", "sapat in mijloc, butonul tot n-a iesit");
+    adevarat(j.sapatInMijloc() > 0.7, "mijlocul n-a fost sapat destul");
+  });
+
+  test("apasat, butonul suge muzeul si lasa ecranul negru", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCarbune(j);
+    curataRama(j);
+    j.avanseazaUsor(120);
+    sapaBlocul(j);
+    egal(j.s11.faza, "buton", "n-am ajuns la buton");
+
+    const b = j.loculButonului();
+    j.cursor.x = b.x + b.r * 4; j.cursor.y = b.y;
+    j.click11(j.ceas.t);
+    egal(j.s11.faza, "buton", "o atingere alaturi a pornit colapsul");
+
+    j.cursor.x = b.x; j.cursor.y = b.y;
+    j.click11(j.ceas.t);
+    egal(j.s11.faza, "colaps", "apasat, butonul n-a supt nimic");
+    j.avanseazaUsor(3500);
+    adevarat(j.s11.colaps >= 1, "colapsul nu s-a terminat: " + j.s11.colaps);
+  });
+
+  test("dupa ce muzeul e inghitit, jucaria incepe din nou", function () {
+    /* Butonul scrie „Apasa-ma iar", si nu e o gluma: dupa ce muzeul e supt
+       inauntru, jucaria o ia de la capat. Nu te scoate la custode, ca celelalte
+       sali — n-ar avea unde, custodele tocmai a fost inghitit cu galeriile lui. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inCarbune(j);
+    j.s11.faza = "buton";
+    const b = j.loculButonului();
+    j.cursor.x = b.x; j.cursor.y = b.y;
+    j.click11(j.ceas.t);
+    j.avanseazaUsor(5200);
+    adevarat(j.stare() !== "carbune", "sala a unsprezecea nu se termina niciodata");
+    adevarat(j.stare() === "crestere" || j.stare() === "balon",
+      "jucaria n-a luat-o de la capat: " + j.stare());
+    adevarat(!j.s3.vizitat, "muzeul tine minte ca a fost vazut, desi a fost inghitit");
+  });
+
+  test("carbunele nu se picteaza din nou la fiecare cadru", function () {
+    /* Stratul de carbune nu e o stampila obisnuita: el **tine datele**, fiindca
+       pe el se sterge. Prima oara se repicta la fiecare cadru, adica tot ce
+       stergeai se punea la loc in saisprezece milisecunde — radiera mergea,
+       socoteala arata optzeci la suta curatat, si pe ecran peretele statea negru
+       ca la inceput. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const g = inCarbune(j);
+    const panza1 = j.pregatesteCarbunele();
+    const desene1 = panza1._panza ? panza1._panza.desene.length : 0;
+    j.cursor.x = g.blocX - g.S * 0.2; j.cursor.y = g.cy;
+    j.freacaCuUnealta(j.ceas.t);
+    j.avanseazaUsor(400);
+    const panza2 = j.pregatesteCarbunele();
+    adevarat(panza2 === panza1, "carbunele s-a facut pe alta panza");
+    const desene2 = panza2._panza ? panza2._panza.desene.length : 0;
+    adevarat(desene2 - desene1 < 200,
+      "carbunele s-a repictat: " + (desene2 - desene1) + " operatii noi");
+  });
+
+  test("in sala a unsprezecea e liniste, si ea se opreste la iesire", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inCarbune(j);
+    adevarat(j.linisteaScena11() !== null, "sala tace de tot, nici macar incordat");
+    j.iesiDinCarbune(j.ceas.t);
+    egal(j.linisteaScena11(), null, "linistea a ramas sa bazaie peste inceput");
+  });
+
+  test("amesteca isi poate manca propriul rezultat", function () {
+    /* O functie care nu-si poate manca propriul rezultat e o capcana, nu o
+       unealta. Multa vreme `amesteca` stia numai hex, iar cine scria
+       `amesteca(x, amesteca(y, z, 0.5), 0.5)` primea negru curat, fara nicio
+       plangere: `parseInt("rgb(242, 241, 236)".slice(1), 16)` da NaN, iar NaN
+       rotunjit da zero. S-a intamplat in sala a unsprezecea — blocul de ghips
+       alb iesea negru ca smoala, si nimic din cod nu arata gresit. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    adevarat(j.amesteca !== null, "lipseste amesteca");
+    const alb = j.amesteca("#ffffff", "#ffffff", 0.5);
+    egal(j.amesteca(alb, alb, 0.5), alb, "amestecul a doua albe nu mai e alb");
+    const gri = j.amesteca("#000000", "#ffffff", 0.5);
+    egal(j.amesteca("#000000", gri, 1), gri, "amestecul cu propriul rezultat s-a stricat");
+    egal(j.amesteca("#204060", "#204060", 0.3), "rgb(32, 64, 96)",
+      "hexul simplu nu mai merge");
   });
 
   /* ---------------------------------------------------------------- */

@@ -154,4 +154,5 @@ window.addEventListener('pointerdown', (e) => {
   if (stare === 'ulei') { click8(acum); return; }
   if (stare === 'acuarela') { click9(acum); return; }
   if (stare === 'colaj') { click10(acum); return; }
+  if (stare === 'carbune') { click11(acum); return; }
 });

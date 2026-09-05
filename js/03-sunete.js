@@ -50,6 +50,10 @@ function zgomot(cand, durata, volum, frecventaStart, frecventaFinal = null) {
 
 // SCENA 1 — sunetul începutului: un „răsărit" sonor
 function sunetRasarit() {
+  /* Jucăria poate să și **reînceapă** acum, din butonul roșu al sălii a
+     unsprezecea — iar atunci răsăritul se cheamă fără să fi atins nimeni ecranul,
+     deci fără sunet pornit. */
+  if (!audio) return;
   const t = audio.currentTime;
   const bas = audio.createOscillator();
   bas.type = 'sine';
@@ -1022,6 +1026,230 @@ function sunetCaretMasina() {
   nota(1400, t, 0.10, 0.05, 'sine', 900);
   nota(1400 * 2.2, t, 0.07, 0.025, 'sine');
   zgomotUscat(t + 0.10, 0.16, 0.05, 900, 400, 4);   // caruțul care se întoarce
+}
+
+/* ==========================================================================
+   SALA A UNSPREZECEA — CĂRBUNE ȘI PASTĂ DE RELIEF
+
+   O sală în care nu se adaugă nimic: se **ia**. Radiera scoate cărbunele de pe
+   perete, șpațclul scoate pasta de pe bloc, și din ce rămâne după ele iese
+   lucrarea. De-aia toate sunetele de aici sunt sunete de **frecare**: nimic nu
+   pică, nimic nu curge, totul se roade.
+
+   Și sunt aspre dinadins. Sala are liniște tensionată și contrast absolut, deci
+   și urechea trebuie să stea între două extreme: tăcere aproape deplină, tăiată de
+   scrâșnete scurte și zgâriate.
+   ========================================================================== */
+
+/* Zgârietura: zgomot tăiat în fărâme foarte scurte, cu un filtru care urcă și
+   coboară. Ce deosebește radiera de șpațclu nu e înălțimea, ci **cât de mărunt e
+   tăiată fărâma**: cauciucul pe hârtie face sute de atingeri mărunte pe secundă,
+   metalul pe pastă face zeci de zgârieturi mari. */
+function zgomotZgariat(cand, durata, volum, f0, f1, ascutime) {
+  if (!audio) return;
+  if (!bufferZgomot) pregatesteZgomotul();
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  const banda = audio.createBiquadFilter();
+  banda.type = 'bandpass';
+  banda.frequency.setValueAtTime(f0, cand);
+  banda.frequency.exponentialRampToValueAtTime(Math.max(80, f1), cand + durata);
+  banda.Q.setValueAtTime(ascutime === undefined ? 1.4 : ascutime, cand);
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, cand);
+  vol.gain.exponentialRampToValueAtTime(volum, cand + durata * 0.2);
+  vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
+
+  sursa.connect(banda).connect(vol).connect(audio.destination);
+  sursa.start(cand);
+  sursa.stop(cand + durata + 0.05);
+}
+
+/* RADIERA — „scritch-scratch".
+
+   Cauciucul pe hârtie nu face un șuierat: face o **ceată de atingeri**, foarte
+   dese și inegale. Un singur zgomot lung ar suna a fâs; șapte-opt fărâme lipite
+   una de alta sună a frecat. */
+function sunetRadiera(tarie) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const q = Math.max(0.25, Math.min(1, tarie === undefined ? 1 : tarie));
+  let cand = t;
+  const cate = 5 + Math.floor(Math.random() * 4);
+  for (let k = 0; k < cate; k++) {
+    zgomotZgariat(cand, 0.018 + Math.random() * 0.026, 0.030 * q + Math.random() * 0.022,
+                  2400 + Math.random() * 2200, 1500, 1.1);
+    cand += 0.010 + Math.random() * 0.024;
+  }
+  // praful care se ridică în urma ei: foarte înalt și foarte stins
+  zgomotZgariat(t + 0.03, 0.22, 0.010 * q, 6500, 4200, 0.7);
+}
+
+/* ȘPAȚCLUL — „scrape, crunch".
+
+   Metal pe pastă uscată. Mai jos, mai rar și mai gros decât radiera, cu un
+   **pocnet** din când în când: crusta cedează dintr-odată, nu treptat. Pocnetul
+   ăla e tot ce desparte „razui" de „ștergi". */
+function sunetRazuire(tarie) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const q = Math.max(0.25, Math.min(1, tarie === undefined ? 1 : tarie));
+  zgomotZgariat(t, 0.10 + Math.random() * 0.09, 0.050 * q,
+                900 + Math.random() * 700, 380, 2.2);
+  nota(120 + Math.random() * 90, t, 0.09, 0.028 * q, 'sawtooth', 70);
+  if (Math.random() < 0.45) {
+    const c = t + 0.03 + Math.random() * 0.06;
+    zgomotZgariat(c, 0.030, 0.055 * q, 2600 + Math.random() * 1800, 900, 0.9);
+    nota(260 + Math.random() * 200, c, 0.05, 0.030 * q, 'triangle', 120);
+  }
+}
+
+/* Bulgărele de pastă care cade și se sparge pe podea. Uscat, scurt, fără ecou:
+   ghipsul nu sună, se fărâmițează. */
+function sunetBulgareDePasta() {
+  if (!audio) return;
+  const t = audio.currentTime + Math.random() * 0.05;
+  nota(90 + Math.random() * 70, t, 0.10, 0.045, 'sine', 55);
+  zgomotZgariat(t, 0.05, 0.040, 1400 + Math.random() * 900, 500, 1.0);
+  for (let k = 0; k < 3; k++) {
+    zgomotZgariat(t + 0.05 + k * 0.04 + Math.random() * 0.03, 0.02, 0.020,
+                  2200 + Math.random() * 1600, 1200, 0.8);
+  }
+}
+
+/* Linia de lumină care iese de sub cărbune: un ton curat, scurt, foarte înalt.
+   E singurul sunet **limpede** din toată sala — și tocmai de-aia se înțelege că
+   ai descoperit ceva, nu că ai stricat ceva. */
+function sunetLinieDescoperita(inaltime) {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const f = inaltime || (1400 + Math.random() * 900);
+  nota(f, t, 0.55, 0.030, 'sine');
+  nota(f * 1.5, t + 0.02, 0.35, 0.014, 'sine');
+}
+
+/* Butonul roșu: un păcănit digital, singurul lucru din jucărie care sună a
+   aparat. Toate celelalte sunete sunt de mână și de materie; ăsta trebuie să pară
+   venit din altundeva, fiindcă și este. */
+function sunetButonRosu() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(1760, t, 0.06, 0.055, 'square', 1760);
+  nota(2640, t + 0.055, 0.09, 0.045, 'square', 2640);
+}
+
+/* VACUUMUL — tot muzeul supt în buton.
+
+   Sunetul cel mai violent din jucărie, și construit pe dos față de toate
+   celelalte: în loc să se stingă, **crește** și se strânge. Trei voci:
+
+   - un șuierat care urcă și se îngustează, ca aerul tras printr-o gaură tot mai
+     mică;
+   - un ton care coboară sub auz, adică masa care se prăbușește;
+   - și, la capăt, tăcere bruscă. Tăcerea e partea cea mai importantă: un sunet
+     care se stinge lin spune „s-a terminat încet"; unul tăiat spune „a fost
+     înghițit". */
+function sunetVacuum() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const D = 2.6;
+  if (!bufferZgomot) pregatesteZgomotul();
+
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+  const banda = audio.createBiquadFilter();
+  banda.type = 'bandpass';
+  banda.frequency.setValueAtTime(320, t);
+  banda.frequency.exponentialRampToValueAtTime(5200, t + D * 0.86);
+  banda.Q.setValueAtTime(0.8, t);
+  banda.Q.linearRampToValueAtTime(7, t + D * 0.86);
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.16, t + D * 0.80);
+  vol.gain.setValueAtTime(0.16, t + D * 0.86);
+  vol.gain.linearRampToValueAtTime(0.0001, t + D * 0.90);
+  sursa.connect(banda).connect(vol).connect(audio.destination);
+  sursa.start(t);
+  sursa.stop(t + D);
+
+  // masa care se prăbușește
+  nota(180, t, D * 0.88, 0.13, 'sawtooth', 24);
+  nota(90, t + 0.1, D * 0.8, 0.10, 'sine', 18);
+
+  /* Bucățile care trec pe lângă tine în drum spre gaură: tot mai dese, tot mai
+     înalte, ca niște stâlpi de gard văzuți dintr-un tren care accelerează. */
+  let cand = t + 0.15;
+  let pas = 0.16;
+  while (cand < t + D * 0.86) {
+    zgomotZgariat(cand, 0.05, 0.05, 500 + (cand - t) * 2200, 300, 1.6);
+    pas *= 0.86;
+    cand += Math.max(0.022, pas);
+  }
+  // și pocnetul de la capăt, când gaura se închide
+  nota(60, t + D * 0.88, 0.32, 0.15, 'sine', 22);
+  zgomotZgariat(t + D * 0.88, 0.10, 0.09, 3000, 200, 1.0);
+}
+
+/* Liniștea tensionată a sălii: un bâzâit foarte jos, la limita auzului, și din
+   când în când ecoul fin al unui fir de praf care cade. Nu e muzică și nici
+   ambianță — e **așteptare**. */
+let linisteaScena11 = null;
+
+function pornesteLinisteaIncordata() {
+  if (!audio || linisteaScena11) return;
+  pregatesteZgomotul();
+  const t = audio.currentTime;
+
+  const bas = audio.createOscillator();
+  bas.type = 'sine';
+  bas.frequency.setValueAtTime(41, t);
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, t);
+  vol.gain.exponentialRampToValueAtTime(0.030, t + 3.5);
+  // bătăi foarte încete, ca o respirație ținută
+  const val = audio.createOscillator();
+  val.type = 'sine';
+  val.frequency.setValueAtTime(0.055, t);
+  const adancime = audio.createGain();
+  adancime.gain.setValueAtTime(0.014, t);
+  val.connect(adancime).connect(vol.gain);
+  val.start(t);
+  bas.connect(vol).connect(audio.destination);
+  bas.start(t);
+
+  linisteaScena11 = { bas, val, vol, panaLa: t + 2 };
+}
+
+function tineLinisteaIncordata() {
+  if (!audio || !linisteaScena11) return;
+  const acum = audio.currentTime;
+  while (linisteaScena11.panaLa < acum + 2) {
+    const cand = linisteaScena11.panaLa;
+    // ecoul fin al prafului: un ton foarte înalt și foarte stins, cu o umbră
+    const f = 2600 + Math.random() * 2600;
+    nota(f, cand, 0.20, 0.008, 'sine');
+    nota(f * 0.99, cand + 0.09, 0.26, 0.004, 'sine');
+    linisteaScena11.panaLa = cand + 2.6 + Math.random() * 5.5;
+  }
+}
+
+function opresteLinisteaIncordata() {
+  if (!linisteaScena11) return;
+  const l = linisteaScena11;
+  linisteaScena11 = null;
+  if (!audio) return;
+  const t = audio.currentTime;
+  try {
+    l.vol.gain.cancelScheduledValues(t);
+    l.vol.gain.setValueAtTime(Math.max(0.0001, l.vol.gain.value), t);
+    l.vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    l.bas.stop(t + 1.0);
+    l.val.stop(t + 1.0);
+  } catch (e) { /* deja oprit */ }
 }
 
 function sunetAtingere() {

@@ -353,6 +353,43 @@ Iar suportul trebuie să se vadă: pasta stă în ostroave groase, și între el
 zărește ce e dedesubt. Acoperit peste tot, suportul dispare cu totul — și atunci
 nu mai e o suprafață pictată, ci un covor de vopsea.
 
+### Se ia, nu se pune (sala a unsprezecea)
+
+Toate sălile de până aici sunt despre **a pune**: culoare, apă, pastă, hârtie
+lipită. A unsprezecea e singura despre **a lua**, și asta hotărăște tot ce e
+înăuntru.
+
+Cărbunele de pe pereți e o pânză ascunsă din care se **șterge** cu
+`destination-out`. E singurul fel cinstit de a face o radieră: orice altceva ar
+însemna să desenezi peste negru cu alb, adică să adaugi în loc să iei. Alături stă
+o rețea de ochiuri care nu desenează nimic — ea numai numără cât s-a curățat.
+Desenul e pe pânză, socoteala e pe rețea.
+
+Stratul ăsta e singura ștampilă din jucărie care **ține datele**, nu doar le
+oglindește: se pictează o dată și pe urmă se scrie pe el. Câtă vreme s-a refăcut
+la fiecare cadru, ca celelalte, tot ce ștergeai se punea la loc în șaisprezece
+milisecunde — radiera mergea, socoteala arăta optzeci la sută curățat, iar pe
+ecran peretele stătea negru ca la început.
+
+Sub cărbune stă o pânză de linii de lumină, toate îndreptate spre bloc, plus rama
+propriu-zisă tăiată în șaisprezece bucăți. Numai rama e condiția de trecere;
+restul liniilor sunt răsplata pentru căutat, ca să nu existe colț de perete unde
+munca să nu se plătească.
+
+Blocul de pastă e un heightmap de 22×22, pictat **minúscul** — un pixel de ochi —
+și pe urmă întins peste tot blocul, lăsând browserul să netezească între pixeli.
+Desenat de-a dreptul, ieșea un zid de cărămidă: pasta n-are muchii drepte
+nicăieri, are pante. Crestele, în schimb, se trag **după** întindere și la mărimea
+adevărată, fiindcă ele trebuie să fie tăioase. Neted peste tot și ascuțit pe
+creste: exact ce e pasta de relief.
+
+La capăt, butonul roșu suge tot muzeul. Colapsul nu redesenează nimic: ia
+**imaginea sălii de dinainte** (`iaPozaSalii`), o strânge spre gaură și o
+răsucește. Ce se prăbușește trebuie să fie chiar lucrul pe care tocmai îl priveai.
+Și, fiindcă pe buton scrie „Apasă-mă iar", după aceea jucăria **începe din nou** —
+nu te scoate la custode, ca celelalte săli: custodele tocmai a fost înghițit cu
+galeriile lui.
+
 ### Sunetul ține locul pipăitului (sala a zecea)
 
 Sala a zecea e singura din toată jucăria în care sunetul nu îmbracă scena, ci
@@ -442,6 +479,7 @@ flowchart TB
     B17["17-scena8-ulei.js · 2820<br/>sala în linie, trusa, cercul cromatic, postamentul"]
     B18["18-scena9-acuarela.js · 1439<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
     B19["19-scena10-colaj.js · 1453<br/>iuta, ziarul, cartonul, sforile, ruptura"]
+    B20["20-scena11-carbune.js · 1071<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 155<br/>ce face fiecare atingere"]
