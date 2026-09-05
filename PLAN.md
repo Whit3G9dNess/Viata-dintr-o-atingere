@@ -49,6 +49,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 29 | Scena 9 — sala acuarelei: hazardul fluid, lacul-oglindă, plonjonul | ✅ gata |
 | 30 | Scena 10 — sala colajului: memoria obiectelor, și peretele care se destramă | ✅ gata |
 | 31 | Scena 11 — cărbune și pastă: distrugerea creatoare, și butonul de la capăt | ✅ gata |
+| 32 | Scena 12 — vidul potențial: punctul, șoapta, și bucla care se închide | ✅ gata |
 
 ---
 
@@ -1023,10 +1024,11 @@ lucruri care nu mai există.
 - **Elefantul și banda din față a grădinii** sunt acum cele mai scumpe lucruri
   dintr-un cadru al scenei a doua (vreo trei sute cincizeci de operații din patru
   sute optzeci). Dacă mai e nevoie de aer, de acolo se ia.
-- **Drumul e închis.** Sala a unsprezecea e ultima, și nu duce mai departe, ci
-  înapoi la început: butonul roșu suge muzeul și jucăria o ia de la capăt. Nu mai
-  există niciun rând „de schimbat când va fi" — pentru prima oară de la sala a
-  cincea încoace.
+- **Drumul e închis, și e un cerc.** Sala a douăsprezecea e ultima: butonul roșu
+  suge muzeul, negrul rămas e vidul, iar din vid un clic pe punct redeschide
+  jucăria de la început. Nu mai există niciun rând „de schimbat când va fi" —
+  pentru prima oară de la sala a cincea încoace, și de acum încolo pentru
+  totdeauna: nu mai urmează nicio sală, fiindcă urmează prima.
 - **Muzeul uită că a fost văzut** după colaps (`s3.vizitat = false`), fiindcă a
   fost înghițit cu galerii cu tot. Dacă vreodată se vrea un al doilea tur mai
   scurt, aici se hotărăște.

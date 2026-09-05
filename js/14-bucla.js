@@ -187,6 +187,10 @@ function cadru(t) {
     actualizeazaAcuarela(acum);
     deseneazaScena9(t, acum);
   }
+  else if (stare === 'vid') {
+    actualizeazaVid(acum);
+    deseneazaScena12(t, acum);
+  }
   else if (stare === 'carbune') {
     /* Și aici se ține apăsat: și ștersul, și răzuitul sunt mișcări lungi. */
     freacaScena11();

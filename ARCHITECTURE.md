@@ -353,6 +353,26 @@ Iar suportul trebuie să se vadă: pasta stă în ostroave groase, și între el
 zărește ce e dedesubt. Acoperit peste tot, suportul dispare cu totul — și atunci
 nu mai e o suprafață pictată, ci un covor de vopsea.
 
+### Bucla se închide (sala a douăsprezecea)
+
+Ultima sală n-are nimic în ea, și asta e chiar conținutul ei: negrul absolut de
+dinainte ca muzeul să fie desenat — adică exact ecranul cu care a început
+jucăria. Celelalte unsprezece au fost despre materie; asta e despre ce era
+înainte de materie. Un vid cu ceva în el n-ar mai fi vid, ar fi o cameră
+întunecată, iar un test numără operațiile de desen ca să rămână așa.
+
+Negrul de la capătul colapsului din sala a unsprezecea **este** începutul acestei
+săli: una se termină în negru absolut, cealaltă începe în negru absolut, și tocmai
+cusătura care nu se vede face deja-vu-ul.
+
+Șoapta („O luăm de la capăt? Promit că data viitoare elefantul va fi albastru.")
+nu e o înregistrare — dar șoapta e, dintre toate felurile de vorbire, singurul
+care se poate face cinstit din cod: **o șoaptă chiar e zgomot**. Când șoptești,
+coardele vocale nu vibrează deloc; aerul trece prin gură și formele ei îl
+filtrează. `sunetSoapta` face exact asta: zgomot alb prin două rezonanțe care se
+mută de la o silabă la alta — formantele vocalelor — tăiat în silabe cu pauzele
+frazei. Cuvintele scrise pe ecran spun **ce**; sunetul spune **cine**.
+
 ### Se ia, nu se pune (sala a unsprezecea)
 
 Toate sălile de până aici sunt despre **a pune**: culoare, apă, pastă, hârtie
@@ -479,6 +499,7 @@ flowchart TB
     B17["17-scena8-ulei.js · 2820<br/>sala în linie, trusa, cercul cromatic, postamentul"]
     B18["18-scena9-acuarela.js · 1439<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
     B19["19-scena10-colaj.js · 1453<br/>iuta, ziarul, cartonul, sforile, ruptura"]
+    B21["21-scena12-vid.js · 269<br/>vidul, punctul, șoapta, bucla"]
     B20["20-scena11-carbune.js · 1071<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]

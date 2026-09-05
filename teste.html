@@ -511,6 +511,17 @@ return {
   s10: typeof s10 !== "undefined" ? s10 : null,
 
   s11: typeof s11 !== "undefined" ? s11 : null,
+
+  s12: typeof s12 !== "undefined" ? s12 : null,
+  intraInVid: typeof intraInVid !== "undefined" ? intraInVid : null,
+  iesiDinVid: typeof iesiDinVid !== "undefined" ? iesiDinVid : null,
+  click12: typeof click12 !== "undefined" ? click12 : null,
+  actualizeazaVid: typeof actualizeazaVid !== "undefined" ? actualizeazaVid : null,
+  deseneazaScena12: typeof deseneazaScena12 !== "undefined" ? deseneazaScena12 : null,
+  loculPunctului: typeof loculPunctului !== "undefined" ? loculPunctului : null,
+  apropiereaDePunct: typeof apropiereaDePunct !== "undefined" ? apropiereaDePunct : null,
+  SOAPTA: typeof SOAPTA !== "undefined" ? SOAPTA : null,
+  inimaScena12: function () { return typeof inimaScena12 !== "undefined" ? inimaScena12 : null; },
   intraInCarbune: typeof intraInCarbune !== "undefined" ? intraInCarbune : null,
   iesiDinCarbune: typeof iesiDinCarbune !== "undefined" ? iesiDinCarbune : null,
   click11: typeof click11 !== "undefined" ? click11 : null,
@@ -2565,8 +2576,10 @@ function ruleaza() {
        capăt. De data asta muzeul **uită** că a fost văzut, și asta nu e o scăpare:
        a fost înghițit cu galerii cu tot. */
     j.iesiDinCarbune(j.ceas.t);
+    egal(j.stare(), "vid", "colapsul nu duce în vid");
+    j.iesiDinVid(j.ceas.t);
     adevarat(j.stare() === "crestere" || j.stare() === "balon",
-      "sala a unsprezecea nu ne întoarce la început: " + j.stare());
+      "vidul nu ne întoarce la început: " + j.stare());
     adevarat(!j.s3.vizitat, "muzeul ține minte că a fost văzut, deși a fost înghițit");
   });
 
@@ -5257,6 +5270,11 @@ function ruleaza() {
     j.click11(j.ceas.t);
     j.avanseazaUsor(5200);
     adevarat(j.stare() !== "carbune", "sala a unsprezecea nu se termina niciodata");
+    egal(j.stare(), "vid", "colapsul nu lasa in urma vidul");
+    j.avanseazaUsor(2400);
+    j.cursor.x = j.loculPunctului().x; j.cursor.y = j.loculPunctului().y;
+    j.click12(j.ceas.t);
+    j.avanseazaUsor(1400);
     adevarat(j.stare() === "crestere" || j.stare() === "balon",
       "jucaria n-a luat-o de la capat: " + j.stare());
     adevarat(!j.s3.vizitat, "muzeul tine minte ca a fost vazut, desi a fost inghitit");
@@ -5306,6 +5324,132 @@ function ruleaza() {
     egal(j.amesteca("#000000", gri, 1), gri, "amestecul cu propriul rezultat s-a stricat");
     egal(j.amesteca("#204060", "#204060", 0.3), "rgb(32, 64, 96)",
       "hexul simplu nu mai merge");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sala a douăsprezecea: vidul, și bucla care se închide");
+
+  function inVid(j) {
+    j.mergiLaStarea("vid");
+    j.intraInVid(j.ceas.t);
+    j.avanseazaUsor(2400);       // trece tacerea de la inceput
+    return j.loculPunctului();
+  }
+
+  test("butonul rosu duce in vid, nu de-a dreptul la inceput", function () {
+    /* Negrul de la capatul colapsului **este** sala a douasprezecea. Una se
+       termina in negru absolut, cealalta incepe in negru absolut, si tocmai
+       cusatura care nu se vede face deja-vu-ul de acolo. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("carbune");
+    j.intraInCarbune(j.ceas.t);
+    j.iesiDinCarbune(j.ceas.t);
+    egal(j.stare(), "vid", "colapsul nu duce in vid");
+  });
+
+  test("sala incepe cu tacere deplina, si abia pe urma bate inima", function () {
+    /* Tacerea nu e absenta sunetului, e primul lucru care se aude. Fara ea, sala
+       a douasprezecea ar fi doar sala a unsprezecea cu lumina stinsa. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    j.mergiLaStarea("vid");
+    j.intraInVid(j.ceas.t);
+    egal(j.s12.faza, "tacere", "sala n-a inceput in tacere");
+    egal(j.inimaScena12(), null, "inima batea de la primul cadru");
+    j.avanseazaUsor(600);
+    egal(j.s12.faza, "tacere", "tacerea s-a terminat prea repede");
+    j.avanseazaUsor(2000);
+    egal(j.s12.faza, "punct", "tacerea nu se termina niciodata");
+    adevarat(j.inimaScena12() !== null, "punctul pulseaza fara inima");
+  });
+
+  test("punctul sta fix in mijloc, ca in prima scena", function () {
+    /* Deja-vu-ul se face din potriveala exacta: un punct mutat cu treizeci de
+       pixeli e alt punct. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const p = inVid(j);
+    aproape(p.x, j.W() / 2, 0.5, "punctul nu e in mijloc, pe orizontala");
+    aproape(p.y, j.H() / 2, 0.5, "punctul nu e in mijloc, pe verticala");
+  });
+
+  test("cu cat te apropii, cu atat punctul creste si te asteapta", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const p = inVid(j);
+    j.cursor.x = j.W() * 0.95; j.cursor.y = j.H() * 0.9;
+    const departe = j.apropiereaDePunct();
+    j.cursor.x = p.x + 10; j.cursor.y = p.y + 10;
+    const aproape2 = j.apropiereaDePunct();
+    adevarat(departe < 0.1, "de la celalalt capat al salii se simte apropierea");
+    adevarat(aproape2 > 0.9, "langa punct nu se simte nicio apropiere: " + aproape2);
+  });
+
+  test("apropiat de punct, cineva soptesc gluma — o singura data", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const p = inVid(j);
+    adevarat(!j.s12.aSoptit, "s-a soptit inainte sa ma apropii");
+    j.cursor.x = j.W() * 0.95; j.cursor.y = j.H() * 0.9;
+    j.avanseazaUsor(1200);
+    adevarat(!j.s12.aSoptit, "s-a soptit de la celalalt capat al salii");
+
+    j.cursor.x = p.x + 20; j.cursor.y = p.y + 20;
+    j.avanseazaUsor(900);
+    adevarat(j.s12.aSoptit, "apropiat de punct, nu s-a soptit nimic");
+
+    // cuvintele raman pe ecran: o gluma auzita pe jumatate nu e o gluma
+    j.avanseazaUsor(2600);
+    adevarat(j.s12.cuvinte > 0.9, "cuvintele n-au ramas: " + j.s12.cuvinte);
+    const d = j.doar(function () { j.deseneazaScena12(j.ceas.t, j.ceas.t); });
+    adevarat(/elefantul va fi albastru/.test(totScrisul(d)), "gluma nu se vede scrisa");
+    adevarat(/albastru/.test(j.SOAPTA), "textul soaptei s-a schimbat");
+  });
+
+  test("clicul pe punct da flasul, iar flasul redeschide jucaria", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const p = inVid(j);
+
+    // un clic departe nu face nimic: punctul e singurul lucru din sala
+    j.cursor.x = j.W() * 0.9; j.cursor.y = j.H() * 0.85;
+    j.click12(j.ceas.t);
+    egal(j.s12.faza, "punct", "un clic in gol a pornit flasul");
+
+    j.cursor.x = p.x; j.cursor.y = p.y;
+    j.click12(j.ceas.t);
+    egal(j.s12.faza, "flash", "clicul pe punct n-a dat flasul");
+    j.avanseazaUsor(1400);
+    adevarat(j.stare() === "crestere" || j.stare() === "balon",
+      "flasul nu redeschide jucaria: " + j.stare());
+    adevarat(!j.s3.vizitat, "muzeul tine minte ca a fost vazut, desi a fost inghitit");
+  });
+
+  test("tinta punctului e generoasa, ca sa nu ceara ochire", function () {
+    /* Punctul e mic, dar el **e** singurul lucru din sala. Ar fi o gluma proasta
+       sa ceri ochire intr-o camera in care nu mai e nimic altceva de nimerit. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const p = inVid(j);
+    const S = Math.min(j.W(), j.H());
+    j.cursor.x = p.x + S * 0.10; j.cursor.y = p.y;
+    j.click12(j.ceas.t);
+    egal(j.s12.faza, "flash", "de la o zecime de ecran, punctul nu se lasa apasat");
+  });
+
+  test("in vid nu se deseneaza nimic in afara de punct", function () {
+    /* Un vid cu ceva in el n-ar mai fi vid, ar fi o camera intunecata. Testul
+       numara operatiile de desen: sala asta trebuie sa fie cea mai saraca din
+       toata jucaria, si de departe. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inVid(j);
+    const d = j.doar(function () { j.deseneazaScena12(j.ceas.t, j.ceas.t); });
+    adevarat(d.length < 30,
+      "vidul deseneaza prea mult: " + d.length + " operatii");
+  });
+
+  test("inima se opreste cand se inchide bucla", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    inVid(j);
+    adevarat(j.inimaScena12() !== null, "in vid nu bate nimic");
+    j.iesiDinVid(j.ceas.t);
+    egal(j.inimaScena12(), null, "inima a ramas sa bata peste inceputul jucariei");
   });
 
   /* ---------------------------------------------------------------- */

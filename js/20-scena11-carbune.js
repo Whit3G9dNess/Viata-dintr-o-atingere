@@ -100,16 +100,17 @@ function pregatesteMateriaSalii() {
 
      Trei sinusuri cu perioade care nu se împart una la alta, ca peste tot în
      jucărie: așa creasta nu se repetă vizibil și nu iese un carou. */
+  /* Grosimea pastei urmează volumul mare: multă pe movile, puțină în văi. Așa
+     răzuitul înseamnă ceva — sapi într-un vârf și ai de scos, treci printr-o vale
+     și dai repede de gol. */
   s11.pasta = [];
   for (let j = 0; j < OCHIURI_BLOC; j++) {
     const r = [];
     for (let i = 0; i < OCHIURI_BLOC; i++) {
-      const val = 0.78
-        + 0.11 * Math.sin(i * 0.91 + j * 0.37)
-        + 0.07 * Math.sin(i * 2.13 - j * 1.71)
-        + 0.05 * Math.sin(i * 0.43 + j * 3.07)
-        + samanta(i * 31.7 + j * 13.3) * 0.10;
-      r.push(Math.max(0.45, Math.min(1, val)));
+      const u = (i + 0.5) / OCHIURI_BLOC, v = (j + 0.5) / OCHIURI_BLOC;
+      const val = 0.42 + inaltimeaMare(u, v) * 0.58
+                + samanta(i * 31.7 + j * 13.3) * 0.06;
+      r.push(Math.max(0.30, Math.min(1, val)));
     }
     s11.pasta.push(r);
   }
@@ -424,6 +425,42 @@ function panzaBloc(acum) {
    Întâi făcusem un câmp de înălțimi din trei sinusuri, netezit. Ieșea o pernă:
    blocul părea suflat, nu întins. Materia groasă se cunoaște după **drumul mâinii
    care a pus-o**, iar un câmp de sinusuri n-are niciun drum în el. */
+/* ---------- VOLUMUL MARE ----------
+
+   Tușele singure nu fac o sculptură: fac o suprafață acoperită cu tușe. Ce
+   deosebește un relief de un tapet e că **masa întreagă are formă** — se umflă
+   într-o parte, se scobește în alta, și lumina o traversează dintr-un capăt în
+   celălalt, nu se oprește la fiecare tușă.
+
+   De-aia sub tușe stă un relief mare, făcut din câteva movile late. El nu se vede
+   ca desen — se vede ca **lumină**: partea dinspre stânga sus a fiecărei movile e
+   deschisă, cea dinspre dreapta jos e întunecată, și asta peste tot ce e desenat
+   deasupra. Așa blocul se ridică de pe perete.
+
+   Și tot de-aia pasta e mai groasă acolo unde movila e mai înaltă: când razui în
+   vârful ei ai mai mult de scos decât într-o vale. */
+const RELIEFUL_MARE = [
+  { u: 0.36, v: 0.34, r: 0.40, h: 1.00 },
+  { u: 0.66, v: 0.28, r: 0.30, h: 0.72 },
+  { u: 0.58, v: 0.62, r: 0.38, h: 0.88 },
+  { u: 0.22, v: 0.70, r: 0.30, h: 0.64 },
+  { u: 0.82, v: 0.72, r: 0.26, h: 0.55 },
+  { u: 0.46, v: 0.14, r: 0.22, h: 0.44 },
+  { u: 0.14, v: 0.44, r: 0.20, h: 0.38 }
+];
+
+function inaltimeaMare(u, v) {
+  let h = 0.10;
+  for (const m of RELIEFUL_MARE) {
+    const d = Math.hypot((u - m.u) / m.r, (v - m.v) / m.r);
+    if (d >= 1) continue;
+    // o movilă lină: se stinge în marginile ei, nu se termină într-o muchie
+    const c = 1 - d * d;
+    h += m.h * c * c;
+  }
+  return Math.min(1, h);
+}
+
 const TUSE_PASTA = [
   { x0: -0.06, y0: 0.16, cx: 0.42, cy: 0.02, x1: 0.98, y1: 0.20, lat: 0.20, sam: 3 },
   { x0: 1.04, y0: 0.34, cx: 0.50, cy: 0.30, x1: -0.04, y1: 0.42, lat: 0.17, sam: 11 },
@@ -569,8 +606,10 @@ function tusaDePasta(c, t, lat, inalt) {
   c.restore();
 }
 
-/* Pânza mică pe care se socotește câtă pastă a mai rămas. */
+/* Pânza mică pe care se socotește câtă pastă a mai rămas, și cea pe care se
+   socotește lumina volumului mare. */
 const panzaMastii = { panza: null, latime: 0, inaltime: 0 };
+const panzaVolumului = { panza: null, latime: 0, inaltime: 0 };
 
 function pictezaBlocul(c, lat, inalt) {
   /* Întâi se pictează blocul **întreg**, așa cum a fost pus, și abia pe urmă se
@@ -602,6 +641,64 @@ function pictezaBlocul(c, lat, inalt) {
 
   // tușele, una peste alta
   for (const t of TUSE_PASTA) tusaDePasta(c, t, lat, inalt);
+
+  /* Umbrirea de ansamblu: aceeași lumină, dinspre stânga sus, dusă peste toată
+     masa. Se socotește pe o pânză mică — patruzeci pe patruzeci — și se întinde
+     peste bloc, ca să iasă lină: un volum n-are muchii între zonele lui de umbră.
+
+     Se pun două treceri, fiindcă umbra și lumina nu se fac la fel: umbra
+     **înmulțește** (întunecă ce e dedesubt, oricare ar fi), iar lumina se
+     **adaugă** (albește crestele fără să le spele culoarea). Puse amândouă la fel,
+     ieșea o ceață cenușie peste tot. */
+  const NM = 40;
+  const mare = panzaDeLucru(panzaVolumului, NM, NM);
+  const vc = mare.getContext('2d');
+  vc.setTransform(1, 0, 0, 1, 0, 0);
+  vc.globalAlpha = 1;
+  vc.clearRect(0, 0, NM, NM);
+  const pas = 1 / NM;
+  for (let j = 0; j < NM; j++) {
+    for (let i = 0; i < NM; i++) {
+      const u = (i + 0.5) / NM, v = (j + 0.5) / NM;
+      const dx = inaltimeaMare(u - pas, v) - inaltimeaMare(u + pas, v);
+      const dy = inaltimeaMare(u, v - pas) - inaltimeaMare(u, v + pas);
+      const catre = Math.max(-1, Math.min(1, (dx + dy) * 5.5));
+      if (catre < 0) {
+        vc.fillStyle = 'rgba(58, 56, 50, ' + (-catre * 0.62).toFixed(3) + ')';
+      } else {
+        vc.fillStyle = 'rgba(255, 255, 255, ' + (catre * 0.50).toFixed(3) + ')';
+      }
+      vc.fillRect(i, j, 1, 1);
+    }
+  }
+  c.save();
+  c.imageSmoothingEnabled = true;
+  c.globalCompositeOperation = 'multiply';
+  c.globalAlpha = 0.9;
+  c.drawImage(mare, 0, 0, NM, NM, 0, 0, lat, inalt);
+  c.globalCompositeOperation = 'lighter';
+  c.globalAlpha = 0.55;
+  c.drawImage(mare, 0, 0, NM, NM, 0, 0, lat, inalt);
+  c.restore();
+
+  /* Și o umbră proprie în văile adânci: acolo unde masa coboară mult, lumina nici
+     nu mai ajunge. Fără asta, movilele par niște umflături pe o tăblie, nu o
+     materie grămădită. */
+  vc.clearRect(0, 0, NM, NM);
+  for (let j = 0; j < NM; j++) {
+    for (let i = 0; i < NM; i++) {
+      const h = inaltimeaMare((i + 0.5) / NM, (j + 0.5) / NM);
+      if (h > 0.42) continue;
+      vc.fillStyle = 'rgba(46, 44, 39, ' + ((0.42 - h) * 1.5).toFixed(3) + ')';
+      vc.fillRect(i, j, 1, 1);
+    }
+  }
+  c.save();
+  c.imageSmoothingEnabled = true;
+  c.globalCompositeOperation = 'multiply';
+  c.globalAlpha = 0.75;
+  c.drawImage(mare, 0, 0, NM, NM, 0, 0, lat, inalt);
+  c.restore();
 
   // granulația ghipsului, peste tot
   c.save();
@@ -1003,15 +1100,16 @@ function intraInCarbune(acum) {
    săli — nu mai are unde, custodele tocmai a fost înghițit odată cu galeriile
    lui. Te lasă în întunericul de la început, cu balonul care așteaptă. */
 function iesiDinCarbune(acum) {
+  /* Negrul de la capătul colapsului **este** sala a douăsprezecea: vidul de
+     dinainte ca muzeul să fie desenat. Nu se face nicio trecere între ele — una
+     se termină în negru absolut, cealaltă începe în negru absolut, și tocmai
+     cusătura care nu se vede face deja-vu-ul de acolo. */
   opresteLinisteaIncordata();
   opresteNatura();
   pregatesteMateriaSalii();
   s11.faza = 'intrare';
-  /* Muzeul uită că a fost văzut: a fost supt în buton cu tot cu galerii, deci de
-     data asta se deschide din nou de la capăt. */
-  s3.vizitat = false;
   pocnetulBalonului = null;
-  incepeJucaria(acum);
+  intraInVid(acum);
 }
 
 /* ---------- CE SE ÎNTÂMPLĂ LA ATINGERE ---------- */
@@ -1190,19 +1288,70 @@ function deseneazaScena11(t, acum) {
   deseneazaLiniileDeLumina(ctx, acum);
   ctx.drawImage(pregatesteCarbunele(), 0, 0);
 
-  // blocul din mijloc
-  ctx.drawImage(panzaBloc(acum), g.blocX, g.blocY, g.blocLat, g.blocInalt);
-  /* Umbra pe care blocul o aruncă pe perete: fără ea, el ar părea desenat pe
-     perete, iar sala are nevoie să se vadă că e un **volum** în cameră. */
+  /* Grosimea plăcii, înainte de fața ei: blocul nu e o imagine lipită pe perete, e
+     o lespede care iese din el. Se vede muchia de jos și cea din dreapta — exact
+     laturile pe care lumina din stânga sus le lasă în umbră.
+
+     E cel mai ieftin lucru din toată sala și cel mai mult schimbă: o suprafață
+     fără grosime rămâne un tablou, oricât relief ai desena pe ea. */
+  const gr = g.S * 0.030;
   ctx.save();
-  ctx.globalAlpha = 0.5;
-  const um = ctx.createLinearGradient(g.blocX, g.blocY + g.blocInalt,
-                                      g.blocX, g.blocY + g.blocInalt + g.S * 0.09);
-  um.addColorStop(0, 'rgba(0,0,0,0.75)');
+  // umbra aruncată pe perete, dincolo de lespede
+  const um = ctx.createLinearGradient(g.blocX, g.blocY + g.blocInalt + gr,
+                                      g.blocX, g.blocY + g.blocInalt + gr + g.S * 0.13);
+  um.addColorStop(0, 'rgba(0,0,0,0.85)');
   um.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = um;
-  ctx.fillRect(g.blocX - g.S * 0.02, g.blocY + g.blocInalt,
-               g.blocLat + g.S * 0.04, g.S * 0.09);
+  ctx.fillRect(g.blocX - g.S * 0.03, g.blocY + g.blocInalt + gr,
+               g.blocLat + g.S * 0.09, g.S * 0.13);
+  const uml = ctx.createLinearGradient(g.blocX + g.blocLat + gr, 0,
+                                       g.blocX + g.blocLat + gr + g.S * 0.10, 0);
+  uml.addColorStop(0, 'rgba(0,0,0,0.8)');
+  uml.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = uml;
+  ctx.fillRect(g.blocX + g.blocLat + gr, g.blocY - g.S * 0.01,
+               g.S * 0.10, g.blocInalt + gr + g.S * 0.02);
+
+  // latura de jos a lespezii
+  const jos = ctx.createLinearGradient(0, g.blocY + g.blocInalt, 0, g.blocY + g.blocInalt + gr);
+  jos.addColorStop(0, '#b6b4ac');
+  jos.addColorStop(1, '#6d6b64');
+  ctx.fillStyle = jos;
+  ctx.beginPath();
+  ctx.moveTo(g.blocX, g.blocY + g.blocInalt);
+  ctx.lineTo(g.blocX + g.blocLat, g.blocY + g.blocInalt);
+  ctx.lineTo(g.blocX + g.blocLat + gr, g.blocY + g.blocInalt + gr);
+  ctx.lineTo(g.blocX + gr, g.blocY + g.blocInalt + gr);
+  ctx.closePath();
+  ctx.fill();
+  // latura din dreapta
+  const dr = ctx.createLinearGradient(g.blocX + g.blocLat, 0, g.blocX + g.blocLat + gr, 0);
+  dr.addColorStop(0, '#c9c7c0');
+  dr.addColorStop(1, '#83817a');
+  ctx.fillStyle = dr;
+  ctx.beginPath();
+  ctx.moveTo(g.blocX + g.blocLat, g.blocY);
+  ctx.lineTo(g.blocX + g.blocLat + gr, g.blocY + gr);
+  ctx.lineTo(g.blocX + g.blocLat + gr, g.blocY + g.blocInalt + gr);
+  ctx.lineTo(g.blocX + g.blocLat, g.blocY + g.blocInalt);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // fața lespezii
+  ctx.drawImage(panzaBloc(acum), g.blocX, g.blocY, g.blocLat, g.blocInalt);
+
+  // muchia de sus, luminată: acolo bate lumina
+  ctx.save();
+  ctx.globalAlpha = 0.8;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = Math.max(1, g.S * 0.0035);
+  ctx.beginPath();
+  ctx.moveTo(g.blocX, g.blocY);
+  ctx.lineTo(g.blocX + g.blocLat, g.blocY);
+  ctx.moveTo(g.blocX, g.blocY);
+  ctx.lineTo(g.blocX, g.blocY + g.blocInalt);
+  ctx.stroke();
   ctx.restore();
 
   deseneazaButonul(ctx, acum);

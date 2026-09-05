@@ -1252,6 +1252,171 @@ function opresteLinisteaIncordata() {
   } catch (e) { /* deja oprit */ }
 }
 
+/* ==========================================================================
+   SALA A DOUĂSPREZECEA — VIDUL, ȘI BUCLA
+
+   Ultima sală n-are nici materie, nici unelte, deci n-are nici sunete de materie.
+   Rămân două: o **inimă** și o **șoaptă**. Atât are un loc în care nu s-a
+   randat încă nimic — ceva care bate, și cineva care știe o glumă.
+   ========================================================================== */
+
+/* Inima. Un „lub-dub" foarte jos, cald, de sintetizator: două bătăi inegale, a
+   doua mai stinsă și mai aproape, și pe urmă liniște până la următoarea.
+
+   Ce face un bas să sune a inimă nu e înălțimea, ci **cele două bătăi lipite**:
+   una singură, oricât de joasă, e o tobă. Și ritmul: sub un bătaie pe secundă se
+   simte odihnă, peste două se simte frică. Aici bate rar, fiindcă sala e o glumă
+   blândă, nu o amenințare. */
+let inimaScena12 = null;
+
+function batereDeInima(cand, tarie) {
+  if (!audio) return;
+  const bat = function (t, f0, f1, vol, dur) {
+    const osc = audio.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f0, t);
+    osc.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const g = audio.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(audio.destination);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
+  };
+  bat(cand, 62, 30, 0.16 * tarie, 0.34);
+  bat(cand + 0.20, 54, 27, 0.10 * tarie, 0.26);
+  // căldura: un ton foarte jos, care ține cât bătaia
+  bat(cand, 41, 38, 0.06 * tarie, 0.55);
+}
+
+function pornesteInima() {
+  if (!audio || inimaScena12) return;
+  inimaScena12 = { panaLa: audio.currentTime + 1.2, tarie: 0 };
+}
+
+function tineInima() {
+  if (!audio || !inimaScena12) return;
+  const acum = audio.currentTime;
+  /* Inima **crește** încet, de la nimic. În sala asta primul lucru care se aude
+     trebuie să pară că era acolo dinainte și abia acum l-ai auzit. */
+  inimaScena12.tarie = Math.min(1, inimaScena12.tarie + 0.06);
+  while (inimaScena12.panaLa < acum + 1.5) {
+    batereDeInima(inimaScena12.panaLa, inimaScena12.tarie);
+    inimaScena12.panaLa += 1.15;
+  }
+}
+
+function opresteInima() {
+  inimaScena12 = null;
+}
+
+/* ȘOAPTA.
+
+   Nu se rostesc cuvinte — în jucărie nu intră niciun fișier de sunet, deci nu
+   există voce înregistrată. Dar șoapta e, dintre toate felurile de vorbire,
+   singurul care se poate face cinstit din cod: **o șoaptă chiar e zgomot**.
+
+   Când șoptești, coardele vocale nu vibrează deloc; aerul trece prin gură și
+   formele ei îl filtrează. De-aia o șoaptă n-are înălțime — n-o poți cânta — și
+   totuși se înțelege. Aici se face exact așa: zgomot alb trecut prin două
+   rezonanțe care se mută de la o silabă la alta, tăiat în silabe cu pauzele
+   frazei. Cuvintele scrise pe ecran spun ce anume; sunetul spune **cine**.
+
+   Cele două rezonanțe nu sunt alese din ureche: ele sunt formantele vocalelor.
+   Prima jos și a doua sus — „i". Amândouă la mijloc — „a". Prima sus și a doua
+   jos — „u". Atât trebuie ca o șoaptă să pară românească și nu un fâsâit. */
+const VOCALELE_SOAPTEI = [
+  [ 700, 1200],   // a
+  [ 500, 1800],   // e
+  [ 320, 2400],   // i
+  [ 480,  900],   // o
+  [ 340,  750],   // u
+  [ 560, 1500]    // ă
+];
+
+function osilaba(cand, durata, vocala, tarie) {
+  if (!audio) return;
+  if (!bufferZgomot) pregatesteZgomotul();
+  const V = VOCALELE_SOAPTEI[vocala % VOCALELE_SOAPTEI.length];
+  const sursa = audio.createBufferSource();
+  sursa.buffer = bufferZgomot;
+  sursa.loop = true;
+
+  const f1 = audio.createBiquadFilter();
+  f1.type = 'bandpass';
+  f1.frequency.setValueAtTime(V[0], cand);
+  f1.Q.setValueAtTime(7, cand);
+  const f2 = audio.createBiquadFilter();
+  f2.type = 'bandpass';
+  f2.frequency.setValueAtTime(V[1], cand);
+  f2.Q.setValueAtTime(6, cand);
+  const amestec = audio.createGain();
+
+  const vol = audio.createGain();
+  vol.gain.setValueAtTime(0.0001, cand);
+  vol.gain.exponentialRampToValueAtTime(0.055 * tarie, cand + durata * 0.28);
+  vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
+
+  sursa.connect(f1).connect(amestec);
+  sursa.connect(f2).connect(amestec);
+  amestec.connect(vol).connect(audio.destination);
+  sursa.start(cand);
+  sursa.stop(cand + durata + 0.05);
+}
+
+/* Fraza șoptită. Ritmul e scris de mână, silabă cu silabă, fiindcă tocmai ritmul
+   face vorbirea: unde se grăbește, unde se oprește, unde urcă la semnul de
+   întrebare. Un șir de silabe egale sună a metronom, nu a om. */
+function sunetSoapta() {
+  if (!audio) return;
+  const t = audio.currentTime + 0.12;
+
+  /* „O luăm de la capăt?" — șapte silabe, cu ultima ridicată.
+     „Promit că data viitoare elefantul va fi albastru." — restul, mai repede,
+     cu o pauză mică înainte de „albastru", unde stă gluma. */
+  const fraza = [
+    // [vocala, durata, pauza după]
+    [3, 0.11, 0.04], [4, 0.10, 0.02], [0, 0.13, 0.05],   // O lu-ăm
+    [1, 0.08, 0.02], [0, 0.08, 0.03],                     // de la
+    [0, 0.10, 0.02], [5, 0.16, 0.40],                     // ca-păt?
+    [3, 0.09, 0.02], [2, 0.11, 0.05],                     // Pro-mit
+    [5, 0.09, 0.06],                                      // că
+    [0, 0.09, 0.02], [0, 0.09, 0.05],                     // da-ta
+    [2, 0.08, 0.02], [3, 0.09, 0.02], [0, 0.09, 0.02], [1, 0.10, 0.07], // vi-i-toa-re
+    [1, 0.08, 0.02], [1, 0.08, 0.02], [0, 0.08, 0.02],    // e-le-fan
+    [4, 0.09, 0.06],                                      // tul
+    [0, 0.08, 0.02], [2, 0.10, 0.14],                     // va fi
+    [0, 0.09, 0.02], [0, 0.11, 0.02], [4, 0.16, 0.00]     // al-bas-tru
+  ];
+
+  let cand = t;
+  for (let k = 0; k < fraza.length; k++) {
+    const sil = fraza[k];
+    // ultima silabă a întrebării și cea de la capăt se aud puțin mai tare
+    const tarie = (k === 6 || k === fraza.length - 1) ? 1.25 : 0.85 + Math.random() * 0.3;
+    osilaba(cand, sil[1], sil[0], tarie);
+    cand += sil[1] + sil[2];
+  }
+
+  // suflul de la început și de la sfârșit: aerul care intră și iese
+  zgomot(t - 0.10, 0.14, 0.020, 2600, 1400);
+  zgomot(cand + 0.06, 0.30, 0.016, 1800, 700);
+}
+
+/* Flașul de la capăt: punctul se face ecran. Un șuierat care urcă și se taie în
+   tăcere, exact ca vacuumul din sala a unsprezecea — dar acela sugea, ăsta dă
+   drumul. Aceeași formă, întoarsă. */
+function sunetFlash() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  zgomot(t, 0.65, 0.13, 400, 6000);
+  nota(120, t, 0.7, 0.10, 'sine', 900);
+  nota(240, t + 0.05, 0.55, 0.06, 'triangle', 1800);
+  // și clipa de după, în care nu se mai aude nimic
+  nota(1800, t + 0.62, 0.18, 0.03, 'sine', 3600);
+}
+
 function sunetAtingere() {
   if (!audio) return;
   nota(1600, audio.currentTime, 0.045, 0.022, 'sine', 900);
