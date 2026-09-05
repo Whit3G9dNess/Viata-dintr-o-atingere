@@ -20,12 +20,20 @@
    negru-albăstrui, ghipsul e alb-verzui, iar singurul lucru colorat din toată
    sala e butonul roșu de la sfârșit — și tocmai fiindcă e singurul, se vede de
    la o poștă. */
-const CARBUNE       = '#0d0d10';
-const CARBUNE_MAT   = '#17171c';
-const CARBUNE_PRAF  = '#2b2b33';
-const GHIPS         = '#f2f1ec';
-const GHIPS_UMBRA   = '#b9b8b2';
-const GHIPS_ADANC   = '#77766f';
+/* Cărbunele e **cald**, nu albăstrui. Întâi îl făcusem cu o umbră de albastru, cum
+   iese „negrul" pe orice ecran; în fotografiile cu cărbune adevărat, bățul e ars
+   din lemn și trage spre brun-fumuriu. Nuanța asta desparte tăciunele de cerneala
+   de tipar.
+
+   Și ghipsul e aproape alb, cu umbrele lui foarte apropiate: în pastă de relief
+   nu există gri închis nicăieri, există alb și alb puțin mai întors de la lumină.
+   Tot ce se vede acolo se vede din **formă**, nu din culoare. */
+const CARBUNE       = '#14120f';
+const CARBUNE_MAT   = '#221f1a';
+const CARBUNE_PRAF  = '#3a352d';
+const GHIPS         = '#f6f5f1';
+const GHIPS_UMBRA   = '#dedcd5';
+const GHIPS_ADANC   = '#a8a69e';
 const LUMINA_LINIE  = '#eef1f4';
 const ROSU_BUTON    = '#d81f2a';
 
@@ -207,9 +215,9 @@ function pregatesteCarbunele() {
   c.clearRect(0, 0, W, H);
 
   const fond = c.createLinearGradient(0, 0, W, H);
-  fond.addColorStop(0, '#2a2a32');
+  fond.addColorStop(0, '#39342c');
   fond.addColorStop(0.5, CARBUNE_PRAF);
-  fond.addColorStop(1, '#222229');
+  fond.addColorStop(1, '#2e2a23');
   c.fillStyle = fond;
   c.fillRect(0, 0, W, H);
 
@@ -227,14 +235,20 @@ function pregatesteCarbunele() {
     c.fillStyle = pat;
     c.fillRect(a * W - r, b * H - r, r * 2, r * 2);
   }
-  // firele de praf care stau pe suprafață
+  /* Bobul hârtiei. În orice desen în cărbune, primul lucru care se vede nu e
+     negrul, ci **granulația**: praful se prinde de vârfurile hârtiei și sare peste
+     adâncituri, așa că nicio suprafață nu e plină. Un negru neted e cerneală; unul
+     pistruiat e cărbune. */
   c.globalAlpha = 1;
-  for (let k = 0; k < 1400; k++) {
+  for (let k = 0; k < 4200; k++) {
     const a = samanta(7300 + k * 3.7), b = samanta(7360 + k * 5.9);
-    const e = samanta(7420 + k * 2.3);
-    c.globalAlpha = 0.05 + e * 0.16;
-    c.fillStyle = e > 0.7 ? '#3d3d47' : '#000000';
-    c.fillRect(a * W, b * H, 1 + e * 2, 1 + (1 - e) * 2);
+    const e = samanta(7420 + k * 2.3), f = samanta(7480 + k * 1.7);
+    c.globalAlpha = 0.06 + e * 0.20;
+    c.fillStyle = e > 0.62 ? '#4a443a' : '#080705';
+    const r = 1 + f * 2.2;
+    c.beginPath();
+    c.ellipse(a * W, b * H, r, r * (0.6 + f * 0.7), f * 3, 0, Math.PI * 2);
+    c.fill();
   }
   c.globalAlpha = 1;
   panzaCarbunelui.latime = W; panzaCarbunelui.inaltime = H;
@@ -247,14 +261,32 @@ function stergeCarbune(x, y, raza) {
   const c = panzaCarbunelui.panza.getContext('2d');
   c.save();
   c.globalCompositeOperation = 'destination-out';
-  /* Marginea ștersăturii nu e netedă: cauciucul lasă o margine roasă, cu praf
-     rămas pe ea. De-aia se șterge cu un degrade, nu cu un cerc plin. */
-  const g = c.createRadialGradient(x, y, 0, x, y, raza);
-  g.addColorStop(0, 'rgba(0,0,0,1)');
-  g.addColorStop(0.55, 'rgba(0,0,0,0.92)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  c.fillStyle = g;
-  c.fillRect(x - raza, y - raza, raza * 2, raza * 2);
+
+  /* Cărbunele nu se ia dintr-o dată și nu se ia tot.
+
+     Întâi ștergeam cu un singur degrade rotund: ieșea o gaură curată, cu marginea
+     moale și mijlocul complet gol — adică exact ce **nu** face o radieră pe praf.
+     În fotografii se vede altceva: după o trecere rămâne un gri, după a doua unul
+     mai deschis, iar bobul hârtiei ține pigment în adâncituri oricât ai freca.
+
+     Deci se șterge cu **boabe**: vreo cincizeci răspândite în pată, fiecare luând
+     puțin. Suprapuse, scot mai mult la mijloc și mai puțin pe margini, fără niciun
+     degrade — și lasă între ele firișoare neatinse, care sunt chiar cărbunele
+     rămas în hârtie. */
+  for (let k = 0; k < 54; k++) {
+    const a = Math.random(), b = Math.random(), e = Math.random();
+    const un = a * Math.PI * 2, d = Math.sqrt(b) * raza * 0.94;
+    const px = x + Math.cos(un) * d, py = y + Math.sin(un) * d;
+    const r = raza * (0.10 + e * 0.20);
+    c.globalAlpha = 0.22 + e * 0.30;
+    const g2 = c.createRadialGradient(px, py, 0, px, py, r);
+    g2.addColorStop(0, 'rgba(0,0,0,1)');
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g2;
+    c.beginPath();
+    c.arc(px, py, r, 0, Math.PI * 2);
+    c.fill();
+  }
   c.restore();
 
   let atins = false;
@@ -379,129 +411,272 @@ function panzaBloc(acum) {
   return p;
 }
 
-/* Pânza mică pe care se socotește lumina, un pixel de fiecare ochi. */
-const panzaLuminii = { panza: null, latime: 0, inaltime: 0 };
+/* ---------- PASTA, AȘA CUM E PUSĂ ----------
+
+   Pasta de relief nu e un câmp de înălțimi cu zgârieturi peste el: e o grămadă de
+   **tușe late trase cu șpaclul**, una peste alta. Fiecare are trei lucruri, și
+   toate trei se văd în orice fotografie de impasto gros:
+
+   - **striuri în lungul tușei**, lăsate de muchia uneltei când a târât materia;
+   - o **creastă ascuțită** pe marginea de unde s-a ridicat unealta, aproape albă;
+   - o **umbră aruncată** dincolo de creastă, pe ce e dedesubt.
+
+   Întâi făcusem un câmp de înălțimi din trei sinusuri, netezit. Ieșea o pernă:
+   blocul părea suflat, nu întins. Materia groasă se cunoaște după **drumul mâinii
+   care a pus-o**, iar un câmp de sinusuri n-are niciun drum în el. */
+const TUSE_PASTA = [
+  { x0: -0.06, y0: 0.16, cx: 0.42, cy: 0.02, x1: 0.98, y1: 0.20, lat: 0.20, sam: 3 },
+  { x0: 1.04, y0: 0.34, cx: 0.50, cy: 0.30, x1: -0.04, y1: 0.42, lat: 0.17, sam: 11 },
+  { x0: 0.06, y0: 1.04, cx: 0.22, cy: 0.48, x1: 0.44, y1: -0.04, lat: 0.22, sam: 19 },
+  { x0: 0.92, y0: -0.04, cx: 0.72, cy: 0.52, x1: 0.86, y1: 1.04, lat: 0.19, sam: 29 },
+  { x0: -0.04, y0: 0.70, cx: 0.46, cy: 0.62, x1: 1.04, y1: 0.76, lat: 0.16, sam: 37 },
+  { x0: 0.30, y0: 1.06, cx: 0.54, cy: 0.74, x1: 0.96, y1: 0.52, lat: 0.15, sam: 43 },
+  { x0: -0.02, y0: 0.94, cx: 0.40, cy: 0.88, x1: 0.72, y1: 1.06, lat: 0.14, sam: 53 },
+  { x0: 0.62, y0: -0.02, cx: 0.34, cy: 0.34, x1: 0.10, y1: 0.60, lat: 0.13, sam: 61 },
+  { x0: 1.02, y0: 0.10, cx: 0.66, cy: 0.22, x1: 0.28, y1: 0.14, lat: 0.12, sam: 71 },
+  { x0: 0.18, y0: 0.28, cx: 0.52, cy: 0.46, x1: 0.88, y1: 0.38, lat: 0.11, sam: 79 },
+  { x0: 0.74, y0: 0.86, cx: 0.44, cy: 0.94, x1: 0.08, y1: 0.78, lat: 0.12, sam: 89 },
+  { x0: 0.48, y0: 0.06, cx: 0.60, cy: 0.44, x1: 0.40, y1: 0.86, lat: 0.10, sam: 97 }
+];
+
+/* Un punct de pe drumul unei tușe, și încotro merge ea acolo. */
+function pePasta(t, q) {
+  const u = 1 - q;
+  return {
+    x: u * u * t.x0 + 2 * u * q * t.cx + q * q * t.x1,
+    y: u * u * t.y0 + 2 * u * q * t.cy + q * q * t.y1,
+    dx: 2 * u * (t.cx - t.x0) + 2 * q * (t.x1 - t.cx),
+    dy: 2 * u * (t.cy - t.y0) + 2 * q * (t.y1 - t.cy)
+  };
+}
+
+/* O tușă lată de pastă, cu striuri, creastă și umbră. */
+function tusaDePasta(c, t, lat, inalt) {
+  const PASI = 26;
+  const punte = [];
+  for (let k = 0; k <= PASI; k++) {
+    const q = k / PASI, p = pePasta(t, q);
+    const L = Math.hypot(p.dx * lat, p.dy * inalt) || 1;
+    const nx = -(p.dy * inalt) / L, ny = (p.dx * lat) / L;
+    /* Tușa se subțiază la capătul unde s-a ridicat unealta, nu la amândouă:
+       începe gros, unde șpaclul a fost apăsat, și se stinge unde a plecat. */
+    const gros = t.lat * Math.min(lat, inalt) * (1 - q * 0.42) *
+                 (0.86 + 0.14 * Math.sin(q * 9 + t.sam));
+    punte.push({ x: p.x * lat, y: p.y * inalt, nx, ny, gros });
+  }
+
+  const margine = function (semn, cat) {
+    c.beginPath();
+    for (let k = 0; k < punte.length; k++) {
+      const p = punte[k];
+      const px = p.x + p.nx * p.gros * semn * cat;
+      const py = p.y + p.ny * p.gros * semn * cat;
+      if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+  };
+
+  c.save();
+  c.lineJoin = 'round';
+  c.lineCap = 'round';
+
+  /* Umbra aruncată. E cel mai important lucru din toată tușa, și prima oară am
+     pus-o prea slăbuță: tușele ieșeau străvezii, ca niște dungi de sticlă mățuită
+     una peste alta. În fotografii, fiecare tușă de pastă groasă stă limpede
+     **deasupra** celei de dedesubt — și asta se vede numai din umbră.
+
+     Umbra stă aproape de ea, nu departe: pasta e groasă de câțiva milimetri, nu de
+     un lat de palmă. O umbră mutată mult ar ridica tușa de pe perete. */
+  const d = Math.min(lat, inalt) * 0.008;
+  c.save();
+  c.translate(d, d * 1.3);
+  for (let t2 = 3; t2 >= 1; t2--) {
+    c.globalAlpha = 0.16;
+    c.strokeStyle = '#6f6d65';
+    c.lineWidth = Math.max(2, punte[0].gros * 0.16 * t2);
+    c.beginPath();
+    for (let k = 0; k < punte.length; k++) {
+      const p = punte[k];
+      const px = p.x + p.nx * p.gros, py = p.y + p.ny * p.gros;
+      if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    for (let k = punte.length - 1; k >= 0; k--) {
+      const p = punte[k];
+      c.lineTo(p.x - p.nx * p.gros, p.y - p.ny * p.gros);
+    }
+    c.closePath();
+    c.stroke();
+  }
+  c.restore();
+
+  // corpul tușei
+  c.globalAlpha = 1;
+  c.beginPath();
+  for (let k = 0; k < punte.length; k++) {
+    const p = punte[k];
+    const px = p.x - p.nx * p.gros, py = p.y - p.ny * p.gros;
+    if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+  }
+  for (let k = punte.length - 1; k >= 0; k--) {
+    const p = punte[k];
+    c.lineTo(p.x + p.nx * p.gros, p.y + p.ny * p.gros);
+  }
+  c.closePath();
+  /* Culoarea merge **de-a curmezișul** tușei, nu pe lungul ei: o tușă de pastă e
+     rotunjită ca un val, deci are o parte întoarsă spre lumină și una întoarsă de
+     la ea. Pusă pe lungime, ea spunea numai „începe aici și se termină acolo",
+     adică nimic despre formă. */
+  const mij = punte[Math.floor(punte.length / 2)];
+  const corp = c.createLinearGradient(
+    mij.x - mij.nx * mij.gros, mij.y - mij.ny * mij.gros,
+    mij.x + mij.nx * mij.gros, mij.y + mij.ny * mij.gros);
+  corp.addColorStop(0, '#ffffff');
+  corp.addColorStop(0.28, '#faf9f5');
+  corp.addColorStop(0.68, GHIPS_UMBRA);
+  corp.addColorStop(1, '#bfbdb5');
+  c.fillStyle = corp;
+  c.fill();
+
+  /* Striurile: muchia șpaclului nu e netedă, iar fiecare știrbitură a ei lasă un
+     șanț pe toată lungimea tușei. Ele merg **cu** tușa, niciodată de-a curmezișul —
+     asta le deosebește de o zgârietură făcută după aceea. */
+  c.save();
+  c.clip();
+  const cate = Math.max(5, Math.round(t.lat * 44));
+  for (let f = 0; f < cate; f++) {
+    const cat = (f + 0.5) / cate * 2 - 1;
+    const z = samanta(t.sam * 7.7 + f * 3.1);
+    c.globalAlpha = 0.26 + z * 0.34;
+    c.strokeStyle = z > 0.5 ? '#ffffff' : amesteca(GHIPS_ADANC, '#6f6d65', 0.45);
+    c.lineWidth = Math.max(0.8, punte[0].gros * (0.05 + z * 0.10));
+    margine(cat > 0 ? 1 : -1, Math.abs(cat));
+    c.stroke();
+  }
+  c.restore();
+
+  // creasta: muchia dinspre lumină, aproape albă
+  c.globalAlpha = 0.9;
+  c.strokeStyle = '#ffffff';
+  c.lineWidth = Math.max(1.2, punte[0].gros * 0.16);
+  margine(-1, 0.97);
+  c.stroke();
+  // și muchia cealaltă, abia întunecată
+  c.globalAlpha = 0.7;
+  c.strokeStyle = '#8d8b83';
+  c.lineWidth = Math.max(1, punte[0].gros * 0.16);
+  margine(1, 0.97);
+  c.stroke();
+
+  c.restore();
+}
+
+/* Pânza mică pe care se socotește câtă pastă a mai rămas. */
+const panzaMastii = { panza: null, latime: 0, inaltime: 0 };
 
 function pictezaBlocul(c, lat, inalt) {
-  /* Relieful se pictează întâi **minúscul** — un pixel de ochi — și pe urmă se
-     întinde peste tot blocul, lăsând browserul să netezească între pixeli.
-
-     Prima oară desenasem fiecare ochi ca pe un dreptunghi de-a dreptul pe bloc, și
-     ieșea un zid de cărămidă: douăzeci și două pe douăzeci și două de pătrate cu
-     muchii drepte. Pasta n-are muchii drepte nicăieri — are pante. Și o pantă
-     desenată din pătrate rămâne o scară, oricâte nuanțe i-ai da.
-
-     Crestele, în schimb, se trag **după** întindere și la mărimea adevărată: ele
-     trebuie să fie tăioase, fiindcă asta lasă șpaclul în urma lui. Neted peste tot
-     și ascuțit pe creste: exact ce e pasta de relief. */
+  /* Întâi se pictează blocul **întreg**, așa cum a fost pus, și abia pe urmă se
+     scoate din el ce ai răzuit. Ordinea asta nu e o comoditate: pasta chiar a
+     fost pusă toată, iar tu iei din ea. Dacă aș desena numai ce a rămas, fiecare
+     tușă ar trebui recroită după fiecare zgârietură — și s-ar vedea, fiindcă
+     striurile și creasta ar merge după gaură, nu după mâna care a întins-o. */
   const N = OCHIURI_BLOC;
-  const mic = panzaDeLucru(panzaLuminii, N, N);
-  const mc = mic.getContext('2d');
+
+  // stratul de dedesubt: pastă întinsă subtire, cu urma gletierei
+  const fond = c.createLinearGradient(0, 0, lat, inalt);
+  fond.addColorStop(0, '#d9d7d0');
+  fond.addColorStop(0.6, '#c6c4bc');
+  fond.addColorStop(1, '#adaba3');
+  c.fillStyle = fond;
+  c.fillRect(0, 0, lat, inalt);
+  c.save();
+  c.globalAlpha = 0.35;
+  c.strokeStyle = '#ffffff';
+  c.lineWidth = Math.max(0.7, inalt * 0.004);
+  for (let k = 0; k < 60; k++) {
+    const z = samanta(9100 + k * 3.1);
+    c.beginPath();
+    c.moveTo(0, z * inalt);
+    c.lineTo(lat, z * inalt + (samanta(9160 + k * 5.3) - 0.5) * inalt * 0.03);
+    c.stroke();
+  }
+  c.restore();
+
+  // tușele, una peste alta
+  for (const t of TUSE_PASTA) tusaDePasta(c, t, lat, inalt);
+
+  // granulația ghipsului, peste tot
+  c.save();
+  c.globalAlpha = 0.35;
+  for (let k = 0; k < 1400; k++) {
+    const a = samanta(7600 + k * 3.1), b = samanta(7660 + k * 7.7);
+    const e = samanta(7720 + k * 5.3);
+    c.fillStyle = e > 0.5 ? '#ffffff' : '#9c9a93';
+    c.fillRect(a * lat, b * inalt, 1 + e, 1 + e);
+  }
+  c.restore();
+
+  /* Acum se scoate ce s-a răzuit. Masca se face pe o pânză de N×N — un pixel de
+     ochi — și se întinde peste bloc: marginea iese moale, ca a unei materii
+     săpate cu unealta, nu tăiată cu foarfeca. */
+  const masca = panzaDeLucru(panzaMastii, N, N);
+  const mc = masca.getContext('2d');
   mc.setTransform(1, 0, 0, 1, 0, 0);
   mc.globalAlpha = 1;
   mc.clearRect(0, 0, N, N);
-
+  let ceva = false;
   for (let j = 0; j < N; j++) {
     for (let i = 0; i < N; i++) {
-      const h = s11.pasta[j][i];
-      if (h <= 0.02) { mc.fillStyle = '#08080a'; mc.fillRect(i, j, 1, 1); continue; }
-      /* Lumina vine din stânga sus, ca peste tot în jucărie. O pantă întoarsă
-         spre ea e albă, una întoarsă de la ea e cenușie — și asta e tot ce
-         înseamnă relief pe un ecran. */
-      const panta = (grosimeaPastei(i - 1, j) - grosimeaPastei(i + 1, j)) * 1.0 +
-                    (grosimeaPastei(i, j - 1) - grosimeaPastei(i, j + 1)) * 1.0;
-      const catre = Math.max(-1, Math.min(1, panta * 2.6));
-      const baza = catre > 0 ? amesteca(GHIPS, '#ffffff', catre * 0.9)
-                             : amesteca(GHIPS, GHIPS_ADANC, -catre * 1.0);
-      // câtă pastă a mai rămas: când se subțiază, se vede golul de dedesubt
-      mc.fillStyle = amesteca('#14141a', baza, Math.min(1, 0.18 + h * 1.05));
+      const scos = 1 - s11.pasta[j][i];
+      if (scos <= 0.02) continue;
+      ceva = true;
+      mc.fillStyle = 'rgba(0,0,0,' + Math.min(1, scos * 1.25).toFixed(3) + ')';
       mc.fillRect(i, j, 1, 1);
     }
   }
 
-  c.imageSmoothingEnabled = true;
-  c.drawImage(mic, 0, 0, N, N, 0, 0, lat, inalt);
+  if (ceva) {
+    c.save();
+    c.globalCompositeOperation = 'destination-out';
+    c.imageSmoothingEnabled = true;
+    c.drawImage(masca, 0, 0, N, N, 0, 0, lat, inalt);
+    c.restore();
 
-  // crestele tăioase, la mărimea adevărată
-  const pw = lat / N, ph = inalt / N;
-  c.save();
-  c.lineCap = 'round';
-  for (let j = 0; j < N; j++) {
-    for (let i = 0; i < N; i++) {
-      const h = s11.pasta[j][i];
-      if (h <= 0.25) continue;
-      const sus = grosimeaPastei(i, j - 1), jos = grosimeaPastei(i, j + 1);
-      if (h - sus < 0.06) continue;                 // nu e creastă
-      const x = i * pw, y = j * ph;
-      c.globalAlpha = Math.min(0.9, (h - sus) * 3.2) * h;
-      c.strokeStyle = '#ffffff';
-      c.lineWidth = Math.max(1, ph * 0.16);
-      c.beginPath();
-      c.moveTo(x, y + ph * 0.12);
-      c.lineTo(x + pw, y + ph * 0.12);
-      c.stroke();
-      if (h - jos > 0.06) {
-        c.globalAlpha = Math.min(0.7, (h - jos) * 2.6) * h;
-        c.strokeStyle = '#3c3c42';
-        c.lineWidth = Math.max(1, ph * 0.20);
-        c.beginPath();
-        c.moveTo(x, y + ph * 0.92);
-        c.lineTo(x + pw, y + ph * 0.92);
-        c.stroke();
-      }
-    }
-  }
-  c.restore();
+    /* Golul de dedesubt și buza ruptă din jurul lui. Golul se pune **sub** pastă,
+       ca să se vadă prin gaura tocmai scoasă; buza, deasupra, fiindcă ea e chiar
+       marginea materiei rămase. */
+    c.save();
+    c.globalCompositeOperation = 'destination-over';
+    c.fillStyle = '#0a0908';
+    c.fillRect(0, 0, lat, inalt);
+    c.restore();
 
-  /* Găurile: unde pasta s-a dus de tot, se vede golul. Ele se taie **după**
-     netezire și cu margine ascuțită — o gaură netezită arată a pată, iar aici
-     tocmai muchia spune că materia a fost ruptă, nu ștearsă. */
-  c.save();
-  for (let j = 0; j < N; j++) {
-    for (let i = 0; i < N; i++) {
-      if (s11.pasta[j][i] > 0.06) continue;
-      const x = i * pw, y = j * ph;
-      c.fillStyle = '#06060a';
-      c.beginPath();
-      for (let q = 0; q <= 7; q++) {
-        const a = (q / 7) * Math.PI * 2;
-        const z = samanta(i * 31.1 + j * 17.7 + q * 3.3);
-        const r = pw * (0.52 + z * 0.34);
-        const px = x + pw * 0.5 + Math.cos(a) * r;
-        const py = y + ph * 0.5 + Math.sin(a) * r * (ph / pw);
-        if (q === 0) c.moveTo(px, py); else c.lineTo(px, py);
-      }
-      c.closePath();
-      c.fill();
-      /* Buza ruptă se luminează **numai pe marginea găurii**, adică acolo unde
-         deasupra a mai rămas pastă. Trasată la fiecare ochi gol, ieșeau dungi
-         albe pe toată lățimea craterului — blocul săpat arăta a jaluzele. O buză
-         e o margine; un șir de buze una sub alta nu mai e nimic. */
-      if (grosimeaPastei(i, j - 1) > 0.06) {
-        c.globalAlpha = 0.6;
+    /* Buza ruptă din jurul craterului: se luminează numai acolo unde deasupra a
+       mai rămas pastă. Trasată la fiecare ochi gol, ieșeau dungi albe pe toată
+       lățimea găurii — jaluzele, nu materie ruptă. */
+    const pw = lat / N, ph = inalt / N;
+    c.save();
+    c.lineCap = 'round';
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        if (s11.pasta[j][i] > 0.10) continue;
+        if (grosimeaPastei(i, j - 1) <= 0.10) continue;
+        c.globalAlpha = 0.75;
         c.strokeStyle = '#ffffff';
+        c.lineWidth = Math.max(1, ph * 0.22);
+        c.beginPath();
+        c.moveTo(i * pw, j * ph + ph * 0.08);
+        c.lineTo((i + 1) * pw, j * ph + ph * 0.08);
+        c.stroke();
+        c.globalAlpha = 0.5;
+        c.strokeStyle = '#4a4841';
         c.lineWidth = Math.max(0.8, ph * 0.14);
         c.beginPath();
-        c.moveTo(x, y + ph * 0.06);
-        c.lineTo(x + pw, y + ph * 0.06);
+        c.moveTo(i * pw, j * ph + ph * 0.26);
+        c.lineTo((i + 1) * pw, j * ph + ph * 0.26);
         c.stroke();
-        c.globalAlpha = 1;
       }
     }
+    c.restore();
   }
-  c.restore();
-
-  // granulația ghipsului
-  c.globalAlpha = 0.45;
-  for (let k = 0; k < 900; k++) {
-    const a = samanta(7600 + k * 3.1), b = samanta(7660 + k * 7.7);
-    const e = samanta(7720 + k * 5.3);
-    const i = Math.floor(a * N), j = Math.floor(b * N);
-    if (s11.pasta[j] === undefined || s11.pasta[j][i] <= 0.08) continue;
-    c.fillStyle = e > 0.5 ? '#ffffff' : '#8e8d87';
-    c.fillRect(a * lat, b * inalt, 1 + e, 1 + e);
-  }
-  c.globalAlpha = 1;
 }
 
 /* ---------- BUTONUL ROȘU ----------
@@ -692,40 +867,98 @@ function cursorulScenei11() {
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.fillRect(-w * 0.16, -h * 0.5, w * 0.5, Math.max(1, h * 0.14));
   } else {
-    // șpaclul: o lamă lată de metal, cu mâner
-    const w = S * 0.070, h = S * 0.030;
-    ctx.fillStyle = 'rgba(10,10,12,0.45)';
+    /* Eboșorul, după fotografii: **o buclă de sârmă** prinsă într-un guler de metal,
+       pe un mâner de lemn deschis. Nu e un șpaclu de zugrav — aia e o lopată.
+       Unealta cu care se scoate materie e o buclă: intră în pastă și taie o felie,
+       iar felia iese prin mijlocul ei.
+
+       De-aia se și vede prin ea. O buclă desenată plină ar fi doar o lingură. */
+    const L = S * 0.115, G = S * 0.026;
+
+    // umbra uneltei
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(2, G * 0.5);
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(-w * 0.46, -h * 0.14);
-    ctx.lineTo(w * 0.30, -h * 0.44);
-    ctx.lineTo(w * 0.30, h * 0.30);
-    ctx.lineTo(-w * 0.46, h * 0.44);
-    ctx.closePath();
-    ctx.fill();
-    const otel = ctx.createLinearGradient(0, -h * 0.5, 0, h * 0.5);
-    otel.addColorStop(0, '#f0f2f5');
-    otel.addColorStop(0.42, '#aeb3ba');
-    otel.addColorStop(0.6, '#dfe3e8');
-    otel.addColorStop(1, '#70757c');
-    ctx.fillStyle = otel;
-    ctx.beginPath();
-    ctx.moveTo(-w * 0.52, -h * 0.30);
-    ctx.lineTo(w * 0.24, -h * 0.58);
-    ctx.lineTo(w * 0.24, h * 0.16);
-    ctx.lineTo(-w * 0.52, h * 0.30);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#5c6067';
-    ctx.lineWidth = Math.max(1, S * 0.0014);
+    ctx.moveTo(-L * 0.30 + G * 0.22, G * 0.22);
+    ctx.lineTo(L * 0.52 + G * 0.22, G * 0.22);
     ctx.stroke();
-    // mânerul de lemn
-    ctx.fillStyle = '#3a3129';
-    dreptunghiIn(ctx, w * 0.24, -h * 0.40, w * 0.34, h * 0.62, h * 0.16);
+    ctx.restore();
+
+    // mânerul de lemn, mai gros la mijloc
+    const lemn = ctx.createLinearGradient(0, -G * 0.34, 0, G * 0.34);
+    lemn.addColorStop(0, '#efdcb8');
+    lemn.addColorStop(0.34, '#e0c89a');
+    lemn.addColorStop(0.72, '#c2a375');
+    lemn.addColorStop(1, '#9c8055');
+    ctx.fillStyle = lemn;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.16, -G * 0.20);
+    ctx.quadraticCurveTo(L * 0.18, -G * 0.34, L * 0.54, -G * 0.16);
+    ctx.quadraticCurveTo(L * 0.60, 0, L * 0.54, G * 0.16);
+    ctx.quadraticCurveTo(L * 0.18, G * 0.34, -L * 0.16, G * 0.20);
+    ctx.closePath();
     ctx.fill();
-    // pasta rămasă pe lamă
+    ctx.strokeStyle = 'rgba(120, 96, 58, 0.7)';
+    ctx.lineWidth = Math.max(0.7, S * 0.0012);
+    ctx.stroke();
+    // fibra lemnului
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#8a6f45';
+    ctx.lineWidth = Math.max(0.5, S * 0.0009);
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath();
+      ctx.moveTo(-L * 0.12, (k - 1) * G * 0.12);
+      ctx.quadraticCurveTo(L * 0.20, (k - 1) * G * 0.16, L * 0.50, (k - 1) * G * 0.10);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // gulerul de metal care strânge sârma
+    const guler = ctx.createLinearGradient(0, -G * 0.26, 0, G * 0.26);
+    guler.addColorStop(0, '#e8ebee');
+    guler.addColorStop(0.45, '#a9aeb4');
+    guler.addColorStop(1, '#6e737a');
+    ctx.fillStyle = guler;
+    dreptunghiIn(ctx, -L * 0.26, -G * 0.24, L * 0.14, G * 0.48, G * 0.08);
+    ctx.fill();
+    ctx.strokeStyle = '#5a5f66';
+    ctx.lineWidth = Math.max(0.6, S * 0.0010);
+    ctx.stroke();
+
+    /* Bucla: două sârme care ies din guler, se depărtează și se întorc într-un
+       vârf. Se desenează numai conturul, fiindcă prin ea chiar se vede. */
+    ctx.strokeStyle = '#cfd4d9';
+    ctx.lineWidth = Math.max(1.4, G * 0.14);
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.26, -G * 0.14);
+    ctx.quadraticCurveTo(-L * 0.52, -G * 0.44, -L * 0.72, -G * 0.10);
+    ctx.quadraticCurveTo(-L * 0.80, G * 0.06, -L * 0.66, G * 0.20);
+    ctx.quadraticCurveTo(-L * 0.46, G * 0.40, -L * 0.26, G * 0.14);
+    ctx.stroke();
+    // luciul de pe sârmă
     ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = Math.max(0.6, G * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.30, -G * 0.18);
+    ctx.quadraticCurveTo(-L * 0.54, -G * 0.44, -L * 0.70, -G * 0.14);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // felia de pastă prinsă în buclă
+    ctx.globalAlpha = 0.9;
     ctx.fillStyle = GHIPS;
-    ctx.fillRect(-w * 0.52, -h * 0.28, w * 0.14, h * 0.54);
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.66, G * 0.16);
+    ctx.quadraticCurveTo(-L * 0.52, G * 0.34, -L * 0.36, G * 0.12);
+    ctx.quadraticCurveTo(-L * 0.52, G * 0.02, -L * 0.66, G * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
   ctx.restore();
   return true;
