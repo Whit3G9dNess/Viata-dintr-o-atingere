@@ -1213,16 +1213,24 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului,
   const salt = calca * Math.abs(Math.cos(faza)) * s * 0.022;
   const legan = Math.sin(faza * 2) * calca * 0.03;
 
-  /* Intoarcerea spre casa. Nu o clipire de la fata la ceafa, ci o rasucire: cat
-     tine, omul se ingusteaza pana se vede din muchie, apoi se largeste la loc —
-     acelasi lucru care se intampla si cu canaturile usii, si din acelasi motiv,
-     ca panza e plata si nu are adancime in care sa se roteasca ceva.
-     La jumatatea rasucirii, cand oricum nu se vede aproape nimic, chipul lasa
-     locul cefei. */
-  const intors = Math.max(0, Math.min(1, ((pleaca || 0) - 0.02) / 0.13));
+  /* Întoarcerea spre casă. La jumătatea răsucirii, chipul lasă locul cefei, iar
+     trupul se îngustează puțin, cât să se citească mișcarea umărului.
+
+     **Puțin.** Aici era greșeala, și era una de înțeles, nu de scris: răsucirea
+     era făcută ca la canaturile ușii — lățimea scădea cu cosinusul unghiului,
+     până se vedea numai muchia. Pentru o ușă e chiar adevărul: o ușă **este** un
+     dreptunghi plat, și întoarsă pe muchie chiar dispare. Un om nu e.
+
+     Strâns la a șaptea parte din lățime, omul nu se citea ca întors, ci ca stricat:
+     o dungă verticala cu capul turtit, oprită în mijlocul lanului. Și ținea o
+     treime de secundă — destul cât să pară că tabloul a înghețat.
+
+     Acum se strânge cel mult cu o treime, și de două ori mai repede. La mărimea
+     la care se văd oamenii în tabloul ăsta, întoarcerea oricum se citește din
+     **față sau ceafă**, nu din lățime; îngustarea e numai condimentul. */
+  const intors = Math.max(0, Math.min(1, ((pleaca || 0) - 0.02) / 0.06));
   const dinSpate = intors > 0.5;
-  const ingustare = intors > 0 && intors < 1
-    ? Math.max(0.14, Math.abs(Math.cos(intors * Math.PI))) : 1;
+  const ingustare = 1 - 0.34 * Math.sin(intors * Math.PI);
 
   c.save();
   c.translate(w * tx, h * ty - salt);
@@ -1438,32 +1446,52 @@ function taranIn(c, w, h, tx, ty, marime, tip, salut, acum, mers, samantaOmului,
       c.moveTo(-s * 0.128, -s * 0.925);
       c.quadraticCurveTo(0, -s * 0.875, s * 0.128, -s * 0.925);
       c.stroke();
-      return;
-    }
 
-    c.beginPath();
-    c.moveTo(-s * 0.128, -s * 1.03);
-    c.quadraticCurveTo(-s * 0.205, -s * 0.93, -s * 0.175, -s * 0.79);
-    c.quadraticCurveTo(-s * 0.115, -s * 0.88, -s * 0.105, -s * 0.99);
-    c.closePath(); c.fill();
-    c.beginPath();
-    c.moveTo(-s * 0.128, -s * 0.95);
-    c.quadraticCurveTo(-s * 0.145, -s * 1.16, 0, -s * 1.165);
-    c.quadraticCurveTo(s * 0.145, -s * 1.16, s * 0.128, -s * 0.95);
-    c.lineTo(s * 0.088, -s * 0.945);
-    c.quadraticCurveTo(s * 0.10, -s * 1.10, 0, -s * 1.10);
-    c.quadraticCurveTo(-s * 0.10, -s * 1.10, -s * 0.088, -s * 0.945);
-    c.closePath(); c.fill();
-    c.fillStyle = '#4a382a';
-    c.beginPath();
-    c.ellipse(0, -s * 1.075, s * 0.082, s * 0.03, 0, Math.PI, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = PORT_ROMANESC.rosu;
-    c.lineWidth = Math.max(0.6, s * 0.012);
-    c.beginPath();
-    c.moveTo(-s * 0.115, -s * 1.02);
-    c.quadraticCurveTo(0, -s * 1.145, s * 0.115, -s * 1.02);
-    c.stroke();
+    /* Aici era un `return`, și el a oprit tabloul din sala a cincea.
+
+       Trebuia să spună numai „năframa din spate e gata, nu o mai desena și pe
+       cea din față". Dar un `return` nu iese dintr-un `if`, ci **din toată
+       funcția** — iar funcția asta începe cu un `c.save()` și se termină cu
+       `c.restore()`, fiindcă înainte de a desena omul îi mută originea, îl
+       înclină și îl îngustează.
+
+       Deci de fiecare dată când femeia se vedea din spate, pe pânza de compunere
+       rămânea o mutare nescoasă. Iar pânza aia se folosește din nou la fiecare
+       cadru: mutările se înmulțeau una peste alta, și după vreo opt cadre tot ce
+       se desena cădea la câteva mii de pixeli în afara ei, strivit la câteva
+       procente din lățime. Până și ștersul de la începutul cadrului cădea alături.
+
+       De aici, ce se vedea: tabloul îngheța exact în clipa în care oamenii se
+       întorceau spre casă, cu ei rămași în lan ca două dungi subțiri. Nu se
+       blocase nimic — sala mergea mai departe, dar picta în afara pânzei.
+
+       Un `return` din mijlocul unei funcții care ține o stare de desen e o ușă
+       lăsată deschisă. Aici nu mai e niciunul: năframa din față stă în `else`. */
+    } else {
+      c.beginPath();
+      c.moveTo(-s * 0.128, -s * 1.03);
+      c.quadraticCurveTo(-s * 0.205, -s * 0.93, -s * 0.175, -s * 0.79);
+      c.quadraticCurveTo(-s * 0.115, -s * 0.88, -s * 0.105, -s * 0.99);
+      c.closePath(); c.fill();
+      c.beginPath();
+      c.moveTo(-s * 0.128, -s * 0.95);
+      c.quadraticCurveTo(-s * 0.145, -s * 1.16, 0, -s * 1.165);
+      c.quadraticCurveTo(s * 0.145, -s * 1.16, s * 0.128, -s * 0.95);
+      c.lineTo(s * 0.088, -s * 0.945);
+      c.quadraticCurveTo(s * 0.10, -s * 1.10, 0, -s * 1.10);
+      c.quadraticCurveTo(-s * 0.10, -s * 1.10, -s * 0.088, -s * 0.945);
+      c.closePath(); c.fill();
+      c.fillStyle = '#4a382a';
+      c.beginPath();
+      c.ellipse(0, -s * 1.075, s * 0.082, s * 0.03, 0, Math.PI, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = PORT_ROMANESC.rosu;
+      c.lineWidth = Math.max(0.6, s * 0.012);
+      c.beginPath();
+      c.moveTo(-s * 0.115, -s * 1.02);
+      c.quadraticCurveTo(0, -s * 1.145, s * 0.115, -s * 1.02);
+      c.stroke();
+    }
   } else {
     c.fillStyle = '#3d2c1f';
     c.beginPath();

@@ -291,6 +291,15 @@ function creeazaPanza() {
   return {
     ctx: ctx, desene: desene, filtre: filtre,
     get masuratori() { return masuratori; },
+    /* Ce mutare a rămas pe pânză, și câte `save()`-uri n-au fost scoase.
+
+       O funcție de desen care mută originea și iese fără `restore()` lasă mutarea
+       pe pânză. Pe pânza ecranului nu se vede, fiindcă ea se ia de la capăt la
+       fiecare cadru. Pe o pânză ascunsă, care se folosește din nou, mutările se
+       înmulțesc una peste alta — și după câteva cadre tot desenul cade în afara ei.
+       Așa a înghețat tabloul din sala a cincea. */
+    get matrice() { return m.slice(); },
+    get saveNescoase() { return stiva.length; },
     goleste: function () { desene.length = 0; filtre.length = 0; }
   };
 }
@@ -745,6 +754,7 @@ function porneste(optiuni) {
   j.filtre = panza.filtre;
   j.goleste = panza.goleste;
   j.panzeAscunse = panzeAscunse;
+  j.panzaPrincipala = panza;
   j.ceas = ceas;
 
   // Rulează bucla de animație adevărată, cu pași de câte un cadru.
@@ -3324,10 +3334,16 @@ function ruleaza() {
     egal(dupaIntoarcere, 0, "se departeaza, dar tot se uita la jucator");
   });
 
-  test("intoarcerea nu e o clipire, ci o rasucire", function () {
-    /* La jumatatea rasucirii omul se vede din muchie: se ingusteaza si se
-       largeste la loc, ca un canat de usa. Fara asta, chipul ar sari brusc in
-       ceafa, de la un cadru la altul. */
+  test("intoarcerea nu e o clipire, dar nici o strivire", function () {
+    /* La mijlocul rasucirii omul se ingusteaza si se largeste la loc, ca sa nu
+       sara chipul in ceafa de la un cadru la altul.
+
+       Cat de mult se ingusteaza a fost prima oara gresit: latimea scadea cu
+       cosinusul unghiului, pana se vedea numai muchia — regula canatului de usa.
+       Pentru o usa e chiar adevarul, fiindca o usa **este** un dreptunghi plat.
+       Un om nu e: strans la a saptea parte din latime, nu se citea ca intors, ci
+       ca stricat, si tinea o treime de secunda. Testul apara acum amandoua
+       marginile: rasucirea trebuie sa se vada, dar omul trebuie sa ramana om. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     inCampie(j);
     function latimea(pleaca) {
@@ -3338,11 +3354,17 @@ function ruleaza() {
       return lat;
     }
     const dreptInFata = latimea(0);
-    const dinMuchie = latimea(0.085);
+    let ceaMaiSubtire = dreptInFata, unde = 0;
+    for (let p = 0.02; p <= 0.09; p += 0.002) {
+      const l = latimea(p);
+      if (l < ceaMaiSubtire) { ceaMaiSubtire = l; unde = p; }
+    }
     const intors = latimea(0.3);
-    adevarat(dinMuchie < dreptInFata * 0.6,
-      "la mijlocul rasucirii e tot lat: " + Math.round(dinMuchie) + " fata de " + Math.round(dreptInFata));
-    adevarat(intors > dinMuchie * 1.6, "nu se mai largeste la loc dupa ce s-a intors");
+    adevarat(ceaMaiSubtire < dreptInFata * 0.85,
+      "rasucirea nu se vede deloc: " + Math.round(ceaMaiSubtire) + " fata de " + Math.round(dreptInFata));
+    adevarat(ceaMaiSubtire > dreptInFata * 0.5,
+      "omul e strivit la " + Math.round(ceaMaiSubtire / dreptInFata * 100) + "% din latime, la plecare " + unde.toFixed(3));
+    adevarat(intors > ceaMaiSubtire * 1.05, "nu se mai largeste la loc dupa ce s-a intors");
   });
 
   /* ---------------------------------------------------------------- */
@@ -5860,6 +5882,100 @@ function ruleaza() {
       if (sursa.slice(i, j2 < 0 ? undefined : j2).indexOf("uitaCadrul()") === -1) fara.push(n);
     }
     egal(fara.length, 0, "picteaza fara sa uite cadrul: " + fara.join(", "));
+  });
+
+  test("nicio sala nu lasa o mutare pe vreo panza ascunsa", function () {
+    /* Bugul care a oprit tabloul din sala a cincea, si clasa lui intreaga.
+
+       `taranIn` incepe cu `c.save()`, muta originea pe om, il inclina si il
+       ingusteaza, si se termina cu `c.restore()`. In mijloc era un `return`,
+       pus acolo ca sa spuna „naframa din spate e gata, nu o mai desena si pe cea
+       din fata". Numai ca un `return` nu iese dintr-un `if`, ci din toata
+       functia — deci de fiecare data cand femeia se vedea din spate, pe panza de
+       compunere ramanea o mutare nescoasa.
+
+       Panza aia se foloseste din nou la fiecare cadru. Mutarile se inmulteau una
+       peste alta, si dupa vreo opt cadre tot ce se desena cadea la cateva mii de
+       pixeli in afara ei, strivit la cateva procente din latime. Pana si stersul
+       de la inceputul cadrului cadea alaturi. Din afara: tabloul ingheata exact
+       cand oamenii se intorceau spre casa, cu ei ramasi in lan ca doua dungi.
+
+       Testul nu se uita la un singur loc: dupa cateva cadre din fiecare sala,
+       toate panzele trebuie sa aiba mutarea la loc si stiva de `save` goala. */
+    const IDENTITATE = [1, 0, 0, 1, 0, 0];
+    function curata(pz, unde, gasite) {
+      const m = pz.matrice;
+      for (let k = 0; k < 6; k++) {
+        if (Math.abs(m[k] - IDENTITATE[k]) > 1e-6) {
+          gasite.push(unde + ": mutare ramasa [" + m.map(function (v) { return v.toFixed(3); }).join(", ") + "]");
+          return;
+        }
+      }
+      if (pz.saveNescoase) gasite.push(unde + ": " + pz.saveNescoase + " save() nescoase");
+    }
+
+    const SALI = [
+      ["muzeu", "intrareScena3"], ["galerie", "intraInGalerie"], ["campie", "intraInCampie"],
+      ["foc", "intraInFoc"], ["gheata", "intraInGheata"], ["ulei", "intraInUlei"],
+      ["acuarela", "intraInAcuarela"], ["colaj", "intraInColaj"],
+      ["carbune", "intraInCarbune"], ["vid", "intraInVid"]
+    ];
+    const gasite = [];
+    for (const [nume, intrare] of SALI) {
+      const j = porneste({ latime: 1400, inaltime: 800 });
+      j.mergiLaStarea(nume);
+      j[intrare](j.ceas.t);
+      j.avanseazaUsor(2500);
+      /* In campie ii trimitem si spre casa: acolo se vedea greseala, fiindca
+         numai intorsi cu spatele ieseau din functie pe usa gresita. */
+      if (nume === "campie") {
+        for (let k = 0; k < 14 && j.s5.faza !== "casa"; k++) { j.click5(j.ceas.t); j.avanseazaUsor(200); }
+        j.avanseazaUsor(2200);
+      }
+      curata(j.panzaPrincipala, nume + " / panza ecranului", gasite);
+      j.panzeAscunse.forEach(function (el, i) {
+        if (el._panza) curata(el._panza, nume + " / panza ascunsa " + i, gasite);
+      });
+    }
+    egal(gasite.length, 0, gasite.join("  |  "));
+  });
+
+  test("taranca intoarsa cu spatele nu lasa panza mutata", function () {
+    /* Acelasi lucru, tintit: chiar functia care avea usa lasata deschisa. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(j.ceas.t);
+    j.avanseazaUsor(2800);
+    const pz = j.panzaPrincipala;
+    for (const pleaca of [0, 0.05, 0.1, 0.3, 0.9, 1]) {
+      j.taranIn(j.panzaPrincipala.ctx, 760, 470, 0.43, 0.815, 0.3, "femeie", 0, j.ceas.t, 0.5, 2, pleaca);
+      const m = pz.matrice;
+      adevarat(Math.abs(m[0] - 1) < 1e-6 && Math.abs(m[4]) < 1e-6,
+        "la plecare " + pleaca + " a ramas mutarea [" + m.join(", ") + "]");
+      egal(pz.saveNescoase, 0, "la plecare " + pleaca + " a ramas un save() nescos");
+    }
+  });
+
+  test("cand se intorc spre casa, oamenii raman oameni", function () {
+    /* Rasucirea era facuta ca la canaturile usii: latimea scadea cu cosinusul
+       unghiului, pana se vedea numai muchia. Pentru o usa e chiar adevarul — o
+       usa **este** un dreptunghi plat. Un om nu e: strans la a saptea parte din
+       latime, nu se citea ca intors, ci ca stricat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("campie");
+    j.intraInCampie(j.ceas.t);
+    j.avanseazaUsor(2800);
+    let ceaMaiSubtire = 1;
+    for (let p = 0; p <= 0.3; p += 0.005) {
+      const d = j.doar(function () {
+        j.taranIn(j.panzaPrincipala.ctx, 760, 470, 0.43, 0.815, 0.3, "femeie", 0, j.ceas.t, 0.5, 2, p);
+      });
+      let x0 = Infinity, x1 = -Infinity;
+      for (const o of d) if (o.limite) { if (o.limite.x0 < x0) x0 = o.limite.x0; if (o.limite.x1 > x1) x1 = o.limite.x1; }
+      if (x1 > x0) ceaMaiSubtire = Math.min(ceaMaiSubtire, (x1 - x0) / 760);
+    }
+    adevarat(ceaMaiSubtire > 0.02,
+      "in rasucire omul ajunge o dunga: " + (ceaMaiSubtire * 100).toFixed(1) + "% din latimea panzei");
   });
 
   test("nu exista doua functii cu acelasi nume in toata jucaria", function () {

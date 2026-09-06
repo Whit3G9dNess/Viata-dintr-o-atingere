@@ -53,6 +53,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 33 | Elefantul roz, câmpia care nu mai amuțește, și ceața din sala a opta | ✅ gata |
 | 34 | Vânătoare de buguri prin toată jucăria: bucla, plasa cadrului, sunetul refuzat, sforile | ✅ gata |
 | 35 | Sughițul de la manual și de la țărani, și muzica muzeului cântată de două ori | ✅ gata |
+| 36 | `return`-ul care oprea tabloul: pânza de compunere rămânea mutată | ✅ gata |
 
 ---
 

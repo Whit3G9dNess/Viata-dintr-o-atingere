@@ -80,6 +80,35 @@ greșeală se vede ca o clipire și se scrie o dată în consolă. La teste, dim
 acolo se cheamă `unCadru`, cel fără plasă, fiindcă o greșeală trebuie să pice
 testul, nu să fie înghițită.
 
+### O ușă lăsată deschisă pe o pânză ascunsă
+
+`taranIn` începe cu `c.save()`, mută originea pe om, îl înclină și îl îngustează,
+și se termină cu `c.restore()`. La mijlocul ei, în ramura femeii văzute din spate,
+stătea un `return` — pus acolo ca să spună „năframa din spate e gata, nu o mai
+desena și pe cea din față". Numai că un `return` nu iese dintr-un `if`, ci **din
+toată funcția**, iar `restore`-ul rămânea nefăcut.
+
+Pe pânza ecranului nu s-ar fi văzut: ea se ia de la capăt la fiecare cadru. Dar
+oamenii se pictează pe **pânza de compunere**, care se folosește din nou. Mutările
+se înmulțeau una peste alta și, după vreo opt cadre, tot ce se desena cădea la
+câteva mii de pixeli în afara pânzei, strivit la câteva procente din lățime — până
+și ștersul de la începutul cadrului cădea alături.
+
+Din afară: tabloul îngheța exact în clipa în care oamenii se întorceau spre casă,
+cu ei rămași în lan ca două dungi subțiri. Nu se blocase nimic — sala mergea mai
+departe, dar picta în afara pânzei.
+
+Testele păzesc acum toată clasa asta: după câteva cadre din fiecare sală, fiecare
+pânză (și cea a ecranului, și cele ascunse) trebuie să aibă mutarea la loc și
+stiva de `save` goală.
+
+Și o a doua lecție, de desen: răsucirea omului era făcută după regula canatului de
+ușă — lățimea scădea cu cosinusul unghiului, până se vedea numai muchia. Pentru o
+ușă e chiar adevărul, fiindcă o ușă **este** un dreptunghi plat. Un om nu e: strâns
+la a șaptea parte din lățime, nu se citește ca întors, ci ca stricat. Acum se
+strânge cel mult cu o treime, și de două ori mai repede; întoarcerea se citește
+oricum din față-sau-ceafă, nu din lățime.
+
 ### Sughițul care se face lag
 
 Două săli întregi se pictează „din vreme", ca să nu cadă tot desenul lor în
