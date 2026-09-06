@@ -61,10 +61,9 @@ function intraInVid(acum) {
    cu tot, în sala dinainte. */
 function iesiDinVid(acum) {
   opresteInima();
-  s3.vizitat = false;
   /* Și se ține promisiunea. O glumă spusă jucătorului și neținută e mai rea decât
      una nespusă: cine se întoarce anume ca să vadă elefantul roz și îl găsește
-     albastru află că sala a mintțit, nu că a glumit. */
+     albastru află că sala a mințit, nu că a glumit. */
   elefantulERoz = true;
   if (typeof zugravesteElefantul === 'function') zugravesteElefantul(true);
   incepeJucaria(acum);

@@ -1,4 +1,31 @@
+/* Ce s-a plâns deja, ca să nu se plângă de șaizeci de ori pe secundă. */
+const necazuriStiute = new Set();
+
+/* Un cadru care crapă nu mai are voie să omoare jucăria.
+
+   Rândul care cere cadrul următor stătea la **capătul** funcției. Adică orice
+   greșeală dintr-un singur cadru — o mărime ieșită NaN, o ștampilă negata, un
+   degrade cu rază nefinită — sărea peste el, și jucăria înțepenea pe veci: totul
+   rămânea pe ecran, nimic nu se mai mișca, și nimeni n-avea de unde ști de ce.
+   Pentru ceva ce se arată unei clase, ăsta e cel mai rău fel de a se strica.
+
+   Acum cadrul următor se cere **întâi**, iar desenul e într-o plasă: o greșeală
+   dintr-un cadru se vede ca o clipire, nu ca o moarte. Se scrie o dată în
+   consolă și nu se mai repetă, ca să rămână citibilă. */
 function cadru(t) {
+  requestAnimationFrame(cadru);
+  try {
+    unCadru(t);
+  } catch (e) {
+    const semn = String(e && e.message || e);
+    if (!necazuriStiute.has(semn)) {
+      necazuriStiute.add(semn);
+      console.error('cadru întrerupt în starea „' + stare + '":', e);
+    }
+  }
+}
+
+function unCadru(t) {
   reglezaCalitatea(t);
   const acum = performance.now();
 
@@ -206,6 +233,5 @@ function cadru(t) {
   }
 
   deseneazaCursorul();
-  requestAnimationFrame(cadru);
 }
 requestAnimationFrame(cadru);

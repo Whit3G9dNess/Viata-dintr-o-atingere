@@ -4,13 +4,48 @@
 let audio = null;
 let bufferZgomot = null;   // „zgomot alb" — materia primă pentru pleoscăit și aspirare
 
+/* Dacă browserul a refuzat o dată să dea context audio, nu-l mai întrebăm la
+   fiecare atingere. */
+let audioRefuzat = false;
+
+/* Pornirea sunetului **nu are voie să crape**.
+
+   Rândul ăsta e primul din ascultătorul de atingeri, înaintea oricărei logici de
+   joc. Dacă el aruncă, atingerea moare acolo și nu se mai întâmplă nimic — iar
+   `new AudioContext()` chiar poate să arunce: fereastră privată, sunet oprit din
+   sistem, browser vechi fără AudioContext deloc.
+
+   Așa se ajungea la cel mai rău fel de a se strica: un ecran negru care nu
+   răspunde la nicio atingere, la nesfârșit. Un calculator de școală e exact locul
+   unde se întâmplă asta, și exact locul unde nu vrei să se întâmple.
+
+   Acum, dacă sunetul nu se poate, jucăria merge mai departe mută. */
 function pornesteAudio() {
-  if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
-  if (audio.state === 'suspended') audio.resume();
+  if (audio) {
+    try { if (audio.state === 'suspended') audio.resume(); } catch (e) { /* mută */ }
+    return;
+  }
+  if (audioRefuzat) return;
+  try {
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    audioRefuzat = true;
+  }
 }
 
+/* Toate sunetele încep cu același paznic: **fără context audio, tăcere**.
+
+   Sunetele scrise mai târziu îl au toate; primele, din scenele întâi și a doua,
+   nu — au fost scrise pe când singurul drum spre ele trecea prin atingerea care
+   deschide contextul, deci `audio` nu putea fi gol. Nu mai e adevărat: un
+   browser poate să refuze contextul (fereastră privată, sunet oprit din sistem),
+   și atunci `audio.currentTime` crapă — iar jucăria se oprea din desenat pentru
+   un sunet pe care nimeni nu-l aude oricum.
+
+   O jucărie fără sunet e o jucărie. Una care se oprește, nu. */
 // O notă simplă: frecvență, moment de start, durată, volum, formă de undă
 function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = null) {
+  if (!audio) return;
   const osc = audio.createOscillator();
   osc.type = tip;
   osc.frequency.setValueAtTime(frecventa, cand);
@@ -26,6 +61,7 @@ function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = nu
 
 // Un „fâșâit" filtrat — pentru stropi de vopsea și aspirare
 function zgomot(cand, durata, volum, frecventaStart, frecventaFinal = null) {
+  if (!audio) return;
   if (!bufferZgomot) {
     bufferZgomot = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
     const date = bufferZgomot.getChannelData(0);
@@ -80,6 +116,7 @@ function sunetRasarit() {
 
 // Râsul balonului gâdilat: un ping fin urmat de note scurte, săltărețe
 function sunetChicotit() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(1400, t, 0.05, 0.04, 'sine');
   for (let i = 0; i < 5; i++) {
@@ -90,6 +127,7 @@ function sunetChicotit() {
 
 // Chemarea balonului când e lăsat singur: două note blânde, ca un „hei, hei"
 function sunetChemare() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(520, t, 0.12, 0.04, 'sine');
   nota(660, t + 0.16, 0.14, 0.04, 'sine');
@@ -97,17 +135,20 @@ function sunetChemare() {
 
 // SCENA 2 — transformarea balonului în minge: un mic arpegiu magic
 function sunetTransformare() {
+  if (!audio) return;
   const t = audio.currentTime;
   [523, 659, 784, 1047].forEach((f, i) => nota(f, t + i * 0.09, 0.22, 0.06, 'triangle'));
 }
 
 // săritura mingii — „boing" de desen animat
 function sunetBoing() {
+  if (!audio) return;
   nota(320, audio.currentTime, 0.28, 0.07, 'triangle', 85);
 }
 
 // stropul de vopsea — „pleosc!"
 function sunetPleosc() {
+  if (!audio) return;
   zgomot(audio.currentTime, 0.09, 0.14, 750);
 }
 
@@ -115,6 +156,7 @@ function sunetPleosc() {
    cu care se destramă în nor. Nu un pocnet de balon de petrecere — ăla ar speria
    pe cineva care se uită liniștit la cer. */
 function sunetBalonSpart() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(430, t, 0.07, 0.05, 'sine', 190);
   zgomot(t + 0.03, 0.42, 0.045, 1500, 420);
@@ -122,6 +164,7 @@ function sunetBalonSpart() {
 
 // mingea fluieră după utilizator (fluier de desen animat: sus, apoi jos)
 function sunetFluier() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(620, t, 0.18, 0.055, 'sine', 1250);
   nota(1250, t + 0.22, 0.22, 0.055, 'sine', 800);
@@ -129,12 +172,14 @@ function sunetFluier() {
 
 // bucuria mingii: triluri urcătoare
 function sunetBucurie() {
+  if (!audio) return;
   const t = audio.currentTime;
   [660, 880, 1100].forEach((f, i) => nota(f, t + i * 0.09, 0.09, 0.06, 'sine', f * 1.15));
 }
 
 // sperietura mingii: un țipăt scurt, apoi fuga
 function sunetSperiat() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(700, t, 0.1, 0.07, 'sine', 1600);
   nota(1600, t + 0.11, 0.3, 0.05, 'sine', 380);
@@ -142,6 +187,7 @@ function sunetSperiat() {
 
 // elefantul aspiră o pată — „sloop!"
 function sunetAspirare() {
+  if (!audio) return;
   const t = audio.currentTime;
   zgomot(t, 0.2, 0.1, 1400, 250);
   nota(850, t, 0.18, 0.045, 'sine', 170);
@@ -149,6 +195,7 @@ function sunetAspirare() {
 
 // trompeta elefantului (mic semn că el va conta în scena următoare)
 function sunetTrompeta() {
+  if (!audio) return;
   const t = audio.currentTime;
   nota(196, t, 0.18, 0.07, 'sawtooth', 294);
   nota(294, t + 0.2, 0.3, 0.07, 'sawtooth', 262);

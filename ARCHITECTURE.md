@@ -70,6 +70,23 @@ stateDiagram-v2
 
 ## Cum se naște un cadru
 
+Cadrul următor se cere **întâi**, și abia pe urmă se desenează, cu desenul într-o
+plasă (`cadru` cheamă `unCadru` într-un `try`). Rândul care cere cadrul următor
+stătea la capăt: o singură greșeală dintr-un singur cadru — o mărime ieșită NaN,
+un degrade cu rază nefinită — sărea peste el, și jucăria înțepenea pe veci: totul
+rămânea pe ecran, nimic nu se mai mișca, și nimeni n-avea de unde ști de ce.
+Pentru ceva ce se arată unei clase, ăsta e cel mai rău fel de a se strica. Acum o
+greșeală se vede ca o clipire și se scrie o dată în consolă. La teste, dimpotrivă:
+acolo se cheamă `unCadru`, cel fără plasă, fiindcă o greșeală trebuie să pice
+testul, nu să fie înghițită.
+
+Tot așa, **pornirea sunetului nu are voie să crape**: `pornesteAudio()` e primul
+rând din ascultătorul de atingeri, iar `new AudioContext()` chiar poate să arunce
+(fereastră privată, sunet oprit din sistem, browser vechi). Câtă vreme arunca,
+atingerea murea acolo: un ecran negru care nu răspunde la nimic, la nesfârșit — pe
+un calculator de școală, exact unde nu trebuie. Acum jucăria merge mai departe
+mută, și toate sunetele au același paznic la început.
+
 `cadru(t)` e singura funcție chemată de `requestAnimationFrame`. Ea nu desenează
 nimic: alege scena, o lasă să-și mute lucrurile cu `dt`, apoi o pune să se
 deseneze.
@@ -398,13 +415,37 @@ Negrul de la capătul colapsului din sala a unsprezecea **este** începutul aces
 săli: una se termină în negru absolut, cealaltă începe în negru absolut, și tocmai
 cusătura care nu se vede face deja-vu-ul.
 
-Șoapta („O luăm de la capăt? Promit că data viitoare elefantul va fi albastru.")
+Șoapta („O luăm de la capăt? Promit că data viitoare elefantul va fi roz.")
 nu e o înregistrare — dar șoapta e, dintre toate felurile de vorbire, singurul
 care se poate face cinstit din cod: **o șoaptă chiar e zgomot**. Când șoptești,
 coardele vocale nu vibrează deloc; aerul trece prin gură și formele ei îl
 filtrează. `sunetSoapta` face exact asta: zgomot alb prin două rezonanțe care se
 mută de la o silabă la alta — formantele vocalelor — tăiat în silabe cu pauzele
 frazei. Cuvintele scrise pe ecran spun **ce**; sunetul spune **cine**.
+
+#### Lumea de la capăt
+
+O promisiune făcută jucătorului trebuie ținută, și ținută **întreagă**. La al
+doilea tur elefantul e roz — și corpul, și trompa, care se desenează separat ca să
+poată urmări petele; culorile stau într-un singur loc (`culorileElefantului`),
+fiindcă scrise în două ieșea un elefant roz cu trompa albastră, adică promisiunea
+ținută pe jumătate.
+
+Restul lumii, pe dos: trebuie să fie iar de la început. `lumeaDeLaCapat()` pune
+înapoi mingea, elefantul, petele, grădina, cerul și numărătoarea scăpărilor
+balonului, dintr-o **fotografie** a lor luată la încărcarea fișierelor
+(`MINGEA_LA_INCEPUT`, `ELEFANTUL_LA_INCEPUT`) — nu dintr-o listă scrisă de mână,
+care s-ar învechi la primul câmp nou fără ca nimeni să vadă, fiindcă greșeala
+apare abia la al doilea tur.
+
+Scăparea n-a fost o greșeală de scris, ci una de închipuire: câtă vreme jucăria
+mergea o singură dată, nimic nu avea nevoie să se întoarcă, și toată starea a fost
+scrisă pentru dus, nu pentru întors. La al doilea tur ieșea o sală a doua goală:
+mingea rămânea în buzunarul elefantului, de unde o luase custodele cu un tur
+înainte — deci n-aveai ce arunca, nu se făcea nicio pată, iar o singură atingere
+pe elefant te trimitea de-a dreptul în muzeu. Și balonul din sala întâi, care se
+lasă prins abia după cinci scăpări, ținea minte numărătoarea: la al doilea tur se
+preda din prima, adică scena întâi nu se mai juca deloc.
 
 ### Se ia, nu se pune (sala a unsprezecea)
 
@@ -523,7 +564,7 @@ flowchart TB
   end
   subgraph S["Scenele"]
     B5["05-scena1-balon.js · 172"]
-    B6["06-scena2-minge.js · 1001<br/>mingea, petele, elefantul, grădina"]
+    B6["06-scena2-minge.js · 1016<br/>mingea, petele, elefantul, grădina"]
     B11["11-scena3-muzeu.js · 1931<br/>custodele, haina, buzunarul, manualul"]
     B12["12-scena4-galerie.js · 1454<br/>sala rococo, rama, lupa"]
     B13["13-scena5-campie.js · 2003<br/>pânza uriașă, țăranii, pantofii"]
@@ -531,8 +572,8 @@ flowchart TB
     B16["16-scena7-gheata.js · 2133<br/>sala de gheață, costumul, portalul"]
     B17["17-scena8-ulei.js · 2893<br/>sala în linie, trusa, cercul cromatic, postamentul"]
     B18["18-scena9-acuarela.js · 1526<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
-    B19["19-scena10-colaj.js · 2037<br/>iuta, ziarul, cartonul, sforile, ruptura"]
-    B21["21-scena12-vid.js · 274<br/>vidul, punctul, șoapta, bucla"]
+    B19["19-scena10-colaj.js · 2077<br/>iuta, ziarul, cartonul, sforile, ruptura"]
+    B21["21-scena12-vid.js · 273<br/>vidul, punctul, șoapta, bucla"]
     B20["20-scena11-carbune.js · 1453<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]

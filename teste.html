@@ -347,7 +347,11 @@ function AudioContextFals() {
 
 const EXPORTURI = `
 return {
-  cadru: cadru,
+  /* Cadrul **fără plasă**. În joc, o greșeală dintr-un cadru e prinsă și scrisă
+     în consolă, ca jucăria să nu înțepenească pe veci. La teste vrem exact pe dos:
+     o greșeală trebuie să pice testul, nu să fie înghițită și să treacă verde. */
+  deseneazaCursorul: typeof deseneazaCursorul !== "undefined" ? deseneazaCursorul : null,
+  cadru: typeof unCadru !== "undefined" ? unCadru : cadru,
   redimensioneaza: redimensioneaza,
   orizont: orizont,
   intre: intre,
@@ -431,6 +435,9 @@ return {
   razaDePrindere: typeof razaDePrindere !== "undefined" ? razaDePrindere : null,
   initMembrana: typeof initMembrana !== "undefined" ? initMembrana : null,
   numarEvadari: function () { return typeof numarEvadari !== "undefined" ? numarEvadari : null; },
+  baloaneSparte: function () { return typeof baloaneSparte !== "undefined" ? baloaneSparte : null; },
+  lumeaDeLaCapat: typeof lumeaDeLaCapat !== "undefined" ? lumeaDeLaCapat : null,
+  incepeJucaria: typeof incepeJucaria !== "undefined" ? incepeJucaria : null,
   TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
   TEXT_FISA_IMPRESIONISM: typeof TEXT_FISA_IMPRESIONISM !== "undefined" ? TEXT_FISA_IMPRESIONISM : null,
   geomSala: typeof geomSala !== "undefined" ? geomSala : null,
@@ -705,7 +712,12 @@ function porneste(optiuni) {
     innerWidth: o.latime || 1200,
     innerHeight: o.inaltime || 800,
     devicePixelRatio: 1,
-    AudioContext: AudioContextFals,
+    /* Cu `audioStricat`, browserul refuză contextul — fereastră privată, sunet
+       oprit din sistem, browser vechi. Jucăria trebuie să meargă mută, nu să
+       moară. */
+    AudioContext: o.audioStricat
+      ? function () { throw new Error("sunetul e oprit din sistem"); }
+      : AudioContextFals,
     addEventListener: function (nume, f) { (ascultatori[nume] = ascultatori[nume] || []).push(f); }
   };
   const ceas = { t: 0 };
@@ -4789,6 +4801,48 @@ function ruleaza() {
     adevarat(crapate.length > 0, "n-a crapat niciun clei in jur");
   });
 
+  test("sfoara apasata zvacneste, ca sa se inteleaga ca de ea se trage", function () {
+    /* Unsprezece bucati din perete se pornesc cu un deget pus pe ele. Sforile
+       nu: de ele se trage. Numai ca asta nu se vedea nicaieri — apasai pe
+       sfoara, nu se intampla nimic, si sala nu se putea termina, fiindca coltul
+       de desprins apare abia dupa ce s-au pornit toate treisprezece. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    j.avanseazaUsor(3200);
+    const sf = j.s10.piese.filter(function (p) { return p.fel === "sfoara"; });
+    adevarat(sf.length >= 2, "peretele n-are sfori");
+    for (const p of sf) {
+      const m = j.punctulSforii(p, 0.5);
+      p.arc = 0;
+      j.cursor.x = m.x; j.cursor.y = m.y;
+      j.click10(j.ceas.t);
+      adevarat(Math.abs(p.arc) > 0.02,
+        "sfoara " + p.i + " n-a zvacnit sub deget");
+      adevarat(!p.activat, "un clic a pornit sfoara, desi de ea trebuie sa se traga");
+    }
+  });
+
+  test("daca raman numai sforile, sala spune ce e de facut cu ele", function () {
+    /* Un perete care nu se mai termina si nu spune de ce nu e o ghicitoare, e o
+       usa incuiata. Dar nu se spune de la inceput: intai ai vreme sa incerci. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("colaj");
+    j.intraInColaj(j.ceas.t);
+    j.avanseazaUsor(3200);
+    for (const p of j.s10.piese) {
+      if (p.fel === "sfoara") continue;
+      if (!p.activat) { p.activat = true; j.s10.activate++; }
+    }
+    j.avanseazaUsor(4000);
+    adevarat(!j.s10.aSpusSforile, "sala a spus prea repede, fara sa apuc sa incerc");
+    j.avanseazaUsor(6000);
+    adevarat(j.s10.aSpusSforile, "sala nu spune niciodata ce e cu sforile");
+    j.avanseazaUsor(600);
+    const scris = totScrisul(j.cadruCurat()).replace(/\s+/g, "");
+    adevarat(/Sforile|setrag/i.test(scris), "indemnul nu se vede scris: " + scris.slice(0, 120));
+  });
+
   test("coltul de desprins apare abia dupa ce toate au fost pornite", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inColaj(j);
@@ -5570,6 +5624,57 @@ function ruleaza() {
       "trompa n-a luat culoarea noua");
   });
 
+  test("la al doilea tur, lumea e iar de la inceput", function () {
+    /* „Daca jucatorul o ia de la capat se repeta totul" — si chiar tot, nu
+       numai decorul. La primul tur elefantul ia mingea in buzunar si o duce
+       custodelui; la al doilea, mingea ramanea acolo. Adica scena a doua se
+       deschidea fara minge: nimic de aruncat, nicio pata, si o singura atingere
+       pe elefant te trimitea de-a dreptul in muzeu.
+
+       Tot asa, balonul din scena intai numara de cate ori a scapat. Numaratoarea
+       ramanea de la primul tur, deci la al doilea se lasa prins din prima —
+       adica scena intai, cea in care balonul rade si fuge, nu se mai juca deloc.
+
+       Nimic din astea n-a fost o greseala de scris: cat timp jucaria mergea o
+       singura data, nimic n-avea nevoie sa se intoarca. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+
+    // starea in care orice parcurgere adevarata lasa lumea
+    j.minge.inBuzunar = true;
+    j.minge.mod = "ascunsa";
+    j.elefant.stare = "retrage";
+    j.pete.push({ x: 10, y: 10, culoare: "#000", marime: 4, stropi: [], progres: 0 });
+    j.gradina.push({ fx: 0.5, adancime: 0.5, soi: "copac", crestere: 1 });
+    j.baloaneCuloare.push({ x: 0, y: 0, pluteste: true, nascut: 0 });
+
+    inVid(j);
+    j.iesiDinVid(j.ceas.t);
+
+    egal(j.minge.inBuzunar, false, "mingea a ramas in buzunarul elefantului");
+    egal(j.minge.mod, "liber", "mingea a ramas ascunsa de la turul trecut");
+    egal(j.elefant.stare, "plimbare", "elefantul a ramas in starea de la capat");
+    egal(j.numarEvadari(), 0, "balonul tine minte cate scapari a avut la turul trecut");
+    egal(j.pete.length, 0, "petele de la turul trecut au ramas pe jos");
+    egal(j.gradina.length, 0, "gradina de la turul trecut a ramas crescuta");
+    egal(j.baloaneCuloare.length, 0, "baloanele de la turul trecut au ramas in cer");
+    egal(j.baloaneSparte(), 0, "numaratoarea baloanelor sparte a trecut de bucla");
+
+    // singurul lucru care **trebuie** sa treaca dincolo de bucla
+    egal(j.elefantulERoz(), true, "rozul s-a sters odata cu restul lumii");
+  });
+
+  test("balonul nu se lasa prins din prima, nici la al doilea tur", function () {
+    /* Scena intai e chiar jocul de-a v-ati ascunselea cu balonul. Daca se lasa
+       prins la prima atingere, ea nu mai exista — e un clic si atat. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    inVid(j);
+    j.iesiDinVid(j.ceas.t);
+    j.avanseazaUsor(4600);
+    egal(j.stare(), "balon", "jucaria n-a ajuns la balon: " + j.stare());
+    j.atinge(j.balon.x / j.scalaPanzei(), j.balon.y / j.scalaPanzei());
+    egal(j.stare(), "balon", "balonul s-a lasat prins de la prima atingere");
+  });
+
   test("in vid nu se deseneaza nimic in afara de punct", function () {
     /* Un vid cu ceva in el n-ar mai fi vid, ar fi o camera intunecata. Testul
        numara operatiile de desen: sala asta trebuie sa fie cea mai saraca din
@@ -5592,6 +5697,71 @@ function ruleaza() {
 
   /* ---------------------------------------------------------------- */
   sectiune("Nicio funcție nu șterge altă funcție");
+
+  test("un cadru crapat nu opreste jucaria pentru totdeauna", function () {
+    /* Randul care cere cadrul urmator statea la **capatul** functiei. Adica orice
+       greseala dintr-un singur cadru sarea peste el, si jucaria intepenea pe
+       veci: totul ramanea pe ecran, nimic nu se mai misca, si nimeni n-avea de
+       unde sti de ce. Pentru ceva ce se arata unei clase, asta e cel mai rau fel
+       de a se strica — mai rau decat o clipire urata.
+
+       Testul se uita la sursa, nu la purtare: intr-o pagina falsa nu exista
+       requestAnimationFrame adevarat de urmarit. */
+    adevarat(/function cadru\(t\) \{\s*requestAnimationFrame\(cadru\);/.test(sursa),
+      "cadrul urmator nu se mai cere inaintea desenului");
+    adevarat(/catch \(e\)[\s\S]{0,200}necazuriStiute/.test(sursa),
+      "desenul nu mai e prins intr-o plasa");
+  });
+
+  test("degetul iesit din numere nu darama cadrul", function () {
+    /* `NaN < -100` e fals, deci paznicul vechi il lasa sa treaca, iar degradeul
+       cursorului crapa la o raza nefinita — si, pana la randul de mai sus, asta
+       oprea jucaria de tot. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.cursor.x = NaN; j.cursor.y = NaN;
+    const d = j.doar(function () { j.deseneazaCursorul(); });
+    egal(d.length, 0, "cursorul a incercat sa se deseneze cu degetul iesit din numere");
+    j.cursor.x = 100; j.cursor.y = 100; j.cursor.viteza = Infinity;
+    const d2 = j.doar(function () { j.deseneazaCursorul(); });
+    egal(d2.length, 0, "cursorul s-a desenat cu viteza nefinita");
+  });
+
+  test("cu sunetul refuzat de browser, jucaria tot porneste", function () {
+    /* `pornesteAudio()` e primul rand din ascultatorul de atingeri, inaintea
+       oricarei logici de joc. Daca el arunca, atingerea moare acolo — si asa se
+       ajungea la cel mai rau fel de a se strica: un ecran negru care nu raspunde
+       la nicio atingere, la nesfarsit. Un calculator de scoala e exact locul
+       unde se intampla asta. */
+    const j = porneste({ latime: 1400, inaltime: 800, audioStricat: true });
+    j.pornesteAudio();                       // nu are voie sa arunce
+    j.avanseaza(3500);
+    incepeJocul(j, 600, 400);                // trec paginile, se naste punctul
+    j.avanseaza(5000);
+    adevarat(j.stare() !== "intuneric",
+      "cu sunetul refuzat, jucaria a ramas in intuneric");
+    adevarat(j.stare() === "balon" || j.stare() === "crestere",
+      "jucaria n-a pornit fara sunet: " + j.stare());
+  });
+
+  test("niciun sunet nu crapa cand nu exista context audio", function () {
+    /* Sunetele scrise mai tarziu au toate paznicul `if (!audio) return;`; primele,
+       din scenele intai si a doua, nu-l aveau — au fost scrise pe cand singurul
+       drum spre ele trecea prin atingerea care deschide contextul.
+
+       Nu mai e adevarat: un browser poate sa refuze contextul (fereastra privata,
+       sunet oprit din sistem), si atunci `audio.currentTime` crapa. O jucarie
+       fara sunet e o jucarie. Una care se opreste din desenat, nu. */
+    const numeSunete = (sursa.match(/^function (sunet\w+|nota|zgomot\w*)\(/gm) || [])
+      .map(function (r) { return r.replace(/^function /, "").replace(/\($/, ""); });
+    adevarat(numeSunete.length > 40, "n-am gasit sunetele: " + numeSunete.length);
+    const fara = [];
+    for (const n of numeSunete) {
+      const i = sursa.indexOf("function " + n + "(");
+      const j = sursa.indexOf("{", i);
+      if (sursa.slice(j, j + 260).indexOf("if (!audio") === -1) fara.push(n);
+    }
+    egal(fara.length, 0, "sunete fara paznic: " + fara.join(", "));
+  });
 
   test("nu exista doua functii cu acelasi nume in toata jucaria", function () {
     /* Toate cele nouasprezece fisiere se incarca in acelasi domeniu, ca scripturi

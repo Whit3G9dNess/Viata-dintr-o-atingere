@@ -59,7 +59,9 @@ const s10 = {
   fasii: [],
   crapaturi: [],      // cleiul crăpat, unde s-a tras
   ultimaIuta: 0,
-  ultimulFosnet: 0
+  ultimulFosnet: 0,
+  candDoarSfori: 0,   // de când n-au mai rămas de pornit decât sforile
+  aSpusSforile: false
 };
 
 /* ---------- CE E PE PERETE ----------
@@ -1711,6 +1713,7 @@ function intraInColaj(acum) {
   s10.intuneric = 0; s10.clapa = 0; s10.clapaInMana = false;
   s10.rupere = 0; s10.fasii = []; s10.crapaturi = [];
   s10.sfoaraInMana = -1; s10.ultimaIuta = 0; s10.ultimulFosnet = 0;
+  s10.candDoarSfori = 0; s10.aSpusSforile = false;
   pregatestePiesele();
   for (const f of FISE_COLAJ) f.cazut = 0;
   stampaPeretelui.latime = 0;         // peretele se face din nou, cu piese noi
@@ -1801,7 +1804,25 @@ function click10(acum) {
 
   const p = piesaDeSub(cursor.x, cursor.y);
   if (!p) return;
-  if (p.fel === 'sfoara') { s10.sfoaraInMana = p.i; return; }
+  if (p.fel === 'sfoara') {
+    s10.sfoaraInMana = p.i;
+    /* O sfoară apăsată **se ciupește**, ca o coardă.
+
+       Toate celelalte unsprezece bucăți din perete se pornesc cu un deget pus
+       pe ele. Sforile nu: de ele se trage, și pe bună dreptate — o manetă trasă
+       cu un clic nu e o manetă. Numai că asta nu se vedea nicăieri: apăsai pe
+       sfoară, nu se întâmpla nimic, și sala nu se putea termina, fiindcă colțul
+       de desprins apare abia după ce s-au pornit toate treisprezece.
+
+       Acum sfoara zvâcnește și sună sub deget, și se lasă la loc când îl iei.
+       Atât — dar atât ajunge ca mâna să încerce, a doua oară, să și tragă. */
+    if (!p.activat) {
+      p.arc = (p.arc >= 0 ? 1 : -1) * 0.035;
+      p.arcTinta = 0;
+      if (audio) sunetSfoaraIncordata(0.3);
+    }
+    return;
+  }
   pornestePiesa(p, acum);
 }
 
@@ -1908,6 +1929,25 @@ function actualizeazaColaj(acum) {
     if (s10.intuneric >= 1) { s10.faza = 'explorare'; s10.t0 = acum; }
   }
   else if (s10.faza === 'explorare') {
+    /* Dacă tot ce se apasă a fost apăsat și au rămas numai sforile, sala o spune
+       — o dată, și abia după ce ai avut vreme să încerci singur. Un perete care
+       nu se mai termină și nu spune de ce nu e o ghicitoare, e o ușă încuiată. */
+    if (!s10.aSpusSforile) {
+      let doarSfori = true, vreoSfoara = false;
+      for (const p of s10.piese) {
+        if (p.activat) continue;
+        if (p.fel === 'sfoara') vreoSfoara = true; else doarSfori = false;
+      }
+      if (doarSfori && vreoSfoara) {
+        if (!s10.candDoarSfori) s10.candDoarSfori = acum;
+        else if (acum - s10.candDoarSfori > 7000) {
+          s10.aSpusSforile = true;
+          batLaMasina('Sforile nu se apasă. Se trag.', 4200);
+        }
+      } else {
+        s10.candDoarSfori = 0;
+      }
+    }
     if (s10.activate >= s10.piese.length) {
       s10.faza = 'desprindere'; s10.t0 = acum;
       batLaMasina('Timpul este legat cu sfoară și lipit cu clei. Desprinde straturile.', 5200);

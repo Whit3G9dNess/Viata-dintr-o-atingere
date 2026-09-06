@@ -38,6 +38,21 @@ const elefant = {
   urmatorulClipit: 0
 };
 
+/* Cum arătau mingea și elefantul la primul cadru, fotografiate înainte să se
+   atingă de ele vreo sală.
+
+   Jucăria se poate lua de la capat — șoapta din vid o promite — și atunci
+   lumea trebuie să fie iar de la început. Scăparea nu era o greșeală de scris,
+   ci una de închipuire: câtă vreme jucăria mergea o singură dată, nimic nu avea
+   nevoie să se întoarcă, și toată starea a fost scrisă pentru dus, nu pentru
+   întors. La al doilea tur ieșea o scenă goală: mingea rămânea în buzunarul
+   elefantului, de unde o luase custodele cu un tur înainte.
+
+   O fotografie, nu o listă scrisă de mână: o listă se învechește la primul câmp
+   nou și nimeni n-o mai vede, fiindcă greșeala apare abia la al doilea tur. */
+const MINGEA_LA_INCEPUT = Object.assign({}, minge);
+const ELEFANTUL_LA_INCEPUT = Object.assign({}, elefant);
+
 /* Culorile aspirate nu se pierd. Elefantul le trimite mai departe: ies pe
    creștetul lui ca niște baloane colorate, urcă legănat spre cer și vopsesc
    ușor norii pe lângă care trec. Curățenia nu mai e un timp mort în care nu

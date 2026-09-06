@@ -714,6 +714,10 @@ function deseneazaPetele() {
 // Cursorul luminos: cald și mic la mișcări lente, alb și mare la mișcări rapide
 function deseneazaCursorul() {
   if (cursor.x < -100) return;
+  /* Și dacă degetul a ieșit din numere cu totul. `NaN < -100` e fals, deci
+     rândul de mai sus îl lasă să treacă, iar degradeul de mai jos crapă la o rază
+     nefinită. Înainte, un singur cadru crapat oprea jucăria pentru totdeauna. */
+  if (!isFinite(cursor.x) || !isFinite(cursor.y) || !isFinite(cursor.viteza)) return;
   /* O scenă poate să-și ia cursorul în primire — sala de gheață îl face cub. Ea
      spune „m-am ocupat", și atunci luminița caldă de mai jos n-ar face decât
      să-i pună o aură de foc unui bloc de gheață. */

@@ -2,7 +2,37 @@
 /* Nașterea punctului. Nu mai stă în ascultătorul de atingeri, fiindcă n-o mai
    pornește atingerea: o pornește bucla, în clipa în care s-au risipit cioburile
    balonului spart. */
+/* Lumea, pusă la loc cum era înainte de primul deget.
+
+   Se cheamă de fiecare dată când începe jucăria, deci și la primul tur (unde nu
+   are ce să pună la loc) și la al doilea. Ce **nu** se atinge aici e culoarea
+   elefantului: rozul e singurul lucru care trebuie să treacă dincolo de buclă,
+   fiindcă el e chiar promisiunea făcută în vid. */
+function lumeaDeLaCapat() {
+  Object.assign(minge, MINGEA_LA_INCEPUT);
+  Object.assign(elefant, ELEFANTUL_LA_INCEPUT);
+  elefant.prindeDe = { x: 0, y: 0 };
+  elefant.trompaTinta = null;
+
+  // scena întâi: balonul se lasă prins abia după ce a scăpat de câteva ori
+  numarEvadari = 0;
+  urma.length = 0;
+
+  // scena a doua: cerul, pământul și petele, toate de la zero
+  pete.length = 0;
+  gradina.length = 0;
+  gradinaSchimbata = true;
+  nori.length = 0;
+  baloaneCuloare.length = 0;
+  baloaneSparte = 0;
+  randulCulorii = 0;
+
+  // muzeul n-a mai fost văzut de nimeni
+  if (typeof s3 !== 'undefined' && s3) s3.vizitat = false;
+}
+
 function incepeJucaria(acum) {
+  lumeaDeLaCapat();
   stare = 'crestere';
   inceputulCresterii = acum;
   balon.x = W / 2;
