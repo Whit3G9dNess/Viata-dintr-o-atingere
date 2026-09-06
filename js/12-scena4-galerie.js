@@ -1196,6 +1196,7 @@ function pregatesteRama(m) {
   pictezaRama(p.getContext('2d'), local, 1);
   stampilaRamei.panza = p; stampilaRamei.cheie = cheie;
   stampilaRamei.latime = p.width; stampilaRamei.inaltime = p.height;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return stampilaRamei;
 }
 
@@ -1205,6 +1206,7 @@ function pregatesteSala() {
   p.width = W; p.height = H;
   pictezaSala(p.getContext('2d'));
   salaGalerie.panza = p; salaGalerie.latime = W; salaGalerie.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
 }
 
 /* ---- ce se vede prin lupă ---- */

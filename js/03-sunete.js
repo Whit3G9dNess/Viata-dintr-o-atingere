@@ -57,6 +57,27 @@ function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = nu
   osc.connect(vol).connect(audio.destination);
   osc.start(cand);
   osc.stop(cand + durata + 0.05);
+  /* Vocea se și întoarce, ca cine a programat-o s-o poată tăia înainte de vreme.
+     Trebuie numai muzicii, care se scrie cu paisprezece secunde înainte — vezi
+     `taieVocile`. Celelalte sunete durează o clipă și n-au ce face cu ea. */
+  return { osc, vol };
+}
+
+/* Taie niște voci programate, și pe cele care se aud, și pe cele care abia
+   urmează. Ce se aude acum se stinge în două sutimi, ca să nu pocă. */
+function taieVocile(voci) {
+  if (!audio || !voci) return;
+  const t = audio.currentTime;
+  for (const v of voci) {
+    if (!v) continue;
+    try {
+      v.vol.gain.cancelScheduledValues(t);
+      v.vol.gain.setValueAtTime(Math.max(0.0001, v.vol.gain.value), t);
+      v.vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+      v.osc.stop(t + 0.03);
+    } catch (e) { /* s-a terminat deja singură */ }
+  }
+  voci.length = 0;
 }
 
 // Un „fâșâit" filtrat — pentru stropi de vopsea și aspirare
@@ -287,7 +308,7 @@ let muzicaClasica = null;
 
 function pornesteMuzicaMuzeu() {
   if (!audio || muzicaClasica) return;
-  muzicaClasica = { panaLa: audio.currentTime + 0.15, oprita: false };
+  muzicaClasica = { panaLa: audio.currentTime + 0.15, oprita: false, voci: [], vociVechi: [] };
 }
 
 /* Se cheamă la fiecare cadru. Notele se programează cu un pas înainte, nu la
@@ -298,29 +319,53 @@ function tineMuzicaMuzeului() {
 
   let t = muzicaClasica.panaLa;
   const inceput = t;
+  /* Vocile din perioada trecută se mai țin o rundă, și abia pe urmă se uită:
+     când se scrie perioada nouă, din cea veche mai are de sunat cel mult o
+     jumătate de secundă, și și aia trebuie să poată fi tăiată. Mai mult de două
+     perioade nu se țin, ca lista să nu crească la nesfârșit. */
+  muzicaClasica.vociVechi = muzicaClasica.voci;
+  muzicaClasica.voci = [];
+  const voci = muzicaClasica.voci;
 
   // basul Alberti, opt optimi pe măsură
   for (let m = 0; m < ARMONIA_MUZEU.length; m++) {
     const acord = ARMONIA_MUZEU[m];
     for (let k = 0; k < 8; k++) {
       const treapta = acord[k % 4];
-      nota(frecventa(inaltime(treapta)), inceput + (m * 4 + k * 0.5) * PATRIME,
-           PATRIME * 0.42, 0.022, 'triangle');
+      voci.push(nota(frecventa(inaltime(treapta)), inceput + (m * 4 + k * 0.5) * PATRIME,
+                     PATRIME * 0.42, 0.022, 'triangle'));
     }
   }
 
   // melodia, peste el
   let cand = inceput;
   for (const [treapta, batai] of MELODIE_MUZEU) {
-    nota(frecventa(inaltime(treapta)), cand, batai * PATRIME * 0.86, 0.03, 'triangle');
+    voci.push(nota(frecventa(inaltime(treapta)), cand, batai * PATRIME * 0.86, 0.03, 'triangle'));
     cand += batai * PATRIME;
   }
 
   muzicaClasica.panaLa = inceput + ARMONIA_MUZEU.length * 4 * PATRIME;
 }
 
+/* Oprirea trebuie să taie și ce e **deja programat**.
+
+   Piesa se scrie cu un pas înainte, pe ceasul sunetului: o perioadă întreagă de
+   opt măsuri, adică vreo paisprezece secunde de note, puse la coadă dintr-o dată.
+   Oprirea ștergea numai ștafeta care le programa; notele deja la coadă sunau mai
+   departe, fiindcă nimeni nu le mai ținea de mână.
+
+   Așa ieșea muzica dublă și suprapusă la intrarea în sala tabloului mare: acolo
+   se oprește piesa și se pornește iar, de la capăt — iar cea veche încă avea
+   paisprezece secunde de spus. Două execuții ale aceleiași piese, decalate,
+   cântate deodată.
+
+   Acum ștafeta ține minte vocile pe care le-a programat și le taie pe toate. */
 function opresteMuzicaMuzeu() {
-  if (muzicaClasica) muzicaClasica.oprita = true;
+  if (muzicaClasica) {
+    muzicaClasica.oprita = true;
+    taieVocile(muzicaClasica.voci);
+    taieVocile(muzicaClasica.vociVechi);
+  }
   muzicaClasica = null;
   if (!muzica3 || !audio) return;
   const t = audio.currentTime;

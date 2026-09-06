@@ -316,7 +316,13 @@ function nodFals() {
     frequency: parametruFals(), gain: parametruFals(), Q: parametruFals(),
     detune: parametruFals(), playbackRate: parametruFals(),
     connect: function (tinta) { return tinta; },
-    disconnect: function () {}, start: function () {}, stop: function () {}
+    disconnect: function () {},
+    start: function (cand) { this.pornitLa = cand; },
+    /* Ține minte când i s-a spus să tacă. Muzica muzeului se scrie cu paisprezece
+       secunde înainte, iar oprirea ei trebuie să taie și notele deja programate —
+       altfel se aud două execuții deodată. Fals sau nu, nodul trebuie să poată
+       spune dacă a fost tăiat. */
+    stop: function (cand) { this.opritLa = cand; this.oprita = true; }
   };
 }
 function AudioContextFals() {
@@ -648,6 +654,13 @@ return {
   scalaPanzei: function () { return typeof scalaPanzei !== "undefined" ? scalaPanzei : 1; },
   calitate: function () { return typeof calitate !== "undefined" ? calitate : 1; },
   pornesteAudio: pornesteAudio,
+  pornesteMuzicaMuzeu: typeof pornesteMuzicaMuzeu !== "undefined" ? pornesteMuzicaMuzeu : null,
+  opresteMuzicaMuzeu: typeof opresteMuzicaMuzeu !== "undefined" ? opresteMuzicaMuzeu : null,
+  tineMuzicaMuzeului: typeof tineMuzicaMuzeului !== "undefined" ? tineMuzicaMuzeului : null,
+  muzicaClasica: function () { return typeof muzicaClasica !== "undefined" ? muzicaClasica : null; },
+  pregatesteSala: typeof pregatesteSala !== "undefined" ? pregatesteSala : null,
+  pregatesteSalaFocului: typeof pregatesteSalaFocului !== "undefined" ? pregatesteSalaFocului : null,
+
   pictezaFundal3: typeof pictezaFundal3 !== "undefined" ? pictezaFundal3 : null,
   fundal3: typeof fundal3 !== "undefined" ? fundal3 : null,
   muzicaMuzeu: function () { return typeof muzicaClasica !== "undefined" ? muzicaClasica : null; },
@@ -5761,6 +5774,92 @@ function ruleaza() {
       if (sursa.slice(j, j + 260).indexOf("if (!audio") === -1) fara.push(n);
     }
     egal(fara.length, 0, "sunete fara paznic: " + fara.join(", "));
+  });
+
+  test("muzica muzeului se taie de tot cand se opreste, nu numai stafeta", function () {
+    /* Piesa se scrie cu un pas inainte, pe ceasul sunetului: o perioada intreaga
+       de opt masuri, adica vreo paisprezece secunde de note, puse la coada dintr-o
+       data. Oprirea stergea numai stafeta care le programa; notele deja la coada
+       sunau mai departe.
+
+       Asa iesea muzica dubla si suprapusa la intrarea in sala tabloului mare:
+       acolo se opreste piesa si se porneste iar, de la capat — iar cea veche inca
+       avea paisprezece secunde de spus. Doua executii ale aceleiasi piese,
+       decalate, cantate deodata. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    j.pornesteMuzicaMuzeu();
+    j.tineMuzicaMuzeului();
+    const m = j.muzicaClasica();
+    adevarat(m && m.voci.length > 40,
+      "piesa n-a programat nicio nota: " + (m ? m.voci.length : "fara stafeta"));
+    const voci = m.voci.slice();
+    j.opresteMuzicaMuzeu();
+    egal(j.muzicaClasica(), null, "stafeta a ramas in picioare");
+    /* O nota e „taiata" daca i s-a spus sa taca **acum**, nu la capatul ei
+       firesc de peste cateva secunde. */
+    const netaiate = voci.filter(function (v) { return v && v.osc.opritLa > 0.5; });
+    egal(netaiate.length, 0,
+      "au ramas " + netaiate.length + " note programate care tot vor suna");
+  });
+
+  test("intrarea in campie nu porneste piesa peste ea insasi", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    j.pornesteMuzicaMuzeu();
+    j.tineMuzicaMuzeului();
+    const vechi = j.muzicaClasica().voci.slice();
+    j.mergiLaStarea("campie");
+    j.intraInCampie(j.ceas.t);
+    j.tineMuzicaMuzeului();
+    const netaiate = vechi.filter(function (v) { return v && v.osc.opritLa > 0.5; });
+    egal(netaiate.length, 0, "piesa veche mai are " + netaiate.length + " note de spus");
+  });
+
+  test("salile mari nu se picteaza peste o miscare de pe ecran", function () {
+    /* Doua sali intregi se picteaza „din vreme", ca sa nu cada tot desenul lor in
+       primul cadru de acolo. Bun gand, momente gresite:
+
+       — galeria se picta din faza manualului, adica tocmai cand se deschide tomul;
+       — rotonda focului se picta cat mergeau taranii spre casa.
+
+       Amandoua cadeau peste singura miscare lunga din sala lor, si de-aia se
+       vedeau. Acum se picteaza mai devreme: galeria de cand citesti plicul,
+       rotonda la intrarea in campie. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.intrareScena3(j.ceas.t);
+    j.avanseazaUsor(3600);              // trece intro-ul, apare plicul
+    adevarat(j.s3.faza !== "intro", "muzeul a ramas in intro");
+    adevarat(j.salaGalerie().panza && j.salaGalerie().latime === j.W(),
+      "galeria nu e pictata inca la faza " + j.s3.faza);
+
+    const k = porneste({ latime: 1400, inaltime: 800 });
+    k.mergiLaStarea("campie");
+    k.intraInCampie(k.ceas.t);
+    adevarat(k.salaFocului.panza && k.salaFocului.latime === k.W(),
+      "rotonda focului nu e pictata la intrarea in campie");
+  });
+
+  test("orice pictura de sala uita cadrul in care s-a pictat", function () {
+    /* Un cadru in care se picteaza o sala intreaga spune, masurat, „calculatorul
+       se ineaca". Termometrul coboara o treapta, coborarea schimba marimea panzei,
+       marimea noua invalideaza toate stampilele, si ele se repicteaza — adica
+       inca un cadru scump, care cheama inca o coborare. Dintr-un sughit de-o clipa
+       ies cateva secunde de smucituri. Exact asta se vedea la manual. */
+    const pictori = (sursa.match(/^function pregateste\w+\(/gm) || [])
+      .map(function (r) { return r.slice(9, -1); });
+    const mari = ["pregatesteSala", "pregatesteSalaFocului", "pregatesteSalaUlei",
+                  "pregatesteSalaGheata", "pregatesteSalaAcuarela", "pregatestePeretele",
+                  "pregatesteCarbunele", "pregatesteFundal3", "pregatesteTablou"];
+    const fara = [];
+    for (const n of mari) {
+      adevarat(pictori.indexOf(n) >= 0, "lipseste pictorul " + n);
+      const i = sursa.indexOf("function " + n + "(");
+      const j2 = sursa.indexOf(String.fromCharCode(10) + "function ", i + 1);
+      if (sursa.slice(i, j2 < 0 ? undefined : j2).indexOf("uitaCadrul()") === -1) fara.push(n);
+    }
+    egal(fara.length, 0, "picteaza fara sa uite cadrul: " + fara.join(", "));
   });
 
   test("nu exista doua functii cu acelasi nume in toata jucaria", function () {

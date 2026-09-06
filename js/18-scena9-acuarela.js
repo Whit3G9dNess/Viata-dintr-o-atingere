@@ -294,6 +294,7 @@ function pregatesteHartia() {
   }
   c.globalAlpha = 1;
   hartiaSalii.latime = W; hartiaSalii.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 
@@ -309,6 +310,7 @@ function pregatesteSalaAcuarela() {
   c.clearRect(0, 0, W, H);
   pictezaSalaAcuarela(c);
   salaAcuarela.latime = W; salaAcuarela.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

@@ -199,6 +199,7 @@ function pregatesteSalaGheata() {
   c.clearRect(0, 0, W, H);
   pictezaSalaGheata(c);
   salaGheata.latime = W; salaGheata.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

@@ -253,6 +253,7 @@ function pregatesteCarbunele() {
   }
   c.globalAlpha = 1;
   panzaCarbunelui.latime = W; panzaCarbunelui.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

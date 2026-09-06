@@ -321,6 +321,7 @@ function pregatesteSalaUlei() {
   c.clearRect(0, 0, W, H);
   pictezaSalaUlei(c);
   salaUlei.latime = W; salaUlei.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

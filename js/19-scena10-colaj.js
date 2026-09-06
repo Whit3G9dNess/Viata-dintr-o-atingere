@@ -1172,6 +1172,7 @@ function pregatestePeretele() {
 
   stampaPeretelui.latime = W;
   stampaPeretelui.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

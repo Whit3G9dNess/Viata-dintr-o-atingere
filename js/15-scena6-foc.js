@@ -346,6 +346,7 @@ function pregatesteSalaFocului() {
   c.clearRect(0, 0, W, H);
   pictezaSalaFocului(c);
   salaFocului.latime = W; salaFocului.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 
@@ -1028,6 +1029,7 @@ function pregatesteRamaFocului() {
   pictezaRamaFocului(p.getContext('2d'), lat, inalt, marg);
   ramaFocului.panza = p; ramaFocului.marg = marg;
   ramaFocului.latime = lat; ramaFocului.inaltime = inalt;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return ramaFocului;
 }
 
@@ -1222,6 +1224,7 @@ function pregatesteFundalTablou(w, h) {
   c.clearRect(0, 0, lw, lh);
   pictezaFundalTablou(c, lw, lh);
   fundalTablou.latime = lw; fundalTablou.inaltime = lh;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return p;
 }
 

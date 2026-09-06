@@ -80,6 +80,35 @@ greșeală se vede ca o clipire și se scrie o dată în consolă. La teste, dim
 acolo se cheamă `unCadru`, cel fără plasă, fiindcă o greșeală trebuie să pice
 testul, nu să fie înghițită.
 
+### Sughițul care se face lag
+
+Două săli întregi se pictează „din vreme", ca să nu cadă tot desenul lor în
+primul cadru de acolo: galeria rococo, și rotonda focului. Gând bun, momente
+greșite — galeria se picta din faza manualului, adică exact când se **deschide
+tomul**; rotonda, cât **mergeau țăranii spre casă**. Amândouă cădeau peste singura
+mișcare lungă din sala lor, unde un sughiț se vede cel mai bine. Acum galeria se
+pictează de când citești plicul, iar rotonda la intrarea în câmpie — la o
+tăietură, unde ochiul așteaptă oricum o schimbare.
+
+Dar mutarea singură n-ar fi de-ajuns, fiindcă sughițul se **înmulțește**: cadrul
+scump ridică media, termometrul de fluență îl ia drept înec și coboără o treaptă
+de rezoluție, coborârea schimbă mărimea pânzei, mărimea nouă invalidează **toate**
+ștampilele, și ele se repictează — încă un cadru scump, care cheamă încă o
+coborâre. Dintr-o clipă ies câteva secunde de smucituri. De-aia orice pictură de
+ștampilă spune la capăt `uitaCadrul()`: media pornește curată de la cadrul
+următor, iar treapta se judecă după cum merge jucăria, nu după cât a durat să fie
+pictată.
+
+### Muzica programată înainte trebuie și tăiată
+
+Piesa muzeului se scrie cu un pas înainte, pe ceasul sunetului: o perioadă de opt
+măsuri, vreo paisprezece secunde de note, puse la coadă dintr-o dată. Oprirea
+ștergea numai ștafeta care le programa; notele deja la coadă sunau mai departe,
+fiindcă nimeni nu le mai ținea de mână. La intrarea în sala tabloului mare piesa
+se oprește și se pornește iar — deci se auzeau două execuții ale aceleiași piese,
+decalate. Acum `nota()` întoarce vocea, ștafeta le ține minte pe cele programate
+(două perioade, atât) și `taieVocile` le stinge pe toate în două sutimi.
+
 Tot așa, **pornirea sunetului nu are voie să crape**: `pornesteAudio()` e primul
 rând din ascultătorul de atingeri, iar `new AudioContext()` chiar poate să arunce
 (fereastră privată, sunet oprit din sistem, browser vechi). Câtă vreme arunca,

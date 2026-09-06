@@ -100,6 +100,7 @@ function pregatesteRamaMare() {
   pc.clearRect(marg + gol, marg + gol, lat - gol * 2, inalt - gol * 2);
   ramaMare.panza = p; ramaMare.marg = marg;
   ramaMare.latime = lat; ramaMare.inaltime = inalt;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return ramaMare;
 }
 
@@ -807,6 +808,7 @@ function pregatesteTablou() {
   p.width = w; p.height = h;
   pictezaTablou(p.getContext('2d'), w, h);
   tabloul.panza = p; tabloul.latime = w; tabloul.inaltime = h;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
   return tabloul;
 }
 
@@ -1671,6 +1673,14 @@ function intraInCampie(acum) {
   s5.faza = 'pixeli'; s5.t0 = acum; s5.ultimulCadru = acum;
   s5.pasi = 0; s5.claritate = 0; s5.usi = 0; s5.plecare = 0;
   pregatesteTablou();
+  /* Și sala a șasea, acum, la intrare — nu mai târziu, când țăranii merg spre casă.
+
+     Se picta cât se deschideau ușile, ca să nu cadă tot desenul rotondei în primul
+     cadru de acolo. Bun gând, moment greșit: rotonda e o sală întreagă, iar
+     pictura ei ține cât vreo trei cadre — pică exact peste singura mișcare lungă
+     din scenă, drumul oamenilor spre casă, și ei înțepenesc în mijlocul pașilor.
+     Un sughiț la o tăietură nu se vede; unul peste un om care merge, se vede. */
+  if (typeof pregatesteSalaFocului === 'function') pregatesteSalaFocului();
   opresteMuzicaMuzeu();
   pornesteMuzicaMuzeu();          // tot înăuntru, în muzeu: aceeași piesă
   pornesteNatura(true);           // scena e despre aer: vânt și păsări
@@ -1792,10 +1802,8 @@ function actualizeazaCampia(acum) {
        e sa intri dupa ei. De-aia scena nu se mai incheie singura: se incheie
        cand atingi usa.
 
-       Sala a sasea se picteaza din vreme, cat timp inca se deschid usile: altfel
-       primul cadru de acolo ar picta toata rotonda si intrarea s-ar simti ca o
-       poticnire. Aceeasi lectie ca la galerie. */
-    if (s5.usi > 0.3 && typeof pregatesteSalaFocului === 'function') pregatesteSalaFocului();
+       (Sala a sasea se picteaza la **intrarea** in campie, nu aici. Aici cadea
+       peste drumul oamenilor spre casa si ii intepenea in mijlocul pasilor.) */
   }
 }
 

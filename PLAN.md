@@ -52,6 +52,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 32 | Scena 12 — vidul potențial: punctul, șoapta, și bucla care se închide | ✅ gata |
 | 33 | Elefantul roz, câmpia care nu mai amuțește, și ceața din sala a opta | ✅ gata |
 | 34 | Vânătoare de buguri prin toată jucăria: bucla, plasa cadrului, sunetul refuzat, sforile | ✅ gata |
+| 35 | Sughițul de la manual și de la țărani, și muzica muzeului cântată de două ori | ✅ gata |
 
 ---
 

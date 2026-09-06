@@ -125,11 +125,26 @@ function reglezaCalitatea(t) {
   }
   ultimaSchimbare = t;
   redimensioneaza();
-  /* Cadrul în care se schimbă treapta e cel mai scump din toată jucăria: cu
-     pânza schimbată, fundalul grădinii și sala galeriei se repictează de la
-     zero, într-o singură clipă. Dacă îl punem la socoteala fluenței, el singur
-     ne spune că jocul se îneacă — și coborâm încă o treaptă, care iar
-     repictează tot. Așa că nu-l măsurăm: uităm ceasul și pornim media curată. */
+  uitaCadrul();
+}
+
+/* „Cadrul ăsta nu se pune la socoteală."
+
+   Termometrul de fluență ține media timpului dintre cadre și, dacă se
+   poticnește, coboără o treaptă de rezoluție. Numai că unele cadre sunt scumpe
+   **o singură dată**: cel în care se pictează o sală întreagă pe o ștampilă, sau
+   cel în care se schimbă treapta și toate ștampilele se refac.
+
+   Măsurat, un cadru din ăsta spune „calculatorul se îneacă". Termometrul coboără
+   treapta, coborârea schimbă mărimea pânzei, mărimea nouă invalidează toate
+   ștampilele, și ele se repictează — adică încă un cadru scump, care cheamă încă o
+   coborâre. Așa, dintr-un sughiț de-o clipă ies câteva secunde de smucituri.
+   Exact asta se vedea când ajungeai la manualul custodelui.
+
+   De-aia orice pictură de ștampilă spune, la capăt, „uiți cadrul ăsta": media
+   pornește curată de la cadrul următor, iar treapta se judecă după cum merge
+   jucăria, nu după cât a durat să fie pictată. */
+function uitaCadrul() {
   mediaCadru = 16;
   ultimulCadruLa = 0;
 }

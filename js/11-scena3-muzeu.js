@@ -481,6 +481,7 @@ function pregatesteFundal3() {
   p.width = W; p.height = H;
   pictezaFundal3(p.getContext('2d'));
   fundal3.panza = p; fundal3.latime = W; fundal3.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
 }
 
 /* Norii pe care i-ai vopsit în scena a doua nu s-au dus nicăieri: plutesc și
@@ -1545,19 +1546,24 @@ function deseneazaPlic(x, y, s, alfa = 1) {
 function actualizeazaMuzeu(acum) {
   if (s3.faza === 'intro' && acum - s3.t0 > 3200) faza3('plic');
 
-  /* Sala galeriei se pictează din vreme, cât stai cu manualul în mână sau cât te
-     cerți cu cercelul. E o sală întreagă — pereți, patru panouri de damasc cu
-     sutele lor de motive, pilaștri, candelabru, parchet, inscripția murală — și
-     pictată în chiar cadrul în care intri, tot desenul ei cade într-o singură
-     clipă, exact în clipa în care ar trebui să se deschidă lin. Aici, în schimb,
-     nu se mișcă mai nimic pe ecran, iar sughițul nu se simte.
+  /* Sala galeriei se pictează din vreme. E o sală întreagă — pereți, patru panouri
+     de damasc cu sutele lor de motive, pilaștri, candelabru, parchet, inscripția
+     murală — și pictată în chiar cadrul în care intri, tot desenul ei cade într-o
+     singură clipă, exact când ar trebui să se deschidă lin.
+
+     Se picta din faza manualului, și acolo era greșeala: tocmai atunci se
+     **deschide tomul**, singura mișcare lungă din toată sala. Sughițul cădea peste
+     ea, termometrul de fluență îl lua drept înec, coboăra o treaptă de rezoluție,
+     coborârea invalida toate ștampilele, ele se repictau — și dintr-un sughiț de-o
+     clipă ieșeau câteva secunde de smucituri.
+
+     Acum se pictează mai devreme, cât citești plicul și scrisoarea: acolo chiar nu
+     se mișcă nimic. Și, ca să nu se mai întâmple nicăieri, pictura spune la capăt
+     `uitaCadrul()` — vezi 01-panza.js.
 
      Se cheamă la fiecare cadru fără grijă: dacă e deja pictată la mărimea bună,
      funcția se întoarce din prima linie. */
-  if (typeof pregatesteSala === 'function' &&
-      (s3.faza === 'manual' || s3.faza === 'nuMaApasa' || s3.faza === 'usaDeschisa')) {
-    pregatesteSala();
-  }
+  if (typeof pregatesteSala === 'function' && s3.faza !== 'intro') pregatesteSala();
 
   // păsările: una la câteva secunde, la răstimpuri neregulate, ca să nu se simtă
   // ceasul din spatele lor
