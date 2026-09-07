@@ -1514,18 +1514,24 @@ function osilaba(cand, durata, vocala, tarie) {
 /* Fraza șoptită. Ritmul e scris de mână, silabă cu silabă, fiindcă tocmai ritmul
    face vorbirea: unde se grăbește, unde se oprește, unde urcă la semnul de
    întrebare. Un șir de silabe egale sună a metronom, nu a om. */
-function sunetSoapta() {
+function sunetSoapta(cuPromisiune) {
   if (!audio) return;
   const t = audio.currentTime + 0.12;
 
   /* „O luăm de la capăt?" — șapte silabe, cu ultima ridicată.
-     „Promit că data viitoare elefantul va fi albastru." — restul, mai repede,
-     cu o pauză mică înainte de „albastru", unde stă gluma. */
-  const fraza = [
+     „Promit că data viitoare elefantul va fi roz!" — restul, mai repede, cu o
+     pauză mică înainte de „roz", unde stă gluma.
+
+     Partea a doua se spune numai când și scrisul o spune. Gura și ecranul
+     trebuie să zică același lucru: o șoaptă care mai adaugă o frază după ce
+     scrisul s-a terminat sună a altcineva din întuneric. */
+  const intrebarea = [
     // [vocala, durata, pauza după]
     [3, 0.11, 0.04], [4, 0.10, 0.02], [0, 0.13, 0.05],   // O lu-ăm
     [1, 0.08, 0.02], [0, 0.08, 0.03],                     // de la
-    [0, 0.10, 0.02], [5, 0.16, 0.40],                     // ca-păt?
+    [0, 0.10, 0.02], [5, 0.16, 0.40]                      // ca-păt?
+  ];
+  const promisiunea = [
     [3, 0.09, 0.02], [2, 0.11, 0.05],                     // Pro-mit
     [5, 0.09, 0.06],                                      // că
     [0, 0.09, 0.02], [0, 0.09, 0.05],                     // da-ta
@@ -1540,6 +1546,8 @@ function sunetSoapta() {
        fiindcă pe ea cade semnul exclamării. */
     [3, 0.22, 0.00]                                       // roz!
   ];
+
+  const fraza = cuPromisiune ? intrebarea.concat(promisiunea) : intrebarea;
 
   let cand = t;
   for (let k = 0; k < fraza.length; k++) {

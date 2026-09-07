@@ -542,7 +542,10 @@ return {
   deseneazaScena12: typeof deseneazaScena12 !== "undefined" ? deseneazaScena12 : null,
   loculPunctului: typeof loculPunctului !== "undefined" ? loculPunctului : null,
   apropiereaDePunct: typeof apropiereaDePunct !== "undefined" ? apropiereaDePunct : null,
-  SOAPTA: typeof SOAPTA !== "undefined" ? SOAPTA : null,
+  SOAPTA_CU_PROMISIUNE: typeof SOAPTA_CU_PROMISIUNE !== "undefined" ? SOAPTA_CU_PROMISIUNE : null,
+  SOAPTA_SIMPLA: typeof SOAPTA_SIMPLA !== "undefined" ? SOAPTA_SIMPLA : null,
+  soaptaVidului: typeof soaptaVidului !== "undefined" ? soaptaVidului : null,
+  maiUrmeazaUnTur: typeof maiUrmeazaUnTur !== "undefined" ? maiUrmeazaUnTur : null,
 
   s13: typeof s13 !== "undefined" ? s13 : null,
   intraInFinal: typeof intraInFinal !== "undefined" ? intraInFinal : null,
@@ -5600,7 +5603,7 @@ function ruleaza() {
     adevarat(j.s12.cuvinte > 0.9, "cuvintele n-au ramas: " + j.s12.cuvinte);
     const d = j.doar(function () { j.deseneazaScena12(j.ceas.t, j.ceas.t); });
     adevarat(/elefantul va fi roz/.test(totScrisul(d)), "gluma nu se vede scrisa");
-    adevarat(/roz/.test(j.SOAPTA), "textul soaptei s-a schimbat");
+    adevarat(/roz/.test(j.soaptaVidului()), "textul soaptei s-a schimbat");
   });
 
   test("clicul pe punct da flasul, iar flasul redeschide jucaria", function () {
@@ -5640,8 +5643,8 @@ function ruleaza() {
        Si tot de-aia textul nu mai spune „albastru": elefantul **este** albastru de
        la bun inceput, deci gluma aceea promitea ca totul ramane la fel. */
     const j = porneste({ latime: 1400, inaltime: 800 });
-    adevarat(/roz/.test(j.SOAPTA), "soapta nu mai promite un elefant roz");
-    adevarat(!/albastru/.test(j.SOAPTA), "soapta promite culoarea pe care o are deja");
+    adevarat(/roz/.test(j.soaptaVidului()), "soapta nu mai promite un elefant roz");
+    adevarat(!/albastru/.test(j.soaptaVidului()), "soapta promite culoarea pe care o are deja");
     egal(j.elefantulERoz(), false, "elefantul era roz de la primul tur");
     const albastru = j.culoareaCustodelui();
 
@@ -5754,6 +5757,45 @@ function ruleaza() {
     adevarat(j.inimaScena12() !== null, "in vid nu bate nimic");
     j.iesiDinVid(j.ceas.t);
     egal(j.inimaScena12(), null, "inima a ramas sa bata peste inceputul jucariei");
+  });
+
+  test("la ultima trecere prin vid, soapta nu mai promite nimic", function () {
+    /* Prima oara prin vid mai urmeaza un tur intreg, si acolo promisiunea are ce
+       sa tina: elefantul chiar iese roz. A doua oara nu mai urmeaza un tur —
+       dupa el vine globul de sticla si numele. O promisiune facuta atunci n-ar
+       avea cum sa fie tinuta, iar toata sala asta sta pe regula ca o gluma
+       spusa jucatorului si netinuta e mai rea decat una nespusa.
+
+       Asa ca la ultima trecere ramane numai intrebarea, si ea suna altfel: nu o
+       gluma cu o promisiune dupa ea, ci o intrebare adevarata, pusa in gol. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+
+    j.puneTurul(1);
+    adevarat(j.maiUrmeazaUnTur(), "la turul intai nu mai urmeaza nimic?");
+    adevarat(/roz/.test(j.soaptaVidului()),
+      "la prima trecere soapta nu mai promite: " + j.soaptaVidului());
+
+    j.puneTurul(j.TURURI_PANA_LA_FINAL);
+    adevarat(!j.maiUrmeazaUnTur(), "la ultimul tur mai urmeaza unul?");
+    egal(j.soaptaVidului(), j.SOAPTA_SIMPLA,
+      "la ultima trecere soapta tot promite ceva: " + j.soaptaVidului());
+    adevarat(!/roz|promit|Promit/.test(j.soaptaVidului()),
+      "a ramas o promisiune in soapta de la urma: " + j.soaptaVidului());
+    adevarat(/O luăm de la capăt/.test(j.soaptaVidului()),
+      "s-a pierdut si intrebarea: " + j.soaptaVidului());
+  });
+
+  test("si pe ecran scrie exact ce se sopteste", function () {
+    /* Gura si ecranul trebuie sa zica acelasi lucru. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.puneTurul(j.TURURI_PANA_LA_FINAL);
+    const p = inVid(j);
+    j.cursor.x = p.x + 20; j.cursor.y = p.y + 20;
+    j.avanseazaUsor(3600);
+    adevarat(j.s12.aSoptit, "nu s-a soptit nimic");
+    const scris = totScrisul(j.doar(function () { j.deseneazaScena12(j.ceas.t, j.ceas.t); }));
+    adevarat(!/roz/.test(scris), "pe ecran a ramas scrisa promisiunea: " + scris.slice(0, 140));
+    adevarat(/capăt/.test(scris), "nu se mai vede nici intrebarea: " + scris.slice(0, 140));
   });
 
   /* ---------------------------------------------------------------- */

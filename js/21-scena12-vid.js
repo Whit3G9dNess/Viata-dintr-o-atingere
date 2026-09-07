@@ -26,7 +26,26 @@ const s12 = {
   flash: 0
 };
 
-const SOAPTA = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz!';
+/* Două șoapte, și una dintre ele.
+
+   Prima oară prin vid, mai urmează un tur întreg: acolo promisiunea are ce să
+   țină, iar elefantul chiar iese roz. A doua oară nu mai urmează un tur — după
+   el vine globul de sticlă și numele. O promisiune făcută atunci n-ar avea cum
+   să fie ținută, iar toată sala asta stă pe regula că **o glumă spusă
+   jucătorului și neținută e mai rea decât una nespusă**.
+
+   Așa că, la ultima trecere, rămâne numai întrebarea. Și ea sună altfel: prima
+   oară e o glumă cu o promisiune după ea, a doua oară e o întrebare adevărată,
+   pusă în gol, fără nimic care s-o îndulcească. */
+const SOAPTA_CU_PROMISIUNE = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz!';
+const SOAPTA_SIMPLA = 'O luăm de la capăt?';
+
+/* Mai urmează un tur după ăsta? `turul` se ridică abia la ieșirea din vid, deci
+   aici el arată încă turul care tocmai s-a terminat. */
+function maiUrmeazaUnTur() { return turul < TURURI_PANA_LA_FINAL; }
+function soaptaVidului() {
+  return maiUrmeazaUnTur() ? SOAPTA_CU_PROMISIUNE : SOAPTA_SIMPLA;
+}
 
 /* ---------- UNDE E PUNCTUL ----------
    Fix în mijloc, ca în prima scenă. Nu „aproape la mijloc": deja-vu-ul se face
@@ -109,7 +128,7 @@ function actualizeazaVid(acum) {
        glumă, e o nedumerire. */
     if (!s12.aSoptit && s12.apropiere > 0.52) {
       s12.aSoptit = true;
-      if (audio) sunetSoapta();
+      if (audio) sunetSoapta(maiUrmeazaUnTur());
     }
     if (s12.aSoptit) s12.cuvinte = Math.min(1, s12.cuvinte + dt / 2400);
     return;
@@ -180,7 +199,7 @@ function deseneazaScena12(t, acum) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#cfd6e0';
-    ctx.fillText(SOAPTA, W * 0.5, H * 0.80);
+    ctx.fillText(soaptaVidului(), W * 0.5, H * 0.80);
     ctx.restore();
   }
 

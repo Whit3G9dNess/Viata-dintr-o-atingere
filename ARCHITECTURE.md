@@ -2,26 +2,27 @@
 
 Document de referință pentru structura tehnică a jucăriei.
 
-> **Stare curentă:** opt scene întregi și jucabile, 230 de teste care trec.
-> Rulează fără server, cu dublu-clic pe `index.html`. Nu are build, nu are
-> dependențe, nu are backend.
+> **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, și 323
+> de teste care trec. Rulează fără server, cu dublu-clic pe `index.html`. Nu are
+> build, nu are dependențe, nu are backend, niciun fișier de imagine sau de
+> sunet.
 
 ## Privire de ansamblu
 
 O pagină de canvas 2D, fără biblioteci și fără niciun fișier luat de undeva —
 nici imagini, nici sunete. Tot ce se vede iese din `CanvasRenderingContext2D`,
 tot ce se aude iese din WebAudio, notă cu notă. `index.html` nu conține cod: e o
-listă de șaptesprezece scripturi obișnuite, încărcate în ordine.
+listă de douăzeci și două de scripturi obișnuite, încărcate în ordine.
 
 ```mermaid
 flowchart LR
   subgraph BROWSER["Browser (dublu-clic pe index.html, fără server)"]
     direction LR
     IDX["index.html<br/>listă de scripturi"]
-    subgraph JS["js/*.js — șaptesprezece fișiere, în ordine"]
+    subgraph JS["js/*.js — douăzeci și două de fișiere, în ordine"]
       direction TB
       TEMELIE["Temelia<br/>01 pânză · 02 cursor<br/>03 sunete · 04 stări"]
-      SCENE["Scenele<br/>05 balon · 06 minge · 11 muzeu · 12 galerie<br/>13 câmpie · 15 foc · 16 gheață · 17 ulei"]
+      SCENE["Sălile<br/>05 balon · 06 minge · 11 muzeu · 12 galerie · 13 câmpie<br/>15 foc · 16 gheață · 17 ulei · 18 acuarelă<br/>19 colaj · 20 cărbune · 21 vid · 22 final"]
       DESEN["Desenul<br/>08 fundal · 09 mânuță<br/>10 scenele 1-2"]
       ATING["07 atingeri"]
       BUCLA["14 bucla"]
@@ -65,6 +66,12 @@ stateDiagram-v2
   foc --> gheata : intri prin arsură
   gheata --> ulei : sari în vârtej
   ulei --> acuarela : urci pe postament,<br/>ceata te ia din locul atins
+  acuarela --> colaj : plonjezi în oglindire
+  colaj --> carbune : rupi peretele
+  carbune --> vid : apeși butonul roșu
+  vid --> crestere : atingi punctul<br/>(jucăria o ia de la capăt)
+  balon --> final : la ultimul tur,<br/>balonul se face glob
+  final --> [*] : îl spargi, și rămâne un nume
   galerie --> muzeu : ieși din galerie
 ```
 
@@ -473,7 +480,20 @@ Negrul de la capătul colapsului din sala a unsprezecea **este** începutul aces
 săli: una se termină în negru absolut, cealaltă începe în negru absolut, și tocmai
 cusătura care nu se vede face deja-vu-ul.
 
-Șoapta („O luăm de la capăt? Promit că data viitoare elefantul va fi roz.")
+Șoapta se spune în două feluri, după cât a mai rămas din jucărie. Prima oară prin
+vid mai urmează un tur întreg, iar promisiunea are ce să țină: *„O luăm de la
+capăt? Promit că data viitoare elefantul va fi roz!"* — și chiar iese roz. A doua
+oară nu mai urmează niciun tur; după el vine globul de sticlă. Atunci rămâne
+numai întrebarea: *„O luăm de la capăt?"*
+
+E aceeași regulă care a scris toată sala: **o glumă spusă jucătorului și neținută
+e mai rea decât una nespusă**. A promite un elefant roz chiar înainte de sfârșit
+ar fi fost o minciună cu termen de o clipă. Iar întrebarea singură sună altfel —
+prima oară e o glumă cu o promisiune după ea, a doua oară e o întrebare
+adevărată, pusă în gol. Gura spune exact cât spune și ecranul: `sunetSoapta`
+primește aceeași hotărâre, și tace partea a doua când textul n-o are.
+
+Niciuna dintre ele
 nu e o înregistrare — dar șoapta e, dintre toate felurile de vorbire, singurul
 care se poate face cinstit din cod: **o șoaptă chiar e zgomot**. Când șoptești,
 coardele vocale nu vibrează deloc; aerul trece prin gură și formele ei îl
@@ -656,7 +676,7 @@ flowchart TB
     B18["18-scena9-acuarela.js · 1528<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
     B19["19-scena10-colaj.js · 2136<br/>iuta, ziarul, cartonul, sforile, ruptura"]
     B22["22-final.js · 375<br/>globul de sticlă, cioburile, numele"]
-    B21["21-scena12-vid.js · 274<br/>vidul, punctul, șoapta, bucla"]
+    B21["21-scena12-vid.js · 293<br/>vidul, punctul, șoapta, bucla"]
     B20["20-scena11-carbune.js · 1454<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]
