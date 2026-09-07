@@ -2,7 +2,15 @@
 
 O jucărie digitală care se desenează singură. Nu are nicio imagine și niciun
 sunet luat de undeva: tot ce se vede și tot ce se aude e scos din cod, linie cu
-linie. Cinci scene, legate una de alta prin atingeri.
+linie. Douăsprezece săli și un sfârșit, legate una de alta prin atingeri.
+
+Fiecare sală e despre o tehnică din limbajul vizual — pata, linia, impastoul,
+acuarela, colajul, cărbunele — și o arată **făcând-o**, nu spunând-o: pictezi,
+stropești, rupi, ștergi. Nu are meniu, nu are butoane, nu are text de ajutor. Ce
+se poate atinge, strălucește.
+
+**Nicio bibliotecă, niciun pas de compilare, niciun fișier de imagine sau de
+sunet.** Douăzeci și două de fișiere JavaScript și o pagină HTML.
 
 ## Cum o pornești
 
@@ -74,6 +82,14 @@ un test poate să întrebe „câte forme s-au desenat aici" sau „ce scrie pe 
 | `js/11-scena3-muzeu.js` | Scena 3 — muzeul secret din haina elefantului |
 | `js/12-scena4-galerie.js` | Scena 4 — galeria rococo cu miniatura și lupa |
 | `js/13-scena5-campie.js` | Scena 5 — pânza uriașă și cei zece pași înapoi |
+| `js/15-scena6-foc.js` | Scena 6 — sala rotundă a focului, șevaletul, pasta |
+| `js/16-scena7-gheata.js` | Scena 7 — sala de gheață, costumul cubist, vârtejul |
+| `js/17-scena8-ulei.js` | Scena 8 — sala de ulei: trusa, cercul cromatic, pelerina |
+| `js/18-scena9-acuarela.js` | Scena 9 — acuarela: pulverizatorul, laviul, lacul-oglindă |
+| `js/19-scena10-colaj.js` | Scena 10 — colajul: iuta, ziarul, cartonul, sforile |
+| `js/20-scena11-carbune.js` | Scena 11 — cărbunele și pasta de relief |
+| `js/21-scena12-vid.js` | Scena 12 — vidul: punctul, șoapta, bucla |
+| `js/22-final.js` | Sfârșitul — globul de sticlă, cioburile, numele |
 | `js/14-bucla.js` | Bucla de animație: un cadru, la nesfârșit |
 
 Ordinea din tabel e chiar ordinea în care `index.html` le încarcă, și ea
@@ -94,7 +110,39 @@ sus, ceva de dedesubt rămâne fără pământ.
 5. **Scena 4** — o sală rococo cu o ramă aurită și o miniatură neagră. Iei lupa de
    pe consolă și cauți.
 6. **Scena 5** — o pânză uriașă, pixelată. Pe podea, o pereche de pantofi și o
-   poruncă: fă zece pași în spate. Cu fiecare pas se limpezește.
+   poruncă: fă zece pași în spate. Cu fiecare pas se limpezește, până se vede un
+   lan de grâu cu doi țărani, care prind viață și pleacă spre casă.
+7. **Scena 6** — o rotondă cu un șevalet culcat. Vopseaua se pune în pastă
+   groasă, cu cuțitul, până tabloul ia foc și arde o ușă în perete.
+8. **Scena 7** — o sală de gheață. Un costum văzut cubist, din toate părțile
+   deodată; îl freci ca să-l dezgheți, și se deschide un vârtej.
+9. **Scena 8** — o sală desenată numai în linie, necolorată. Ai o trusă de șase
+   ustensile și un cerc cromatic: **spațiul este pânza ta**. Acoperi pelerina, ea
+   se înramează și rămâne pe perete, iar tu treci mai departe printr-o ceață care
+   crește din locul în care ai apăsat.
+10. **Scena 9** — acuarela. Iei sticla cu pulverizator, uzi foaia, culoarea curge
+    singură în apă. Când foaia se inundă, plonjezi în oglindirea ei.
+11. **Scena 10** — un perete de colaj în stil junk art: ziar, carton, iută,
+    nasturi de os, sfori. Hârtia se mototolește, cartonul se sparge, de sfori se
+    trage. Când toate au fost pornite, se desprinde un colț și peretele se rupe.
+12. **Scena 11** — cărbune peste tot. Aici nu se pune, se **ia**: ștergi negrul
+    până se descoperă liniile de dedesubt, sapi în pasta de relief, și găsești un
+    buton roșu care scrie *Apasă-mă iar*.
+13. **Scena 12** — vidul. Ecran negru, o inimă care bate, un punct alb care
+    pulsează, și o șoaptă: *O luăm de la capăt? Promit că data viitoare elefantul
+    va fi roz!* Dai clic pe punct și jucăria începe din nou — iar elefantul chiar
+    e roz.
+14. **Sfârșitul** — după două tururi, balonul de la început nu mai fuge: crește,
+    se face glob de sticlă, și se sparge. Cioburile cad, se strâng în mijlocul
+    ecranului, și rămâne negrul de la primul cadru, cu un nume.
+
+## Teste
+
+`teste.html` rulează **321 de teste** în browser, fără nimic de instalat. Ele nu
+copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
+aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
+un test poate să întrebe „câte forme s-au desenat aici", „ce scrie pe ecran" sau
+„a rămas vreo mutare nescoasă pe pânză".
 
 ## De ce e scris așa
 

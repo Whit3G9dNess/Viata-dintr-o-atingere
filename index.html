@@ -84,6 +84,17 @@
 (function () {
   var ultimul = null, semn = null;
 
+  /* Întrebarea are rost numai la lucru, pe serverul de casă. Publicată pe web,
+     pagina ar cere `/__ceas` din două în două secunde de la un server care
+     n-are așa ceva — adică un 404 la fiecare două secunde, la nesfârșit, în
+     consola oricui deschide unelte de dezvoltare. Nimic nu se strică din asta,
+     dar arată a pagină care se zbate degeaba. */
+  var acasa = location.hostname === 'localhost' ||
+              location.hostname === '127.0.0.1' ||
+              location.hostname === '[::1]' ||
+              location.hostname === '';
+  if (!acasa) return;
+
   function arataSemnul() {
     if (semn) return;
     semn = document.createElement('div');
