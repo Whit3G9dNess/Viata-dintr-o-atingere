@@ -4333,10 +4333,22 @@ function ruleaza() {
     acoperaPelerinaToata(j);
     j.avanseaza(3200);
     egal(j.s8.faza, "postament", "lucrarea nu s-a inramat");
-    const locul = j.drumulTabloului(j.geomSala8());
+    const g8 = j.geomSala8();
+    const locul = j.drumulTabloului(g8);
     const disc = locul.disc;
     aproape(locul.cx, disc.cx, 1, "tabloul nu s-a asezat in mijlocul discului");
-    aproape(locul.cy, disc.cy, 1, "tabloul nu s-a asezat in mijlocul discului");
+    /* Pe verticala nu mai tinteste mijlocul discului **intreg**, ci al bucatii
+       care se vede din el. Discul e dinadins mai mare decat peretele — partea
+       lui de jos trece in spatele podelei — iar tabloul asezat in mijlocul
+       discului intreg ajungea, pe ecrane aproape patrate, sub linia podelei:
+       atarnat in aer, in fata podelei, nu pe perete.
+
+       Un tablou sta pe perete. Asta apara testul acum. */
+    const inalt = g8.pelInalt * 1.16 * locul.scara;
+    adevarat(locul.cy - inalt / 2 > g8.cornisa,
+      "tabloul iese prin tavan: " + Math.round(locul.cy - inalt / 2) + " fata de " + Math.round(g8.cornisa));
+    adevarat(locul.cy + inalt / 2 < g8.podea,
+      "tabloul atarna peste podea: " + Math.round(locul.cy + inalt / 2) + " fata de " + Math.round(g8.podea));
 
     j.cursor.x = g.podiumCx; j.cursor.y = g.podiumCy;
     j.click8(j.ceas.t);
@@ -5825,17 +5837,58 @@ function ruleaza() {
       "au ramas " + netaiate.length + " note programate care tot vor suna");
   });
 
-  test("intrarea in campie nu porneste piesa peste ea insasi", function () {
+  test("dintr-o sala de muzeu in alta, piesa curge mai departe", function () {
+    /* Trecerea dintr-o sala de muzeu in alta scria „opreste, apoi porneste".
+       Oprirea stergea ce era pornit, iar pornirea incepea perioada de la prima
+       masura — deci piesa se rupea in doua si se relua din capul ei de fiecare
+       data cand deschideai o usa. La un acompaniament de muzeu asta se aude ca
+       un disc pus de la inceput.
+
+       Acum curge: aceeasi stafeta, aceleasi note programate mai departe. */
     const j = porneste({ latime: 1400, inaltime: 800 });
     j.pornesteAudio();
-    j.pornesteMuzicaMuzeu();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(j.ceas.t);
     j.tineMuzicaMuzeului();
-    const vechi = j.muzicaClasica().voci.slice();
+    const stafeta = j.muzicaClasica();
+    adevarat(stafeta && stafeta.voci.length > 40, "galeria n-a pornit piesa");
+    const vechi = stafeta.voci.slice();
+    const panaLa = stafeta.panaLa;
+    /* „Taiata" inseamna ca i s-a **schimbat** clipa opririi, nu ca se oprea
+       devreme: primele note ale perioadei se termina firesc dupa trei zecimi de
+       secunda, si un prag ghicit le-ar fi numarat drept taiate. */
+    const opriri = vechi.map(function (v) { return v && v.osc.opritLa; });
+
     j.mergiLaStarea("campie");
     j.intraInCampie(j.ceas.t);
     j.tineMuzicaMuzeului();
-    const netaiate = vechi.filter(function (v) { return v && v.osc.opritLa > 0.5; });
-    egal(netaiate.length, 0, "piesa veche mai are " + netaiate.length + " note de spus");
+    adevarat(j.muzicaClasica() === stafeta, "campia a pus alta stafeta in loc");
+    egal(j.muzicaClasica().panaLa, panaLa, "piesa a fost reluata de la prima masura");
+    let taiate = 0;
+    for (let k = 0; k < vechi.length; k++)
+      if (vechi[k] && vechi[k].osc.opritLa !== opriri[k]) taiate++;
+    egal(taiate, 0, "campia a taiat " + taiate + " note care aveau de sunat");
+  });
+
+  test("dar cand iesi din muzeu, piesa se taie de tot", function () {
+    /* Muzica e a muzeului. Afara, la custode, si mai departe in salile de
+       materie, ea n-are ce cauta — iar taierea trebuie sa prinda si notele deja
+       programate, altfel se aud paisprezece secunde de Mozart peste focul din
+       sala a sasea. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pornesteAudio();
+    j.mergiLaStarea("galerie");
+    j.intraInGalerie(j.ceas.t);
+    j.tineMuzicaMuzeului();
+    const vechi = j.muzicaClasica().voci.slice();
+    const opriri = vechi.map(function (v) { return v && v.osc.opritLa; });
+    j.mergiLaStarea("foc");
+    j.intraInFoc(j.ceas.t);
+    egal(j.muzicaClasica(), null, "stafeta a ramas in picioare dupa ce am iesit");
+    let netaiate = 0;
+    for (let k = 0; k < vechi.length; k++)
+      if (vechi[k] && vechi[k].osc.opritLa === opriri[k]) netaiate++;
+    egal(netaiate, 0, "au ramas " + netaiate + " note de Mozart peste sala focului");
   });
 
   test("salile mari nu se picteaza peste o miscare de pe ecran", function () {

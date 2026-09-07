@@ -312,6 +312,20 @@ function stratul() {
 /* ---------- SALA, DESENATĂ ÎN LINIE ---------- */
 const salaUlei = { panza: null, latime: 0, inaltime: 0 };
 
+/* Aceeași sală, pictată a doua oară **fără rochie**.
+
+   Când lucrarea se ridică de pe podium, locul ei din ștampilă trebuie șters, iar
+   ștergerea înseamnă „pune la loc sala de dedesubt". Asta se făcea repictând, în
+   dreptunghiul rochiei, câteva bucăți alese pe sprânceană — și de-aici ieșeau
+   două stricăciuni deodată: ce nu era în listă rămânea șters, iar ce era pictat
+   cu transparență se aduna de două ori și se vedea ca un dreptunghi mai deschis
+   peste podea.
+
+   O a doua ștampilă rezolvă amândouă: sala **exact** cum e, minus rochia. Nimic
+   nu se uită și nimic nu se dublează, fiindcă nu se mai repictează nimic — se
+   copiază pixeli. Costă o pânză în plus, pictată o dată, la intrarea în sală. */
+const salaGoala = { panza: null, latime: 0, inaltime: 0 };
+
 function pregatesteSalaUlei() {
   if (salaUlei.panza && salaUlei.latime === W && salaUlei.inaltime === H) {
     return salaUlei.panza;
@@ -458,6 +472,15 @@ const PODIUM_MODERN = '#e9e4d8';
 const LUMINA_CON    = 'rgba(255, 244, 214, ';
 
 function pictezaSalaUlei(c) {
+  pictezaSalaFaraExponat(c);
+  const g = geomSala8();
+  pelerinaInLinie(c, g, Math.max(1, g.S * 0.0022));
+  fisaDeSala8(c, g, Math.max(1, g.S * 0.0022));
+}
+
+/* Tot ce e în sală afară de rochie. Ordinea e ordinea sălii; fișa vine la urmă,
+   fiindcă e agățată pe perete, peste tot restul. */
+function pictezaSalaFaraExponat(c) {
   const g = geomSala8();
   const gr = Math.max(1, g.S * 0.0022);
 
@@ -466,8 +489,20 @@ function pictezaSalaUlei(c) {
   conulDeLumina(c, g);
   podeaModerna(c, g);
   podiumulCuFunii(c, g, gr);
-  pelerinaInLinie(c, g, gr);
-  fisaDeSala8(c, g, gr);
+}
+
+function pregatesteSalaGoala() {
+  if (salaGoala.panza && salaGoala.latime === W && salaGoala.inaltime === H) {
+    return salaGoala.panza;
+  }
+  const p = panzaDeLucru(salaGoala, W, H);
+  const c = p.getContext('2d');
+  c.clearRect(0, 0, W, H);
+  pictezaSalaFaraExponat(c);
+  fisaDeSala8(c, geomSala8(), Math.max(1, geomSala8().S * 0.0022));
+  salaGoala.latime = W; salaGoala.inaltime = H;
+  uitaCadrul();   // pictura asta nu se pune la socoteala fluenței
+  return p;
 }
 
 /* Fondul: o singură pată mare, de la indigo la teal. Nu are nicio linie — un
@@ -501,6 +536,23 @@ function disculDinSpate(c, g) {
   const d = disculSalii(g);
   const cx = d.cx, cy = d.cy, r = d.r;
 
+  /* Discul e **vopsit pe peretele din fund**, deci nu are voie să treacă de el.
+
+     Raza lui se ia din cea mai mică latură a ecranului, iar peretele se termină
+     la 62% din înălțime. Pe un ecran lat cele două se potriveau din întâmplare;
+     pe unul aproape pătrat nu se mai potrivesc deloc — discul cobora peste linia
+     podelei și se întindea până jos, așa că podeaua din fața ta, care trebuie să
+     fie întunecată, ardea portocaliu. Sala își pierdea adâncimea: nu mai era un
+     perete cu un disc pe el și o podea în față, ci o singură pată caldă.
+
+     Taie o dată, aici, pentru tot ce ține de disc — și haloul, și inelul. Podeaua
+     își păstrează oglindirea, care se desenează separat și **trebuie** să treacă
+     dincolo de linie: o oglindire e a podelei, nu a peretelui. */
+  c.save();
+  c.beginPath();
+  c.rect(0, 0, W, g.podea);
+  c.clip();
+
   const halou = c.createRadialGradient(cx, cy, r * 0.9, cx, cy, r * 1.55);
   halou.addColorStop(0, 'rgba(224, 112, 60, 0.34)');
   halou.addColorStop(1, 'rgba(224, 112, 60, 0)');
@@ -525,6 +577,7 @@ function disculDinSpate(c, g) {
   c.beginPath();
   c.arc(cx, cy, r * 0.90, 0, Math.PI * 2);
   c.stroke();
+  c.restore();
 }
 
 /* Conul de lumină care cade de sus pe exponat. El leagă tavanul de podium și
@@ -2375,6 +2428,7 @@ function intraInUlei(acum) {
   const c = stratul().getContext('2d');
   c.clearRect(0, 0, W, H);
   pregatesteSalaUlei();
+  pregatesteSalaGoala();          // gata dinainte: la înrămare n-are când să se picteze
   pregatesteOchiurile();
   opresteTurbina();
   opresteClipocitul();
@@ -2611,15 +2665,29 @@ function actualizeazaUleiul(acum) {
 /* Locul de pe podium de unde a plecat exponatul: se acoperă cu fondul sălii și
    cu discul, ca și cum rochia n-ar fi fost niciodată acolo. */
 function stergeExponatulDeJos(g) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(g.pelCx - g.pelLat * 1.6, g.pelSus - g.pelInalt * 0.5,
-           g.pelLat * 3.2, g.pelInalt * 1.6);
-  ctx.clip();
-  fondulSalii(ctx, g);
-  disculDinSpate(ctx, g);
-  conulDeLumina(ctx, g);
-  ctx.restore();
+  /* Se copiază sala fără rochie, din ștampila ei. Nimic nu se repictează aici.
+
+     Înainte se repictau câteva bucăți alese pe sprânceană: fondul, discul și
+     conul de lumină. Trei din șase. Ce lipsea din listă rămânea șters, iar
+     dreptunghiul e mare — cât o rochie și jumătate de fiecare parte — așa că se
+     vedea de departe:
+
+     — peste podeaua întunecată din față cădea un dreptunghi mai deschis, cu
+       conul de lumină în el și fără luciul podelei. Exact „lumina și în față",
+       acolo unde trebuia să fie întuneric;
+     — fișa de perete din dreapta își pierdea o fâșie din marginea din stânga, cu
+       tot cu primele litere ale fiecărui rând.
+
+     Iar dacă le-aș fi adăugat pe toate în listă, s-ar fi adunat de două ori
+     tocmai cele pictate cu transparență — oglindirea din podea — și ar fi ieșit
+     alt dreptunghi, mai deschis, în locul celui dintâi. De-aia se copiază. */
+  const x0 = Math.max(0, Math.floor(g.pelCx - g.pelLat * 1.6));
+  const y0 = Math.max(0, Math.floor(g.pelSus - g.pelInalt * 0.5));
+  const x1 = Math.min(W, Math.ceil(g.pelCx + g.pelLat * 1.6));
+  const y1 = Math.min(H, Math.ceil(g.pelSus + g.pelInalt * 1.1));
+  if (x1 <= x0 || y1 <= y0) return;
+  ctx.drawImage(pregatesteSalaGoala(), x0, y0, x1 - x0, y1 - y0,
+                x0, y0, x1 - x0, y1 - y0);
 }
 
 /* Scânteile de la înrămare: câteva puncte de lumină care se desprind din lucrare
@@ -2718,10 +2786,26 @@ function drumulTabloului(g) {
   /* Cât de mică se face lucrarea. Trebuie să **respire** în disc, nu să-l umple
      până la margini: un tablou agățat are perete în jurul lui, altfel nu se vede
      că e agățat, ci că a fost lipit. */
-  const tinta = Math.min(d.r * 0.92 / (g.pelLat * 2.1), d.r * 1.05 / g.pelInalt);
+  /* Și trebuie să încapă **pe perete**, nu numai în disc.
+
+     Discul e socotit din latura mică a ecranului, peretele din înălțime, iar
+     discul e dinadins mai mare decât peretele: partea lui de jos trece în spatele
+     podelei, și tocmai de-acolo îi vine măreția. Numai că tabloul se așeza în
+     mijlocul **discului întreg**, adică deseori sub linia podelei — atârnat în
+     aer, în fața podelei, nu pe perete.
+
+     Așa că se socotește din cât se **vede** din disc: banda dintre marginea lui
+     de sus și linia podelei. Acolo e peretele portocaliu, și acolo se agață. */
+  const susVizibil = Math.max(g.cornisa, d.cy - d.r);
+  const josVizibil = Math.min(g.podea, d.cy + d.r);
+  const inaltVizibil = Math.max(1, josVizibil - susVizibil);
+  /* Cât de mică se face lucrarea: să respire și pe lățime (în disc), și pe
+     înălțime (în bucata de disc care se vede). */
+  const tinta = Math.min(d.r * 0.92 / (g.pelLat * 2.1),
+                         inaltVizibil * 0.76 / (g.pelInalt * 1.16));
   const scara = intre(1, tinta, p);
   const cxAcum = intre(g.pelCx, d.cx, p);
-  const cyAcum = intre(g.pelSus + g.pelInalt * 0.5, d.cy, p);
+  const cyAcum = intre(g.pelSus + g.pelInalt * 0.5, (susVizibil + josVizibil) / 2, p);
   return { p, scara, cx: cxAcum, cy: cyAcum, disc: d };
 }
 

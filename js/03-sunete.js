@@ -1479,7 +1479,12 @@ function sunetSoapta() {
     [1, 0.08, 0.02], [1, 0.08, 0.02], [0, 0.08, 0.02],    // e-le-fan
     [4, 0.09, 0.06],                                      // tul
     [0, 0.08, 0.02], [2, 0.10, 0.14],                     // va fi
-    [0, 0.09, 0.02], [0, 0.11, 0.02], [4, 0.16, 0.00]     // al-bas-tru
+    /* O silabă, nu trei: cuvântul de la capăt e „roz", nu „albastru". Ritmul
+       ăsta e scris de mână, silabă cu silabă, deci nu se schimbă odată cu
+       textul — iar o șoaptă care mai spune două silabe după ce scrisul s-a
+       terminat sună a altcineva, nu a aceeași gură. Și e ținută mai mult,
+       fiindcă pe ea cade semnul exclamării. */
+    [3, 0.22, 0.00]                                       // roz!
   ];
 
   let cand = t;

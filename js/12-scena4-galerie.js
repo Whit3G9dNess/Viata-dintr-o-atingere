@@ -58,8 +58,17 @@ function intraInGalerie(acum) {
   s4.incercari = 0; s4.chemareLupa = 0; s4.chemareTablou = 0; s4.ratacit = 0;
   s4.peMiniatura = 0; s4.peEticheta = 0; s4.portal = 0;
   pregatesteRama(m);              // ștampila ramei, gata dinainte de portal
-  opresteMuzicaMuzeu();
   opresteNatura();                 // sala galeriei e închisă: nu se aude grădina
+  /* Piesa **curge mai departe**, nu se ia de la capăt.
+
+     Aici scria „oprește, apoi pornește". Oprirea ștergea ce era pornit, iar
+     pornirea începea perioada de la prima măsură — deci trecerea dintr-o sală
+     de muzeu în alta rupea piesa în două și o relua din capul ei. La un
+     acompaniament de muzeu asta se aude ca un disc pus de la început de fiecare
+     dată când deschizi o ușă.
+
+     `pornesteMuzicaMuzeu` nu face nimic dacă piesa merge deja, așa că e de-ajuns
+     s-o chemăm: dacă vii din grădină, începe; dacă vii dintr-o sală, continuă. */
   pornesteMuzicaMuzeu();          // înăuntru, în muzeu: piesa în felul lui Mozart
   sunetIntrareGalerie();
 }
@@ -1281,10 +1290,16 @@ function deseneazaEtichetaRamei(lx, ly, r) {
      nicio literă nu iese. Aerul dintre scris și ramă e parte din gravură. */
   const marime = Math.max(8, Math.round(r * 0.098));
   const latScris = pw * 0.80;
-  const jos = textIncadrat('«Tu, înainte de a începe»', lx, ly - ph * 0.24,
-                           latScris, marime * 1.4, `${marime}px Georgia`, '#3a2a10');
-  textIncadrat('atinge rama', lx, jos + marime * 0.55, latScris,
-               marime * 1.4, `italic ${marime}px Georgia`, '#5a4520');
+  /* Pe plăcuță stă titlul lucrării, și atât.
+
+     Sub el scria și „atinge rama". Două lucruri nu mergeau: întâi, era scris de
+     două ori — sus, pe banda sălii, scrie deja «Atinge rama.», și o poruncă
+     spusă de două ori sună a neîncredere. Al doilea, și mai important: o plăcuță
+     de muzeu poartă **ce e lucrarea**, nu ce ai tu de făcut cu ea. Gravată în
+     alamă, o instrucțiune încetează să fie a sălii și devine a obiectului — iar
+     obiectul ăsta e o lucrare, nu un buton. */
+  textIncadrat('«Tu, înainte de a începe»', lx, ly - ph * 0.10,
+               latScris, marime * 1.4, `${marime}px Georgia`, '#3a2a10');
 }
 
 function deseneazaPrinLupa(lx, ly, r, acum) {

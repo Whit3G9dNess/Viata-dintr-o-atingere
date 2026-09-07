@@ -1709,8 +1709,9 @@ function intraInCampie(acum) {
      din scenă, drumul oamenilor spre casă, și ei înțepenesc în mijlocul pașilor.
      Un sughiț la o tăietură nu se vede; unul peste un om care merge, se vede. */
   if (typeof pregatesteSalaFocului === 'function') pregatesteSalaFocului();
-  opresteMuzicaMuzeu();
-  pornesteMuzicaMuzeu();          // tot înăuntru, în muzeu: aceeași piesă
+  /* Aceeași piesă, curgând mai departe din sala de dinainte — vezi
+     `intraInGalerie`. */
+  pornesteMuzicaMuzeu();
   pornesteNatura(true);           // scena e despre aer: vânt și păsări
   if (audio) sunetIntrareGalerie();
 }

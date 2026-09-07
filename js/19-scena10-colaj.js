@@ -1969,6 +1969,60 @@ function actualizeazaColaj(acum) {
 }
 
 /* ---------- DESENUL ---------- */
+/* Bucățile neatinse își arată marginea.
+
+   Peretele e un morman de hârtie, carton și ziar, toate de aceeași culoare de
+   sepia și toate suprapuse — frumos ca imagine, mut ca joc: nu se vede nicăieri
+   ce e o **bucată** și ce e fundal. Cine intră prima oară plimbă degetul la
+   întâmplare până nimerește ceva, iar dacă nu nimerește crede că peretele e doar
+   un tapet.
+
+   Așa că, după ce ai avut vreme să te uiți, marginile celor neatinse încep să
+   respire: o dungă caldă de-a lungul conturului rupt, cu fiecare bucată pe
+   ritmul ei, ca să nu pulseze peretele întreg ca un far. Nu spune „apasă aici",
+   spune „astea sunt lucruri". Restul îl faci tu.
+
+   E același obicei ca al buzunarului custodelui și al lupei din galerie: sala
+   nu te ia de mână, dar nici nu te lasă să crezi că e stricată. Iar cum bucata
+   se atinge, dunga ei se stinge pentru totdeauna — semnul e pentru ce n-ai
+   încercat încă, nu o podoabă. */
+function chemareaPieselor(acum) {
+  if (s10.faza !== 'explorare' && s10.faza !== 'intrare') return;
+  const trecut = acum - (s10.t0 || acum);
+  const cat = Math.max(0, Math.min(1, (trecut - 3200) / 2600));
+  if (cat <= 0) return;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const p of s10.piese) {
+    if (p.activat || p.fel === 'sfoara') continue;
+    const cut = cutiaPiesei(p);
+    /* Fiecare pe ritmul ei: aceeași bătaie pentru toate ar face peretele să
+       clipească întreg, ca o reclamă. */
+    const bat = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(acum * 0.0021 + p.sam * 1.7));
+    ctx.save();
+    ctx.translate(cut.cx, cut.cy);
+    ctx.rotate(p.unghi);
+    if (p.fel === 'nasturi') {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, cut.w * 0.60, cut.h * 0.60, 0, 0, Math.PI * 2);
+    } else {
+      conturRupt(ctx, cut.w, cut.h, p.sam, p.fel === 'carton' ? 0.022 : 0.035);
+    }
+    ctx.globalAlpha = cat * (0.16 + bat * 0.30);
+    ctx.strokeStyle = 'rgba(255, 226, 160, 1)';
+    ctx.lineWidth = Math.max(1.4, Math.min(W, H) * 0.0032);
+    ctx.stroke();
+    // o a doua trecere, mai lată și mai stinsă: dunga capătă puțină lumină în jur
+    ctx.globalAlpha = cat * (0.05 + bat * 0.10);
+    ctx.lineWidth = Math.max(3, Math.min(W, H) * 0.010);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 function deseneazaScena10(t, acum) {
   if (s10.faza === 'rupere' || s10.faza === 'iesire') {
     deseneazaRuptura(acum);
@@ -1992,6 +2046,10 @@ function deseneazaScena10(t, acum) {
     if (p.fel === 'sfoara') franghia(ctx, p, p.activat ? 0.55 : 0);
   }
   deseneazaBiletele(ctx, acum);
+
+  /* Marginile celor neatinse, înainte de lumina celor pornite: semnul e pentru
+     ce n-ai încercat, iar lumina pentru ce ai încercat. */
+  chemareaPieselor(acum);
 
   /* Piesele pornite luminează pe la spate. Ele sunt tabla de bord a sălii: după
      ce nu mai rămâne niciuna stinsă, se desprinde colțul. Fără semnul ăsta,

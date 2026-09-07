@@ -26,7 +26,7 @@ const s12 = {
   flash: 0
 };
 
-const SOAPTA = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz.';
+const SOAPTA = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz!';
 
 /* ---------- UNDE E PUNCTUL ----------
    Fix în mijloc, ca în prima scenă. Nu „aproape la mijloc": deja-vu-ul se face
