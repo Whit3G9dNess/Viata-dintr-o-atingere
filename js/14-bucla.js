@@ -53,6 +53,16 @@ function unCadru(t) {
     if (progres >= 1) stare = 'balon';
   }
   else if (stare === 'balon') {
+    /* La ultimul tur, balonul nu mai fuge: crește și se face sticlă. Trecerea se
+       face aici, la primul cadru de balon, ca să se vadă chiar creșterea — nu în
+       vid, unde n-ar avea din ce să crească. */
+    if (turul > TURURI_PANA_LA_FINAL) {
+      /* Cadrul următor e deja cerut, sus în `cadru`: aici numai ieșim din cadrul
+         de acum, ca să nu se mai deseneze balonul peste globul care tocmai a
+         luat locul lui. */
+      intraInFinal(acum);
+      return;
+    }
     actualizeazaBalonul(acum);
     deseneazaFundal(1);
     /* Cele două definiții, de-o parte și de alta, la mijlocul înălțimii: la stânga
@@ -223,6 +233,9 @@ function unCadru(t) {
     freacaScena11();
     actualizeazaCarbune(acum);
     deseneazaScena11(t, acum);
+  }
+  else if (stare === 'final') {
+    deseneazaScena13(t, acum);
   }
   else if (stare === 'colaj') {
     /* La fel și aici: de sfoară se trage, colțul de colaj se desprinde. Sunt

@@ -54,6 +54,8 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 34 | Vânătoare de buguri prin toată jucăria: bucla, plasa cadrului, sunetul refuzat, sforile | ✅ gata |
 | 35 | Sughițul de la manual și de la țărani, și muzica muzeului cântată de două ori | ✅ gata |
 | 36 | `return`-ul care oprea tabloul: pânza de compunere rămânea mutată | ✅ gata |
+| 37 | Serverul pornit singur, și cele șase îndreptări cerute la fața locului | ✅ gata |
+| 38 | Sfârșitul: balonul se face glob de sticlă, se sparge, și rămâne un nume | ✅ gata |
 
 ---
 

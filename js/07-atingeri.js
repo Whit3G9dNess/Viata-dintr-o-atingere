@@ -172,6 +172,7 @@ window.addEventListener('pointerdown', (e) => {
   }
 
   /* — Scena 3: muzeul secret — */
+  if (stare === 'final') { click13(acum); return; }
   if (stare === 'muzeu') { click3(acum); return; }
 
   /* — Scena 4: galeria cu miniatura — */

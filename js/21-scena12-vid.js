@@ -64,6 +64,7 @@ function iesiDinVid(acum) {
   /* Și se ține promisiunea. O glumă spusă jucătorului și neținută e mai rea decât
      una nespusă: cine se întoarce anume ca să vadă elefantul roz și îl găsește
      albastru află că sala a mințit, nu că a glumit. */
+  turul++;
   elefantulERoz = true;
   if (typeof zugravesteElefantul === 'function') zugravesteElefantul(true);
   incepeJucaria(acum);

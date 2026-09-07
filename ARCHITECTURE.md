@@ -481,6 +481,30 @@ filtrează. `sunetSoapta` face exact asta: zgomot alb prin două rezonanțe care
 mută de la o silabă la alta — formantele vocalelor — tăiat în silabe cu pauzele
 frazei. Cuvintele scrise pe ecran spun **ce**; sunetul spune **cine**.
 
+#### Sfârșitul: balonul se face sticlă
+
+Bucla nu se învârte la nesfârșit. După două tururi întregi — atâtea cât trebuie
+ca promisiunea din vid să fie și făcută, și ținută — balonul de la început nu mai
+fuge: crește, se face **glob de Crăciun**, și așteaptă să fie atins. Atins, se
+sparge în șaisprezece pene de sticlă care cad, se strâng în mijlocul ecranului și
+se sting acolo. Rămâne negrul de la primul cadru al jucăriei, și un nume.
+
+De ce un glob: e singurul lucru care e în același timp **balon** (rotund, ușor,
+plin de lumină) și **obiect** (are greutate, are căpăcel, se sparge). Toată
+jucăria a fost drumul de la o pată de culoare la un lucru făcut de mână, iar
+ultimul obiect îl închide într-o singură formă. Și se **sparge**, nu se
+dezumflă: un balon de săpun dispare fără urmă, sticla lasă cioburi — iar
+cioburile se întorc chiar în punctul din care a crescut, la început, primul punct
+alb.
+
+Ce face un cerc roșu să pară sticlă nu e strălucirea, ci trei lucruri deodată:
+partea de sus mai deschisă (lumina care intră), o seceră închisă jos-interior
+(peretele din spate, văzut **prin** sticlă) și o pată albă mică și tare
+sus-stânga (reflexul ferestrei). Fără secera închisă rămâne o bilă de plastic.
+
+Iar o buclă care nu se închide e o demonstrație tehnică; una care se închide e o
+poveste. `TURURI_PANA_LA_FINAL` spune după câte tururi vine globul.
+
 #### Lumea de la capăt
 
 O promisiune făcută jucătorului trebuie ținută, și ținută **întreagă**. La al
@@ -623,16 +647,17 @@ flowchart TB
   subgraph S["Scenele"]
     B5["05-scena1-balon.js · 172"]
     B6["06-scena2-minge.js · 1016<br/>mingea, petele, elefantul, grădina"]
-    B11["11-scena3-muzeu.js · 1931<br/>custodele, haina, buzunarul, manualul"]
-    B12["12-scena4-galerie.js · 1454<br/>sala rococo, rama, lupa"]
-    B13["13-scena5-campie.js · 2003<br/>pânza uriașă, țăranii, pantofii"]
-    B15["15-scena6-foc.js · 1993<br/>sala rotundă, șevaletul, pasta, arsura"]
-    B16["16-scena7-gheata.js · 2133<br/>sala de gheață, costumul, portalul"]
-    B17["17-scena8-ulei.js · 2893<br/>sala în linie, trusa, cercul cromatic, postamentul"]
-    B18["18-scena9-acuarela.js · 1526<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
-    B19["19-scena10-colaj.js · 2077<br/>iuta, ziarul, cartonul, sforile, ruptura"]
-    B21["21-scena12-vid.js · 273<br/>vidul, punctul, șoapta, bucla"]
-    B20["20-scena11-carbune.js · 1453<br/>radiera, liniile de lumină, blocul, butonul"]
+    B11["11-scena3-muzeu.js · 1937<br/>custodele, haina, buzunarul, manualul"]
+    B12["12-scena4-galerie.js · 1471<br/>sala rococo, rama, lupa"]
+    B13["13-scena5-campie.js · 2040<br/>pânza uriașă, țăranii, pantofii"]
+    B15["15-scena6-foc.js · 1996<br/>sala rotundă, șevaletul, pasta, arsura"]
+    B16["16-scena7-gheata.js · 2134<br/>sala de gheață, costumul, portalul"]
+    B17["17-scena8-ulei.js · 2978<br/>sala în linie, trusa, cercul cromatic, postamentul"]
+    B18["18-scena9-acuarela.js · 1528<br/>foaia, pulverizatorul, laviul, lacul-oglindă"]
+    B19["19-scena10-colaj.js · 2136<br/>iuta, ziarul, cartonul, sforile, ruptura"]
+    B22["22-final.js · 375<br/>globul de sticlă, cioburile, numele"]
+    B21["21-scena12-vid.js · 274<br/>vidul, punctul, șoapta, bucla"]
+    B20["20-scena11-carbune.js · 1454<br/>radiera, liniile de lumină, blocul, butonul"]
   end
   subgraph D["Desenul și legăturile"]
     C7["07-atingeri.js · 155<br/>ce face fiecare atingere"]

@@ -3,7 +3,8 @@
    'crestere'     → punctul alb crește și devine balon        (Scena 1)
    'balon'        → balonul plutește, râde, fuge, lasă urmă   (Scena 1→2)
    'transformare' → balonul prins devine minge, lumea se împarte (Scena 2)
-   'minge'        → mingea se joacă, elefantul se plimbă      (Scena 2) */
+   'minge'        → mingea se joacă, elefantul se plimbă      (Scena 2)
+   'final'        → balonul se face glob de sticlă, și se sparge (Sfârșitul) */
 let stare = 'intuneric';
 let inceputulCresterii = 0;
 const DURATA_CRESTERII = 4000;
@@ -17,6 +18,17 @@ let inceputulTransformarii = 0;
    nimic: elefantul **este** albastru de la bun început, deci gluma promitea că
    totul rămâne la fel. Roz e altceva — și se și vede. */
 let elefantulERoz = false;
+
+/* Al câtelea tur prin jucărie. Începe de la unu și crește o dată la fiecare
+   ieșire din vid.
+
+   Jucăria nu se învârte la nesfârșit: după atâtea tururi câte scrie mai jos,
+   balonul de la început nu mai fugește — crește, se face glob de sticlă, și se
+   sparge. O buclă fără capăt e o demonstrație tehnică; una care se închide e o
+   poveste. Iar promisiunea din vid („data viitoare elefantul va fi roz") cere
+   cel puțin un tur în care să fie ținută, altfel n-are cine s-o vadă. */
+let turul = 1;
+const TURURI_PANA_LA_FINAL = 2;
 const DURATA_TRANSFORMARII = 3400;
 
 // atenuare lină (pornește încet, se termină încet)

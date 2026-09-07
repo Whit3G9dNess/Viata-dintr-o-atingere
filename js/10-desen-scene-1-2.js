@@ -726,6 +726,7 @@ function deseneazaCursorul() {
   if (typeof cursorulScenei10 === 'function' && cursorulScenei10()) return;
   if (typeof cursorulScenei11 === 'function' && cursorulScenei11()) return;
   if (typeof cursorulScenei12 === 'function' && cursorulScenei12()) return;
+  if (typeof cursorulFinal === 'function' && cursorulFinal()) return;
   const calm = factorCalm();
   const raza = 4 + cursor.viteza * 5;
   const lumina = ctx.createRadialGradient(cursor.x, cursor.y, 0, cursor.x, cursor.y, raza * 3);

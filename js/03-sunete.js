@@ -490,6 +490,60 @@ function sunetDescoperire() {
 }
 
 // Rama care se cască în portal: un val care urcă.
+/* ==========================================================================
+   SFÂRȘITUL — BALONUL SE FACE STICLĂ, ȘI SE SPARGE
+   ========================================================================== */
+
+/* Săpunul devine sticlă. Un urcuș subțire, cu două note care se apropie până se
+   ating: din două voci ușor dezacordate iese o bătaie, iar când dezacordul
+   dispare, bătaia se oprește. Aia e clipa în care materia s-a „așezat". */
+function sunetSticlaSeFace() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  nota(392, t, 2.4, 0.035, 'sine', 784);
+  nota(396, t, 2.4, 0.030, 'sine', 784);      // dezacordul care se stinge
+  nota(1568, t + 1.6, 1.1, 0.022, 'sine', 1568);
+  zgomot(t, 1.2, 0.012, 900, 5200);
+}
+
+/* Sticla spartă.
+
+   Un pocnet de sticlă nu e un zgomot, sunt trei lucruri în trei clipe: **lovitura**
+   (o pleasnă scurtă, joasă, care e chiar degetul), **spargerea** (o mână de note
+   foarte înalte, dezacordate între ele, toate deodată — cioburile nu sună la
+   unison, fiindcă nu sunt de aceeași mărime), și **ploaia de cioburi**, care ține
+   cel mai mult: zeci de ciocnituri mărunte, tot mai rare, cum cad și se așază.
+
+   Cea de-a treia e cea care face sunetul credibil. Fără ea rămâne o pleasnă, și
+   sticla pare de plastic. */
+function sunetGlobSpart() {
+  if (!audio) return;
+  const t = audio.currentTime;
+
+  // lovitura
+  nota(180, t, 0.09, 0.10, 'triangle', 60);
+  zgomot(t, 0.07, 0.16, 2600, 900);
+
+  // spargerea: opt cioburi, fiecare cu înălțimea lui
+  for (let k = 0; k < 8; k++) {
+    const f = 1900 + Math.random() * 3400;
+    nota(f, t + 0.005 + Math.random() * 0.03, 0.16 + Math.random() * 0.2,
+         0.030 + Math.random() * 0.022, 'sine', f * (0.72 + Math.random() * 0.2));
+  }
+  zgomot(t + 0.01, 0.55, 0.075, 5200, 2200);
+
+  /* Ploaia de cioburi: se rărește după o lege, nu la întâmplare — la început
+     multe și dese, pe urmă tot mai puține, ca orice lucru care se așază. */
+  let cand = t + 0.10;
+  for (let k = 0; k < 26; k++) {
+    const f = 2400 + Math.random() * 4200;
+    nota(f, cand, 0.05 + Math.random() * 0.09, 0.016 + Math.random() * 0.014,
+         'sine', f * 0.85);
+    if (Math.random() < 0.4) zgomot(cand, 0.05, 0.02, 6000, 3000);
+    cand += 0.03 + (k / 26) * (k / 26) * 0.28 + Math.random() * 0.04;
+  }
+}
+
 function sunetPortal() {
   if (!audio) return;
   const t = audio.currentTime;

@@ -543,6 +543,20 @@ return {
   loculPunctului: typeof loculPunctului !== "undefined" ? loculPunctului : null,
   apropiereaDePunct: typeof apropiereaDePunct !== "undefined" ? apropiereaDePunct : null,
   SOAPTA: typeof SOAPTA !== "undefined" ? SOAPTA : null,
+
+  s13: typeof s13 !== "undefined" ? s13 : null,
+  intraInFinal: typeof intraInFinal !== "undefined" ? intraInFinal : null,
+  click13: typeof click13 !== "undefined" ? click13 : null,
+  spargeGlobul: typeof spargeGlobul !== "undefined" ? spargeGlobul : null,
+  deseneazaScena13: typeof deseneazaScena13 !== "undefined" ? deseneazaScena13 : null,
+  loculGlobului: typeof loculGlobului !== "undefined" ? loculGlobului : null,
+  razaGlobului: typeof razaGlobului !== "undefined" ? razaGlobului : null,
+  cursorulFinal: typeof cursorulFinal !== "undefined" ? cursorulFinal : null,
+  FINAL_RAND1: typeof FINAL_RAND1 !== "undefined" ? FINAL_RAND1 : null,
+  FINAL_RAND2: typeof FINAL_RAND2 !== "undefined" ? FINAL_RAND2 : null,
+  turul: function () { return typeof turul !== "undefined" ? turul : null; },
+  puneTurul: function (n) { if (typeof turul !== "undefined") turul = n; },
+  TURURI_PANA_LA_FINAL: typeof TURURI_PANA_LA_FINAL !== "undefined" ? TURURI_PANA_LA_FINAL : null,
   elefantulERoz: function () { return typeof elefantulERoz !== "undefined" ? elefantulERoz : null; },
   culoareaCustodelui: function () { return typeof ELEF_FATA !== "undefined" ? ELEF_FATA : null; },
   culorileElefantului: typeof culorileElefantului !== "undefined" ? culorileElefantului : null,
@@ -5740,6 +5754,131 @@ function ruleaza() {
     adevarat(j.inimaScena12() !== null, "in vid nu bate nimic");
     j.iesiDinVid(j.ceas.t);
     egal(j.inimaScena12(), null, "inima a ramas sa bata peste inceputul jucariei");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Sfârșitul: balonul se face sticlă");
+
+  function laGlob(j) {
+    j.puneTurul(j.TURURI_PANA_LA_FINAL + 1);
+    j.mergiLaStarea("balon");
+    j.avanseazaUsor(100);                 // bucla vede turul si intra in final
+    j.avanseazaUsor(3000);                // globul creste de tot
+    return j.loculGlobului();
+  }
+
+  test("cat timp mai are tururi, balonul ramane balon", function () {
+    /* Bucla trebuie sa apuce sa se inchida macar o data, altfel promisiunea din
+       vid — „data viitoare elefantul va fi roz" — n-are cine s-o vada. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    egal(j.turul(), 1, "jucaria nu incepe la turul intai");
+    for (let t = 1; t <= j.TURURI_PANA_LA_FINAL; t++) {
+      j.puneTurul(t);
+      j.mergiLaStarea("balon");
+      j.avanseazaUsor(200);
+      egal(j.stare(), "balon", "la turul " + t + " balonul s-a facut deja glob");
+    }
+  });
+
+  test("la ultimul tur, balonul creste si se face glob", function () {
+    /* „Pe ultima scena, cand se revine la balonul de sapun, balonul creste si se
+       transforma intr-un glob decorativ de craciun."
+
+       Trecerea se face la primul cadru de balon, ca sa se vada chiar cresterea:
+       globul porneste de la raza balonului, nu apare gata facut. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.puneTurul(j.TURURI_PANA_LA_FINAL + 1);
+    j.mergiLaStarea("balon");
+    j.avanseazaUsor(100);
+    egal(j.stare(), "final", "balonul ultimului tur n-a devenit glob");
+    egal(j.s13.faza, "crestere", "globul nu creste, apare gata facut");
+    adevarat(j.s13.raza < j.razaGlobului() * 0.7,
+      "globul porneste prea mare: " + Math.round(j.s13.raza));
+    j.avanseazaUsor(3000);
+    egal(j.s13.faza, "asteapta", "globul nu se opreste din crescut");
+    aproape(j.s13.raza, j.razaGlobului(), 1, "globul n-a ajuns la marimea lui");
+  });
+
+  test("globul atins se sparge in cioburi", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = laGlob(j);
+    // un clic departe nu-l atinge
+    j.cursor.x = m.x + j.razaGlobului() * 4; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    egal(j.s13.faza, "asteapta", "globul s-a spart de la un clic din alta parte");
+
+    j.cursor.x = m.x + j.s13.raza * 0.4; j.cursor.y = m.y - j.s13.raza * 0.3;
+    j.click13(j.ceas.t);
+    egal(j.s13.faza, "spargere", "globul nu s-a spart");
+    adevarat(j.s13.cioburi.length >= 10,
+      "s-a spart in prea putine bucati: " + j.s13.cioburi.length);
+  });
+
+  test("cioburile cad, si raman pe ecran cat sa se vada", function () {
+    /* Ea a cerut ca **cioburile sa cada**, adica sa se vada cazand. Prima oara
+       greutatea sticlei era de sapte ori mai mare si ieseau din ecran in jumatate
+       de secunda: se spargea globul si nu se vedea nimic. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = laGlob(j);
+    j.cursor.x = m.x; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    /* Se masoara **mijlocul** gramezii, nu cel mai de sus ciob: cele aruncate in
+       sus urca intai si abia pe urma se intorc, deci minimul poate sa scada chiar
+       si atunci cand tot restul cade. */
+    const mijlociu = function () {
+      const ys = j.s13.cioburi.map(function (c) { return c.y; });
+      return ys.reduce(function (a, b) { return a + b; }, 0) / ys.length;
+    };
+    const inainte = mijlociu();
+    j.avanseazaUsor(1200);
+    adevarat(mijlociu() > inainte + 20,
+      "cioburile nu cad: " + Math.round(inainte) + " -> " + Math.round(mijlociu()));
+    const peEcran = j.s13.cioburi.filter(function (c) { return c.y < j.H() * 1.05; });
+    adevarat(peEcran.length >= j.s13.cioburi.length * 0.6,
+      "au iesit din ecran prea repede: au ramas " + peEcran.length +
+      " din " + j.s13.cioburi.length);
+  });
+
+  test("cioburile se string in mijlocul ecranului si se sting", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = laGlob(j);
+    j.cursor.x = m.x; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    j.avanseazaUsor(2000);
+    egal(j.s13.faza, "adunare", "cioburile nu se aduna niciodata");
+    j.avanseazaUsor(1400);
+    const departe = j.s13.cioburi.filter(function (c) {
+      return Math.hypot(c.x - m.x, c.y - m.y) > j.razaGlobului() * 0.6;
+    });
+    adevarat(departe.length <= 2 || j.s13.faza === "text",
+      departe.length + " cioburi n-au ajuns in mijloc");
+    j.avanseazaUsor(600);
+    egal(j.s13.faza, "text", "dupa adunare nu vine numele");
+    egal(j.s13.cioburi.length, 0, "au ramas cioburi dupa ce s-au stins");
+  });
+
+  test("pe negru ramane numele, si nimic altceva", function () {
+    /* Un generic se citeste in liniste: fara chenar, fara ornament, si fara
+       cursorul luminos — el ar fi singurul lucru care se misca pe ecran. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    const m = laGlob(j);
+    j.cursor.x = m.x; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    j.avanseazaUsor(5200);
+    egal(j.s13.faza, "text", "nu s-a ajuns la nume");
+    j.avanseazaUsor(2400);
+
+    const d = j.doar(function () { j.deseneazaScena13(j.ceas.t, j.ceas.t); });
+    const scris = totTextul(d);
+    adevarat(scris.indexOf("Feliks Iacoblev-Barău") >= 0,
+      "numele nu se vede: " + scris.slice(0, 120));
+    adevarat(scris.indexOf("Jucărie digitală interactivă") >= 0,
+      "nu scrie ce e jucaria: " + scris.slice(0, 120));
+    adevarat(j.cursorulFinal(), "cursorul luminos se plimba peste generic");
+    // negru curat: fara desene colorate peste text
+    const forme = d.filter(function (o) { return o.op === "fill" || o.op === "stroke"; });
+    adevarat(forme.length <= 4,
+      "genericul are " + forme.length + " forme desenate peste el");
   });
 
   /* ---------------------------------------------------------------- */
