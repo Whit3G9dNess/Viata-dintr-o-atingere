@@ -72,9 +72,9 @@ function unCadru(t) {
        etichetă lipită degeaba. Cu negru, ca să se poată citi. */
     const marimeDef = Math.max(ecran(11), Math.min(W, H) * 0.019);
     const latDef = Math.min(W * 0.26, ecran(340));
-    definitiePeFundal(DEFINITIE_PUNCT, W * 0.175, H * 0.5, latDef,
+    definitiePeFundal(T('def.punct'), W * 0.175, H * 0.5, latDef,
                       marimeDef, '#1c1a16', null, 'mijloc');
-    definitiePeFundal(DEFINITIE_LINIE, W * 0.825, H * 0.5, latDef,
+    definitiePeFundal(T('def.linie'), W * 0.825, H * 0.5, latDef,
                       marimeDef, '#1c1a16', null, 'mijloc');
     deseneazaUrma();
     deseneazaBalonul(t);
@@ -136,7 +136,7 @@ function unCadru(t) {
     /* Definiția petei de culoare, așezată în stânga jos, cu ultimul rând chiar pe
        linia orizontului — acolo unde cerul se sfârșește și începe pământul pe
        care cad petele. Fără titlu și cu negru, ca să se poată citi. */
-    definitiePeFundal(DEFINITIE_PATA, W * 0.235, orizont() - H * 0.012,
+    definitiePeFundal(T('def.pata'), W * 0.235, orizont() - H * 0.012,
                       Math.min(W * 0.34, ecran(420)),
                       Math.max(ecran(11), Math.min(W, H) * 0.019),
                       '#1c1a16', null, 'jos');

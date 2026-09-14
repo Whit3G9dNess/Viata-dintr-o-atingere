@@ -42,18 +42,7 @@ const ULTRAVIOLET   = '#a05cff';
    protecția și-a scurtat definiția: ce face bariera se **vede** pe ecran în
    clipa în care apeși, așa că n-are rost s-o mai și descrii. */
 const FUNCTIILE_COSTUMULUI = [
-  { cheie: 'protectie', nume: 'FUNCȚIA DE PROTECȚIE',
-    text: 'Costumul funcționează ca un scut termic împotriva mediului înconjurător.',
-    indemn: 'Atinge fularul.' },
-  { cheie: 'utilitate', nume: 'FUNCȚIA DE UTILITATE',
-    text: 'Costumul asigură supraviețuirea purtătorului prin generarea de micro-căldură, ' +
-          'eliminând rigiditatea și restabilind controlul fluid asupra cursorului în urma ' +
-          'conectării vortexurilor.',
-    indemn: 'Leagă vortexurile, în ordine.' },
-  { cheie: 'estetica', nume: 'FUNCȚIA ESTETICĂ',
-    text: 'Costumul își exprimă valoarea vizuală prin îmbinarea formelor ascuțite cu ' +
-          'reflexiile luminii albastre, proiectând modele abstracte spectaculoase pe pereți.',
-    indemn: 'Pune-i un filtru de stil.' }
+  { cheie: 'protectie' }, { cheie: 'utilitate' }, { cheie: 'estetica' }
 ];
 
 /* Fișa de sală. Sala e făcută din cubism și vorticism deopotrivă — primul îi dă
@@ -61,10 +50,9 @@ const FUNCTIILE_COSTUMULUI = [
    al doilea, fiindcă definiția lui o cuprinde pe a celuilalt. Cubismul rămâne în
    sală acolo unde îi e locul: în costumul desfăcut în față, spate și laturi, care
    se vede fără să scrie nimeni ce e. */
-const TEXT_FISA_VORTICISM =
-  'Vorticismul este o mișcare artistică britanică de scurtă durată din anii 1910 care ' +
-  'combina geometria cubistă cu dinamismul futurist, promovând o estetică dură, ' +
-  'industrială și unghiulară inspirată de energia mașinilor și a erei moderne.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 const s7 = {
   faza: 'intrare',      // intrare → sala → portal → zbor
@@ -315,7 +303,7 @@ function pictezaSalaGheata(c) {
 
   // fișa de sală, pe peretele din stânga
   fisaDeSala7(c, g.fisaX, g.fisaSus, g.fisaLat, g.fisaInalt,
-              'VORTICISM', TEXT_FISA_VORTICISM);
+              T('gheata.fisaTitlu'), T('gheata.fisa'));
 
   // linia unde peretele întâlnește podeaua, tăiată drept
   c.strokeStyle = ARGINT_RECE;
@@ -455,7 +443,12 @@ function scrieInCaseta(c, text, cx, y, latMax, inaltMax, marimeMax, stil, culoar
   for (let k = 0; k < 16; k++) {
     c.font = (stil ? stil + ' ' : '') + Math.round(marime) + 'px Georgia';
     randuri = randuriInCaseta(c, text, latMax);
-    if (randuri.length * marime * 1.42 <= inaltMax || marime <= 8) break;
+    /* Și pe lățime, nu numai pe înălțime: numele funcțiilor costumului sunt în
+       germană un singur cuvânt lung, iar un cuvânt nu se poate rupe după spații.
+       Fără socoteala asta, ieșea din casetă peste cristalele de gheață. */
+    const incape = randuri.length * marime * 1.42 <= inaltMax &&
+                   celMaiLatRand(c, randuri) <= latMax;
+    if (incape || marime <= 8) break;
     marime *= 0.93;
   }
   c.save();
@@ -1009,7 +1002,7 @@ function deseneazaPanoulFunctiei(acum) {
 
   const marime = Math.max(9, w * 0.084);
   if (!are) {
-    scrieInCaseta(ctx, 'Atinge o parte a costumului ca să afli ce face.',
+    scrieInCaseta(ctx, T('gheata.atingeCostumul'),
                   x + w * 0.5, y + h * 0.36, w * 0.84, h * 0.5, marime, '', '#8ea2c8');
     return;
   }
@@ -1017,15 +1010,15 @@ function deseneazaPanoulFunctiei(acum) {
   const f = FUNCTIILE_COSTUMULUI[s7.functiaAratata];
   const pornita = [s7.protectie, s7.utilitate, s7.estetica][s7.functiaAratata];
 
-  let jos = scrieInCaseta(ctx, f.nume, x + w * 0.5, y + h * 0.05, w * 0.86,
+  let jos = scrieInCaseta(ctx, T('gheata.' + f.cheie + '.nume'), x + w * 0.5, y + h * 0.05, w * 0.86,
                           h * 0.18, marime * 1.06, 'bold',
                           pornita ? CYAN_NEON : ALB_GHEATA);
-  jos = scrieInCaseta(ctx, f.text, x + w * 0.5, jos + h * 0.035, w * 0.86,
+  jos = scrieInCaseta(ctx, T('gheata.' + f.cheie + '.text'), x + w * 0.5, jos + h * 0.035, w * 0.86,
                       h * 0.56, marime, '', '#cfdcf4');
   /* Sub definiție, un singur rând: ce ai de făcut, sau că e gata. Cine a citit
      ce face funcția vrea imediat s-o pornească, iar dacă nu-i spune nimeni cum,
      se întoarce la pipăit. */
-  scrieInCaseta(ctx, pornita ? '✓ pornită' : f.indemn,
+  scrieInCaseta(ctx, pornita ? T('gheata.pornita') : T('gheata.' + f.cheie + '.indemn'),
                 x + w * 0.5, jos + h * 0.03, w * 0.86, h * 0.16, marime, 'bold',
                 pornita ? CYAN_NEON : ULTRAVIOLET);
 }
@@ -1581,8 +1574,7 @@ function deseneazaTermometrul(acum) {
   }
   ctx.restore();
 
-  textIncadrat(s7.inghetat ? 'Freacă! Mișcă mâna repede, stânga-dreapta.'
-                          : 'Scutură! Mișcă mâna repede, stânga-dreapta.',
+  textIncadrat(s7.inghetat ? T('gheata.freaca') : T('gheata.scutura'),
                W * 0.5, y - H * 0.05, Math.min(W * 0.6, ecran(600)), ecran(26),
                `bold ${Math.max(Math.round(ecran(13)), Math.round(g.S * 0.024))}px Georgia`,
                ALB_GHEATA);
@@ -1721,6 +1713,16 @@ function deseneazaVorba(acum) {
   const stinge = Math.min(1, (s7.vorba.pana - acum) / 600);
   const lat = Math.min(W * 0.54, ecran(560));
   const y = H * 0.09;
+  const latText = lat - ecran(60);
+  const hLinie = ecran(26);
+  const scris = `bold ${Math.max(Math.round(ecran(13)), Math.round(g.S * 0.024))}px Georgia`;
+
+  /* Caseta crește cu rândurile. Croită pentru un singur rând, cum era, ea ținea
+     cât ține româna — dar aceeași vorbă în germană sau în greacă se rupe în două,
+     iar al doilea rând ieșea din tăblie, peste gheață. */
+  ctx.font = scris;
+  const randuri = randuriIncapute(ctx, s7.vorba.text, latText).length;
+  const inPlus = Math.max(0, randuri - 1) * hLinie;
 
   ctx.save();
   ctx.globalAlpha = stinge;
@@ -1728,8 +1730,8 @@ function deseneazaVorba(acum) {
   ctx.beginPath();
   ctx.moveTo(W * 0.5 - lat / 2, y - H * 0.032);
   ctx.lineTo(W * 0.5 + lat / 2, y - H * 0.038);
-  ctx.lineTo(W * 0.5 + lat / 2 - H * 0.012, y + H * 0.052);
-  ctx.lineTo(W * 0.5 - lat / 2 + H * 0.012, y + H * 0.058);
+  ctx.lineTo(W * 0.5 + lat / 2 - H * 0.012, y + H * 0.052 + inPlus);
+  ctx.lineTo(W * 0.5 - lat / 2 + H * 0.012, y + H * 0.058 + inPlus);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = CYAN_NEON;
@@ -1741,9 +1743,7 @@ function deseneazaVorba(acum) {
 
   ctx.save();
   ctx.globalAlpha = stinge;
-  textIncadrat(s7.vorba.text, W * 0.5, y - H * 0.014, lat - ecran(60), ecran(26),
-               `bold ${Math.max(Math.round(ecran(13)), Math.round(g.S * 0.024))}px Georgia`,
-               ALB_GHEATA);
+  textIncadrat(s7.vorba.text, W * 0.5, y - H * 0.014, latText, hLinie, scris, ALB_GHEATA);
   ctx.restore();
 }
 
@@ -1766,7 +1766,7 @@ function intraInGheata(acum) {
   opresteTurbina();
   pornesteViscolul();
   if (audio) sunetPortal();
-  spuneScena7('Pune-ți fularul virtual!', 6000);
+  spuneScena7(T('gheata.puneFularul'), 6000);
 }
 
 function iesiDinGheata(acum) {
@@ -1812,7 +1812,7 @@ function click7(acum) {
       s7.protectie = true;
       s7.energie = numaraFunctiile() / 3;
       if (audio) sunetMetalic(1320);
-      spuneScena7('Fularul s-a desfăcut. Promoroaca pleacă de pe ecran.', 4600);
+      spuneScena7(T('gheata.fularulDesfacut'), 4600);
     } else if (audio) {
       sunetMetalic(660 + parte * 220);
     }
@@ -1832,7 +1832,7 @@ function click7(acum) {
           s7.energie = numaraFunctiile() / 3;
           s7.functiaAratata = 1;
           if (audio) sunetMetalic(1760);
-          spuneScena7('Vortexurile s-au legat. Degetul se mișcă iar liber.', 4600);
+          spuneScena7(T('gheata.vortexuriLegate'), 4600);
         }
       } else {
         /* Nodul greșit nu pedepsește: zguduie o clipă și lasă lanțul întreg.
@@ -1854,7 +1854,7 @@ function click7(acum) {
     if (k === 0) {
       if (!s7.protectie) {
         s7.protectie = true;
-        spuneScena7('Scutul: fularul se desface în cameră, promoroaca pleacă.', 4800);
+        spuneScena7(T('gheata.scutul'), 4800);
       }
       if (audio) sunetMetalic(1320);
     } else if (k === 1) {
@@ -1864,14 +1864,14 @@ function click7(acum) {
          putință. */
       if (!s7.utilitate && !s7.puzzleTreaz) {
         s7.puzzleTreaz = true;
-        spuneScena7('Roata: micro-căldura a pornit. Leagă acum liniile de forță.', 5200);
+        spuneScena7(T('gheata.roata'), 5200);
       }
       if (audio) sunetMetalic(880);
     } else {
       s7.filtru = (s7.filtru + 1) % FILTRE_DE_STIL.length;
       if (!s7.estetica) {
         s7.estetica = true;
-        spuneScena7('Prisma: muchiile taie lumina în modele pe pereți.', 4800);
+        spuneScena7(T('gheata.prisma'), 4800);
       }
       if (audio) sunetMetalic(1046 + s7.filtru * 240);
     }
@@ -1887,9 +1887,9 @@ function click7(acum) {
       s7.caldura = 0;
       s7.tremur = Math.max(s7.tremur, 0.5);
       if (audio) sunetInghet();
-      spuneScena7('Ai atins gheața cu mâna goală. Freacă-te ca să te dezmorțești!', 5200);
+      spuneScena7(T('gheata.mainaGoala'), 5200);
     } else if (!s7.utilitate || !s7.estetica) {
-      spuneScena7('Costumul te apără, dar încă nu te ajută. Mai are două funcții.', 4200);
+      spuneScena7(T('gheata.teApara'), 4200);
     }
   }
 }
@@ -1978,7 +1978,7 @@ function actualizeazaGheata(acum) {
       s7.tremur = 1;
       facCioburi(s7.degetX, s7.degetY, 22);
       if (audio) sunetGheataCrapata();
-      spuneScena7('Te-ai dezmorțit. Costumul ăsta are trei funcții — pornește-le.', 5000);
+      spuneScena7(T('gheata.teAiDezmortit'), 5000);
     } else {
       s7.caldura = Math.max(0, s7.caldura - dt / 5200);   // frigul îți ia înapoi
     }
@@ -1997,7 +1997,7 @@ function actualizeazaGheata(acum) {
       !s7.cereScuturare && !s7.inghetat) {
     s7.cereScuturare = true;
     s7.caldura = 0;
-    spuneScena7('Costumul e pornit. Acum scutură: sparge gheața de pe lucrare!', 8000);
+    spuneScena7(T('gheata.costumPornit'), 8000);
   }
   if (s7.cereScuturare && s7.caldura >= 1) {
     s7.cereScuturare = false;
@@ -2007,7 +2007,7 @@ function actualizeazaGheata(acum) {
     facCioburi(geomSala7().vx, geomSala7().vy, 34);
     facCioburi(geomSala7().portalX, geomSala7().portalY, 20);
     if (audio) { sunetGheataCrapata(); opresteViscolul(); pornesteTurbina(); }
-    spuneScena7('Sari în vârtej!', 9000);
+    spuneScena7(T('gheata.sari'), 9000);
   }
 
   if (s7.faza === 'portal') {
@@ -2114,19 +2114,27 @@ function deseneazaScena7(t, acum) {
   if (s7.faza === 'sala' && !s7.inghetat && !s7.cereScuturare) {
     const cate = numaraFunctiile();
     let indemn = null;
-    if (!s7.protectie) indemn = 'Sub costum sunt trei forme. Apasă-le: fiecare pornește altă funcție.';
+    if (!s7.protectie) indemn = T('gheata.treiForme');
     else if (!s7.utilitate) indemn = s7.puzzleTreaz
-      ? 'Leagă liniile de forță, în ordine, de la vârtej în afară.'
-      : 'Apasă roata dințată: a doua funcție a costumului.';
-    else if (!s7.estetica) indemn = 'Apasă prisma: a treia funcție a costumului.';
+      ? T('gheata.legaLiniile')
+      : T('gheata.apasaRoata');
+    else if (!s7.estetica) indemn = T('gheata.apasaPrisma');
     if (indemn) {
-      textIncadrat(indemn, W * 0.5, H * 0.945, Math.min(W * 0.7, ecran(700)), ecran(26),
-                   `bold ${Math.max(Math.round(ecran(13)), Math.round(g.S * 0.023))}px Georgia`,
-                   cate === 0 ? ALB_GHEATA : CYAN_NEON);
+      const scris = `bold ${Math.max(Math.round(ecran(13)), Math.round(g.S * 0.023))}px Georgia`;
+      const latIndemn = Math.min(W * 0.7, ecran(700));
+      const hLinie = ecran(26);
+      /* Rândul de jos stă **cu talpa** la aceeași înălțime, nu cu creștetul: în
+         română încape într-un rând, dar în germană se rupe în două, iar al
+         doilea rând ieșea sub marginea de jos a ecranului. Se numără rândurile
+         întâi, și scrisul urcă cu atâtea câte sunt. */
+      ctx.font = scris;
+      const randuri = randuriIncapute(ctx, indemn, latIndemn).length;
+      textIncadrat(indemn, W * 0.5, H * 0.945 - Math.max(0, randuri - 1) * hLinie,
+                   latIndemn, hLinie, scris, cate === 0 ? ALB_GHEATA : CYAN_NEON);
     }
   }
   if (s7.faza === 'portal') {
-    textIncadrat('Sari în vârtej!', g.portalX, g.portalY + g.S * 0.34,
+    textIncadrat(T('gheata.sari'), g.portalX, g.portalY + g.S * 0.34,
                  Math.min(W * 0.4, ecran(400)), ecran(30),
                  `bold ${Math.max(Math.round(ecran(15)), Math.round(g.S * 0.032))}px Georgia`,
                  ALB_GHEATA);

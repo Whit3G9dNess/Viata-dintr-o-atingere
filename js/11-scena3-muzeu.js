@@ -57,17 +57,15 @@ const s3 = {
    el chiar spune cum se vizitează atelierul: că se atinge, că nu se corectează,
    că greșeala e material de lucru. Cine îl răsfoiește iese știind ce are de
    făcut în galerii — iar gluma e că exact asta scrie într-un act oficial. */
+/* Numărul articolului și cheia lui. Cuvântul „Art." nu stă aici, ci în
+   dicționar: în greacă se scrie „Άρθρο", în turcă „Madde", iar în maghiară
+   numărul vine **înaintea** semnului — „318. §". */
 const ARTICOLE_MANUAL = [
-  ['Art. 1',   'Vizitatorul are dreptul să atingă tot ce vede. Ceea ce nu suportă atingerea nu este artă, este mobilier.'],
-  ['Art. 12',  'În atelier nu se corectează. Se continuă.'],
-  ['Art. 23',  'Orice pată făcută din greșeală devine, prin prezenta, intenție.'],
-  ['Art. 47',  'Este strict interzis să vă cereți scuze pentru ce ați desenat.'],
-  ['Art. 88',  'Culoarea nu se cere de la administrație. Se ia.'],
-  ['Art. 104', 'Cine se plictisește are dreptul să strice ceva frumos și să facă altceva din el.'],
-  ['Art. 156', 'Tăcerea din fața pânzei albe nu se socotește pierdere de timp. Se socotește lucrare în curs.'],
-  ['Art. 201', 'Fiecare galerie este un atelier. Nu se vizitează cu mâinile la spate.'],
-  ['Art. 260', 'Nimeni nu pleacă fără să lase o urmă. Urma poate fi oricât de mică.'],
-  ['Art. 318', 'Semnează că ai luat la cunoștință, trăgând custodele de cercel. Toate drepturile de autor sunt rezervate vizitatorului creator.']
+  [1,   'art.1'],   [12,  'art.12'],
+  [23,  'art.23'],  [47,  'art.47'],
+  [88,  'art.88'],  [104, 'art.104'],
+  [156, 'art.156'], [201, 'art.201'],
+  [260, 'art.260'], [318, 'art.318']
 ];
 
 function faza3(nume) { s3.faza = nume; s3.t0 = performance.now(); }
@@ -607,13 +605,13 @@ function deseneazaDiploma() {
 
   if (d.p > 0.55) {
     ctx.globalAlpha = Math.max(0, stingere) * (d.p - 0.55) / 0.45;
-    textIncadrat('DIPLOMĂ DE EXCELENȚĂ', 0, -h * 0.34, w * 0.8,
+    textIncadrat(T('muzeu.diplomaTitlu'), 0, -h * 0.34, w * 0.8,
                  w * 0.07, `bold ${Math.round(w * 0.055)}px Georgia`, '#8f2c38');
-    textIncadrat('Se acordă titlul de Cel Mai Ascultător Jucător. Pentru a ridica premiul, trage de cercel.',
+    textIncadrat(T('muzeu.diploma'),
                  0, -h * 0.14, w * 0.74, w * 0.055, `${Math.round(w * 0.042)}px Georgia`, '#2b2b2b');
     ctx.textAlign = 'right'; ctx.fillStyle = '#6b6152';
     ctx.font = `italic ${Math.round(w * 0.034)}px Georgia`;
-    ctx.fillText('— Direcțiunea Muzeului', w * 0.4, h * 0.34);
+    ctx.fillText(T('muzeu.semnatura'), w * 0.4, h * 0.34);
     // sigiliu de ceară cu panglică
     ctx.fillStyle = '#8f2c38';  // (panglica se desenează sub sigiliu, mai jos)
     ctx.beginPath(); ctx.arc(-w * 0.3, h * 0.28, w * 0.05, 0, Math.PI * 2); ctx.fill();
@@ -726,23 +724,26 @@ function deseneazaManual(d) {
   if (deschis > 0.6) {
     ctx.globalAlpha = (deschis - 0.6) / 0.4;
     const lat = w * 0.44;
-    textIncadrat('MANUAL DE', -w * 0.27, -ph * 0.40, lat * 0.95,
+    textIncadrat(T('muzeu.manual1'), -w * 0.27, -ph * 0.40, lat * 0.95,
                  w * 0.05, `bold ${Math.round(w * 0.036)}px Georgia`, '#3a2a18');
-    textIncadrat('INSTRUCȚIUNI', -w * 0.27, -ph * 0.40 + w * 0.05, lat * 0.95,
+    textIncadrat(T('muzeu.manual2'), -w * 0.27, -ph * 0.40 + w * 0.05, lat * 0.95,
                  w * 0.05, `bold ${Math.round(w * 0.036)}px Georgia`, '#3a2a18');
-    textIncadrat('pagina ' + s3.manualPagina + ' / 369', -w * 0.27, -ph * 0.14, lat * 0.9,
+    /* Rândul întreg vine din dicționar, cu numărul pus la loc, nu lipit în față:
+       în maghiară numărul stă **înaintea** cuvântului („3. oldal"), iar un
+       „pagina " + cifră ar fi ieșit pe dos tocmai acolo. */
+    textIncadrat(T('muzeu.pagina').replace('{n}', s3.manualPagina), -w * 0.27, -ph * 0.14, lat * 0.9,
                  w * 0.04, `${Math.round(w * 0.03)}px Georgia`, '#8a7a58');
     if (s3.manualPagina >= 369) {
-      textIncadrat('Ați parcurs regulamentul. Semnați trăgând custodele de cercel.',
+      textIncadrat(T('muzeu.amParcurs'),
                    w * 0.27, -ph * 0.2, lat * 0.9, w * 0.05,
                    `bold ${Math.round(w * 0.034)}px Georgia`, '#b23a48');
     } else {
       const art = ARTICOLE_MANUAL[s3.articol % ARTICOLE_MANUAL.length];
-      textIncadrat(art[0], w * 0.27, -ph * 0.34, lat * 0.9, w * 0.045,
+      textIncadrat(T('art.eticheta').replace('{n}', art[0]), w * 0.27, -ph * 0.34, lat * 0.9, w * 0.045,
                    `bold ${Math.round(w * 0.03)}px Georgia`, '#8a7a58');
-      const jos = textIncadrat(art[1], w * 0.27, -ph * 0.22, lat * 0.86, w * 0.05,
+      const jos = textIncadrat(T(art[1]), w * 0.27, -ph * 0.22, lat * 0.86, w * 0.05,
                                `${Math.round(w * 0.032)}px Georgia`, '#2b2b2b');
-      textIncadrat('(răsfoiește mai departe)', w * 0.27, jos + w * 0.02, lat * 0.86,
+      textIncadrat(T('muzeu.rasfoieste'), w * 0.27, jos + w * 0.02, lat * 0.86,
                    w * 0.04, `italic ${Math.round(w * 0.026)}px Georgia`, '#8d8570');
     }
   }
@@ -848,7 +849,7 @@ function deseneazaBuzunar(g, chemare, acum) {
   ctx.fillStyle = '#3a2a10';
   ctx.font = `bold ${Math.round(ph * 0.62)}px Georgia`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('GALERIE', px, py + ph * 0.04);
+  ctx.fillText(T('muzeu.galerie'), px, py + ph * 0.04);
 
   if (s3.vizitat) {                        // galeria văzută, însemnată cu alamă
     ctx.strokeStyle = ALAMA; ctx.lineWidth = Math.max(1.6, b.w * 0.026); ctx.lineCap = 'round';
@@ -1580,8 +1581,8 @@ function actualizeazaMuzeu(acum) {
     const niv = idle > 120000 ? 3 : idle > 60000 ? 2 : idle > 30000 ? 1 : 0;
     if (niv > s3.nivelInactiv) {
       s3.nivelInactiv = niv;
-      if (niv === 1) aratBilet('Timpul trece. Ce mai stai?');
-      if (niv === 2) aratBilet('Ai înghețat? E doar un cercel, nu mușcă. Trage de el!');
+      if (niv === 1) aratBilet(T('muzeu.timpul'));
+      if (niv === 2) aratBilet(T('muzeu.aiInghetat'));
     }
     if (niv >= 1 && acum - s3.ultimTic > 1000) { s3.ultimTic = acum; if (audio) sunetTicTac(); }
 
@@ -1634,7 +1635,7 @@ function actualizeazaMuzeu(acum) {
   if (!s3.cercelInPalma && s3.incercari >= PRAG_PALMA &&
       (s3.faza === 'sonerie' || s3.faza === 'manual')) {
     s3.cercelInPalma = true;
-    aratBilet('Ia-l tu, dacă tot nu vrea să se lase prins.');
+    aratBilet(T('muzeu.iaLTu'));
     if (audio) sunetClopotel(784);
   }
   if (s3.cercelInPalma) {
@@ -1745,13 +1746,12 @@ function deseneazaScena3(t, acum) {
     deseneazaPlic(s3.plicX, s3.plicY, puls);
     /* Vorba stă deasupra custodelui, nu sub plic: acolo se uită ochiul când
        intră în scenă, și de acolo n-are ce să acopere. */
-    textIncadrat('Ai primit un plic. Deschide-l.', W * 0.5, H * 0.1, W * 0.7, ecran(26),
+    textIncadrat(T('muzeu.plic'), W * 0.5, H * 0.1, W * 0.7, ecran(26),
                  scrisGeorgia(20, 'bold'), CREM_HARTIE);
   }
   else if (s3.faza === 'scrisoare') {
     // scrisoarea oficială
-    const textNotificare = 'Stimate jucător, prin prezenta vă notificăm că este de ' +
-      'datoria dumneavoastră legală să trageți custodele de cercel.';
+    const textNotificare = T('muzeu.notificare');
     /* Foaia se croiește **după scris**, nu invers. Avea o înălțime fixă, iar de
        când i-a plecat semnătura de la subsol îi rămânea o jumătate de pagină
        goală — iar o hârtie oficială cu jumătate de pagină albă arată a formular
@@ -1773,11 +1773,11 @@ function deseneazaScena3(t, acum) {
     ctx.fillStyle = '#f7f2e6'; ctx.fillRect(-w / 2, -h / 2, w, h);
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#b23a48'; ctx.font = scrisGeorgia(20, 'bold'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('NOTIFICARE OFICIALĂ', 0, -h / 2 + ecran(20));
+    ctx.fillText(T('muzeu.notificareTitlu'), 0, -h / 2 + ecran(20));
     textIncadrat(textNotificare, 0, -h / 2 + susText, latScris, ecran(28),
                  scrisGeorgia(19), '#2b2b2b');
     ctx.restore();
-    textIncadrat('(atinge scrisoarea)', W * 0.5, y + h / 2 + ecran(16), W * 0.5, ecran(20), scrisGeorgia(15), '#666');
+    textIncadrat(T('muzeu.atingeScrisoarea'), W * 0.5, y + h / 2 + ecran(16), W * 0.5, ecran(20), scrisGeorgia(15), '#666');
   }
   else if (s3.faza === 'manual') {
     deseneazaManual(s3.manualDeschidere);
@@ -1789,7 +1789,7 @@ function deseneazaScena3(t, acum) {
       /* Pe frunziș, litera singură se pierde. Avea o umbră estompată, cerută de
          trei ori la fiecare cadru — cât toată grădina la un loc. Acum stă pe o
          plăcuță de lumină, care costă o umplere. */
-      const vorba = 'Trage-l de cercel.';
+      const vorba = T('muzeu.trageDeCercel');
       const tx = W * 0.88, ty = H * 0.3;
       ctx.font = scrisGeorgia(19, 'bold');
       const latVorba = ctx.measureText(vorba).width;
@@ -1801,7 +1801,7 @@ function deseneazaScena3(t, acum) {
       textIncadrat(vorba, tx, ty, W * 0.24, ecran(22), scrisGeorgia(19, 'bold'), '#22301c');
     }
     if (s3.faza === 'nuMaApasa' && s3.butonFuge) {
-      textIncadrat('Prinde-l și apasă-l!', W * 0.5, geomMuzeu().top - ecran(10), W * 0.5, ecran(20), scrisGeorgia(18, 'bold'), '#b23a48');
+      textIncadrat(T('muzeu.prindeL'), W * 0.5, geomMuzeu().top - ecran(10), W * 0.5, ecran(20), scrisGeorgia(18, 'bold'), '#b23a48');
     }
   }
   else if (s3.faza === 'aburi') {
@@ -1809,8 +1809,8 @@ function deseneazaScena3(t, acum) {
     ctx.fillStyle = `rgba(255,255,255,${p})`; ctx.fillRect(0, 0, W, H);
     if (p > 0.7) {
       ctx.fillStyle = '#555'; ctx.font = scrisGeorgia(26, 'bold'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      textIncadrat('Ai fost înghițit de viu de propria curiozitate.', W * 0.5, H * 0.45, W * 0.7, ecran(34), scrisGeorgia(26, 'bold'), '#555');
-      textIncadrat('(atinge pentru a relua)', W * 0.5, H * 0.6, W * 0.5, ecran(22), scrisGeorgia(16), '#999');
+      textIncadrat(T('muzeu.inghitit'), W * 0.5, H * 0.45, W * 0.7, ecran(34), scrisGeorgia(26, 'bold'), '#555');
+      textIncadrat(T('muzeu.reia'), W * 0.5, H * 0.6, W * 0.5, ecran(22), scrisGeorgia(16), '#999');
     }
     return;
   }
@@ -1827,9 +1827,7 @@ function deseneazaScena3(t, acum) {
     /* Cui n-a atins nimic i se poate spune că a câștigat prin ignoranță. Cui a
        încercat de douăzeci de ori și n-a izbutit, nu — ar fi o minciună și o
        răutate. Custodele știe diferența. */
-    textIncadrat(s3.incercari > 0
-      ? 'Ai încercat până s-a făcut floare. Ai câștigat răbdarea, care e mai rară.'
-      : 'Felicitări, ai spart bucla prin ignoranță. Ai câștigat iluminarea spirituală.',
+    textIncadrat(s3.incercari > 0 ? T('muzeu.rabdarea') : T('muzeu.ignoranta'),
       W * 0.5, H * 0.2, W * 0.7, ecran(30), scrisGeorgia(22, 'bold'), '#456');
     return;
   }
@@ -1863,13 +1861,13 @@ function click3(acum) {
   if (s3.faza === 'manual') {
     actiune3(acum);
     if (s3.manualPagina < 369) { s3.manualPagina = Math.min(369, s3.manualPagina + 30 + Math.floor(Math.random() * 18)); s3.articol++; if (audio) sunetHartie(); }
-    else if (peButon(x, y)) { s3.stralucire = 1; faza3('nuMaApasa'); s3.presari = 0; s3.refuzArmat = false; s3.bilet = null; if (audio) sunetEroare(); aratBilet('NU MĂ APĂSA!'); }
+    else if (peButon(x, y)) { s3.stralucire = 1; faza3('nuMaApasa'); s3.presari = 0; s3.refuzArmat = false; s3.bilet = null; if (audio) sunetEroare(); aratBilet(T('muzeu.nuMaApasa')); }
     else rateazaCercelul(acum);
     return;
   }
   if (s3.faza === 'nuMaApasa') {
     if (s3.butonFuge) {
-      if (peButon(x, y)) { actiune3(acum); s3.stralucire = 1; s3.butonFuge = false; s3.diploma = null; aratBilet('Bine, mă predau. Ai câștigat spațiul gol.'); faza3('usaDeschisa'); s3.usa = 0.02; if (audio) sunetUsa(); }
+      if (peButon(x, y)) { actiune3(acum); s3.stralucire = 1; s3.butonFuge = false; s3.diploma = null; aratBilet(T('muzeu.maPredau')); faza3('usaDeschisa'); s3.usa = 0.02; if (audio) sunetUsa(); }
       else rateazaCercelul(acum);
       return;
     }
@@ -1878,7 +1876,7 @@ function click3(acum) {
       actiune3(acum); s3.stralucire = 1; s3.presari++;
       if (s3.presari >= 50) { faza3('aburi'); if (audio) sunetAburi(); return; }
       if (audio) sunetEroare();
-      const mesaje = ['Știam eu că nu te poți abține. Apasă-mă iar.', 'Serios? Încă o dată?', 'Nu spune că nu te-am avertizat.', 'Ai o mică problemă cu autocontrolul.'];
+      const mesaje = [T('carbune.taunt1'), T('carbune.taunt2'), T('carbune.taunt3'), T('carbune.taunt4')];
       aratBilet(mesaje[s3.presari % mesaje.length]);
       return;
     }

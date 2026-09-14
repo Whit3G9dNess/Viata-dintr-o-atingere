@@ -160,11 +160,12 @@ const DARE_CLEI = [
 
    Se pun ultimele, peste tot restul: sunt singurele bucăți de pe perete care
    trebuie **citite**, iar un text pe jumătate acoperit nu e un text. */
-const TEXT_JUNK = 'Junk Art este un curent artistic care folosește obiecte și ' +
-  'materiale uzate sau aruncate pentru a crea opere de artă.';
-const TEXT_COLAJ = 'Colajul este o tehnică artistică prin care se combină și se ' +
-  'lipesc pe o suprafață diferite materiale, imagini sau fragmente pentru a forma ' +
-  'o compoziție nouă.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* Biletețele nu mai sunt lipite pe perete: atârnă de sfoara de-a latul, prinse cu
    cleștișori de rufe. Și, dacă tragi de sfoara aceea, se desprind și cad.
@@ -176,9 +177,9 @@ const TEXT_COLAJ = 'Colajul este o tehnică artistică prin care se combină și
    ești brusc, nu numai când ești cuminte. */
 const FISE_COLAJ = [
   { fel: 'ziar',   peSfoara: 'rufe', t: 0.255, w: 0.252, h: 0.210, unghi: -0.045, sam: 301,
-    titlu: 'JUNK ART', scris: TEXT_JUNK, cazut: 0, leagan: 0.0 },
+    cheie: 'junk', cazut: 0, leagan: 0.0 },
   { fel: 'carton', peSfoara: 'rufe', t: 0.700, w: 0.250, h: 0.215, unghi:  0.035, sam: 313,
-    titlu: 'COLAJUL',  scris: TEXT_COLAJ, cazut: 0, leagan: 1.9 }
+    cheie: 'colaj', cazut: 0, leagan: 1.9 }
 ];
 
 /* Unde stă un bilet acum: atârnat de funie, sau căzut pe jos. */
@@ -284,7 +285,7 @@ function deseneazaBiletele(c, acum) {
     c.save();
     c.translate(loc.x, loc.y);
     c.rotate(loc.unghi);
-    const fals = { fel: f.fel, sam: f.sam, scris: f.scris, titlu: f.titlu };
+    const fals = { fel: f.fel, sam: f.sam, cheie: f.cheie };
     umbraPiesei(c, fals, w, h);
     if (f.fel === 'ziar') bucataDeZiar(c, fals, w, h);
     else bucataDeCarton(c, fals, w, h);
@@ -304,6 +305,16 @@ function deseneazaBiletele(c, acum) {
    al muzeului: acela scrie pe pânza de pe ecran, iar aici scriem pe ștampila
    peretelui, în sistemul răsucit al bucății. */
 function scrieCuvinte(c, text, latMax, marime, culoare, x, y, hLinie) {
+  /* Litera se strânge dacă un cuvânt singur nu încape pe lățimea bucății.
+     Ruperea în rânduri se face după spații, deci un cuvânt lung n-are unde să se
+     frângă și ar ieși peste marginea cartonului rupt. În română nu se întâmpla;
+     în germană și neerlandeză, da. */
+  for (let k = 0; k < 10; k++) {
+    c.font = Math.round(marime) + 'px Georgia, serif';
+    if (celMaiLatRand(c, randuriIncapute(c, text, latMax)) <= latMax || marime <= 7) break;
+    marime *= 0.93;
+    hLinie *= 0.93;
+  }
   c.font = Math.round(marime) + 'px Georgia, serif';
   c.fillStyle = culoare;
   c.textAlign = 'left';
@@ -348,11 +359,11 @@ function fisaScrisa(c, p, w, h) {
   c.fillStyle = CERNEALA_FISA;
   c.textAlign = 'left';
   c.textBaseline = 'top';
-  c.fillText(p.titlu, -w * 0.40, -h * 0.38);
+  c.fillText(T('colaj.' + p.cheie + 'Titlu'), -w * 0.40, -h * 0.38);
   c.globalAlpha = 0.55;
   c.fillRect(-w * 0.40, -h * 0.38 + marime * 1.7, w * 0.80, Math.max(1, h * 0.008));
   c.globalAlpha = 1;
-  scrieCuvinte(c, p.scris, w * 0.80, marime, CERNEALA_FISA,
+  scrieCuvinte(c, T('colaj.' + p.cheie), w * 0.80, marime, CERNEALA_FISA,
                -w * 0.40, -h * 0.38 + marime * 2.5, marime * 1.34);
   c.restore();
 }
@@ -580,7 +591,7 @@ function bucataDeZiar(c, p, w, h) {
   }
   c.globalAlpha = 1;
 
-  if (p.scris) { c.restore(); return; }    // pe fișe se scrie altceva, mai încolo
+  if (p.cheie) { c.restore(); return; }    // pe fișe se scrie altceva, mai încolo
 
   // titlul, gros și scurt
   c.fillStyle = CERNEALA;
@@ -1719,7 +1730,7 @@ function intraInColaj(acum) {
   for (const f of FISE_COLAJ) f.cazut = 0;
   stampaPeretelui.latime = 0;         // peretele se face din nou, cu piese noi
   pregatestePeretele();
-  batLaMasina('Închide ochii și simte texturile.', 1400);
+  batLaMasina(T('colaj.inchideOchii'), 1400);
   opresteVinilul();
   pornesteAtelierRetro();
   if (audio) sunetPortal();
@@ -1943,7 +1954,7 @@ function actualizeazaColaj(acum) {
         if (!s10.candDoarSfori) s10.candDoarSfori = acum;
         else if (acum - s10.candDoarSfori > 7000) {
           s10.aSpusSforile = true;
-          batLaMasina('Sforile nu se apasă. Se trag.', 4200);
+          batLaMasina(T('colaj.sforile'), 4200);
         }
       } else {
         s10.candDoarSfori = 0;
@@ -1951,7 +1962,7 @@ function actualizeazaColaj(acum) {
     }
     if (s10.activate >= s10.piese.length) {
       s10.faza = 'desprindere'; s10.t0 = acum;
-      batLaMasina('Timpul este legat cu sfoară și lipit cu clei. Desprinde straturile.', 5200);
+      batLaMasina(T('colaj.timpul'), 5200);
     }
   }
   else if (s10.faza === 'desprindere') {

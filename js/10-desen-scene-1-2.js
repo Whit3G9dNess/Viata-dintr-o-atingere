@@ -10,17 +10,17 @@ function deseneazaInvitatia(t) {
   const a1 = alfaPagina(tp, PAGINI_INVITATIE[0]);
   if (a1 > 0) {
     const marime = cat(0.062, 26, 62);
-    titluDeTipar('VIAȚA DINTR-O ATINGERE', W / 2, H * 0.47, marime, marime * 0.22, a1);
+    titluDeTipar(T('titlu'), W / 2, H * 0.47, marime, marime * 0.22, a1);
   }
 
   // pagina a doua: ce fel de lucru ai în față
   const a2 = alfaPagina(tp, PAGINI_INVITATIE[1]);
   if (a2 > 0) {
     const marime = cat(0.032, 16, 30);
-    textIncadrat('O jucărie digitală nu are scop și nu are sfârșit.',
+    textIncadrat(T('desch.rand1'),
       W / 2, H * 0.42, W * 0.74, marime * 1.6,
       `${marime}px Georgia`, `rgba(238, 230, 214, ${a2})`);
-    textIncadrat('Experimentează ce se naște dintr-un punct.',
+    textIncadrat(T('desch.rand2'),
       W / 2, H * 0.42 + marime * 2.1, W * 0.74, marime * 1.6,
       `italic ${marime}px Georgia`, `rgba(206, 198, 184, ${a2 * 0.9})`);
   }
@@ -33,7 +33,7 @@ function deseneazaInvitatia(t) {
     ctx.globalAlpha = a3;
     /* Mânuța se așază sub ultimul rând scris, nu la o înălțime fixă: pe ecran
        îngust îndemnul trece pe două rânduri și i-ar cădea peste degete. */
-    const jos = textIncadrat('Atinge ecranul oriunde, ca să înceapă — apoi atinge tot ce mișcă.',
+    const jos = textIncadrat(T('desch.indemn'),
       W / 2, H * 0.28, W * 0.72, marime * 1.5,
       `${marime}px Georgia`, 'rgba(255, 244, 222, 0.92)');
     /* Mâna se întinde de la un vârf de deget la o mărime deasupra palmei până

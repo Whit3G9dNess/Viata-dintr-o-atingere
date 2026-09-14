@@ -73,16 +73,9 @@ const ALAMA_SALA     = '#c9a24a';
    **materia**, fiindcă sala asta nu e despre un curent, e despre pastă. Și
    pregătește sala următoare: un pigment pe bază de apă e o acuarelă, iar prin
    trapa de sub podium tocmai într-acolo se coboară. */
-const TEXT_FISA_PIGMENTI =
-  'Culorile pigmentare sunt formate din materie (pigmenți organici sau minerali ' +
-  'prelucrați și amestecați cu un liant), având o prezență fizică ' +
-  'tangibilă. În schimb, culorile spectrale (lumina) sunt unde electromagnetice ' +
-  'percepute de ochi.\n' +
-  'Pigmenții au nevoie de un liant pentru a fi aplicați. În funcție de acesta, ' +
-  'culorile se împart în culori pe bază de apă (acuarelă, tempera, guașă, acrilic) ' +
-  'sau pe bază de ulei.\n' +
-  'Vopseaua poate fi aplicată pe suport (pânză, hârtie, lemn etc.) cu pensula, cu ' +
-  'cuțitul de paletă, prin tamponare, prin stropire sau prin presare.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* ---------- USTENSILELE ---------- */
 /* Șase, și fiecare lasă altceva. Nu sunt șase butoane cu aceeași urmă în altă
@@ -1574,7 +1567,7 @@ function loculFisei(g) { return H * 0.90 - g.fisaY; }
 function masuraFisei(c, g) {
   const locul = loculFisei(g);
   let marime = Math.max(9, Math.min(g.fisaLat * 0.055, g.S * 0.021));
-  const paragrafe = TEXT_FISA_PIGMENTI.split('\n');
+  const paragrafe = T('ulei.fisa').split('\n');
   let inalt = 0;
   c.save();
   for (let k = 0; k < 24; k++) {
@@ -1610,7 +1603,7 @@ function fisaDeSala8(c, g, gr) {
      cu trei litere diferite arată a colaj. */
   const marime = m.marime;
   let yy = y + w * 0.06;
-  for (const par of TEXT_FISA_PIGMENTI.split('\n')) {
+  for (const par of T('ulei.fisa').split('\n')) {
     yy = scrieInCaseta(c, par, x + w * 0.5, yy, w * 0.86, h, marime, '', '#3a342c');
     yy += marime * 0.75;
   }
@@ -1763,11 +1756,11 @@ function indemnulScenei8(g, locuri) {
      sală întunecată, un dreptunghi galben în colț arată a etichetă lipită. */
   ctx.fillStyle = '#f6f1e4';
   ctx.font = `bold ${Math.round(marimeMare)}px Georgia`;
-  ctx.fillText('Spațiul este pânza ta.', cx, R.textY + R.textInalt * 0.30);
+  ctx.fillText(T('ulei.spatiul'), cx, R.textY + R.textInalt * 0.30);
   ctx.fillStyle = 'rgba(240, 232, 214, 0.78)';
   ctx.font = `italic ${Math.round(marimeMare * 0.78)}px Georgia`;
-  ctx.fillText('Lasă-ți amprenta.', cx, R.textY + R.textInalt * 0.62);
-  ctx.fillText('Personalizează exponatul.', cx, R.textY + R.textInalt * 0.88);
+  ctx.fillText(T('ulei.amprenta'), cx, R.textY + R.textInalt * 0.62);
+  ctx.fillText(T('ulei.personalizeaza'), cx, R.textY + R.textInalt * 0.88);
 
   // o linie subțire sub text, care desparte registrul în încăperi
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
@@ -2633,7 +2626,7 @@ function actualizeazaUleiul(acum) {
     if (s8.inramare >= 1) {
       s8.faza = 'postament'; s8.t0 = acum;
       if (audio) sunetClopotel(660);
-      spuneScena8('Ești invitat pe postament.', 9000);
+      spuneScena8(T('ulei.postament'), 9000);
     }
   }
 

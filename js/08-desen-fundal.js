@@ -59,6 +59,21 @@ function randuriIncapute(c, text, latime) {
   return randuri;
 }
 
+/* Cât ține cel mai lat rând dintr-o rupere. Nu e o socoteală de prisos: ruperea
+   se face **după spații**, deci un cuvânt singur, mai lat decât caseta, rămâne
+   un rând întreg și iese din chenar — oricâte rânduri ar avea loc pe înălțime.
+
+   În română nu se vedea, fiindcă n-avem cuvinte atât de lungi. Germana scrie
+   „GEBRAUCHSFUNKTION" într-un singur cuvânt, neerlandeza „UITMUNTENDHEID", iar
+   ucraineana leagă cu cratimă „відвідувачеві-творцеві". De când jucăria vorbește
+   cincisprezece limbi, litera trebuie aleasă și după lățime, nu numai după cât
+   loc are pe verticală. */
+function celMaiLatRand(c, randuri) {
+  let lat = 0;
+  for (const r of randuri) lat = Math.max(lat, c.measureText(r).width);
+  return lat;
+}
+
 /* Fișa nu e un carton agățat pe perete: e **pictată pe perete**, ca o inscripție
    murală. Are câmpul ei de tencuială, mai deschis decât mătasea din jur, un
    chenar tras cu pensula în ocru și câte o voluță în creștet și în poale. Litera
@@ -76,20 +91,9 @@ function randuriIncapute(c, text, latime) {
 
    Se scriu cu o cerneală abia vizibilă: cine vrea le citește, cine nu se joacă
    mai departe. Un text de manual pus tare peste o jucărie o face temă de casă. */
-const DEFINITIE_PUNCT =
-  'Punctul este cel mai simplu element de limbaj vizual, reprezentând urma ' +
-  'lăsată de un instrument pe o suprafață și centrul dinamic din care se ' +
-  'dezvoltă o compoziție.';
-
-const DEFINITIE_LINIE =
-  'Linia este elementul vizual unidimensional ce ia naștere prin mișcarea ' +
-  'continuă a unui punct pe o suprafață, având rolul de a contura forme, de a ' +
-  'exprima direcție și de a reda dinamism.';
-
-const DEFINITIE_PATA =
-  'Pata de culoare este o suprafață bine delimitată de pigment aplicată pe un ' +
-  'suport, care creează efecte decorative, spațiale sau expresive în cadrul ' +
-  'unei compoziții plastice.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* Un bloc de text așezat pe fundal, rupt singur în rânduri.
 

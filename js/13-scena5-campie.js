@@ -57,10 +57,9 @@ function geomCasa(w, h) {
   return { x, lat, talpa, soclu, inalt, sus, usaX, usaY, usaW, usaH };
 }
 
-const TEXT_FISA_IMPRESIONISM =
-  'Impresionismul este un curent artistic apărut în Franța secolului al XIX-lea, ' +
-  'caracterizat prin captarea impresiilor vizuale de moment și a jocului de lumină ' +
-  'prin tușe rapide și libere de culoare.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* Contrastul cald-rece, ținut discret: o notă de portocaliu pe unde bate lumina,
    una de albastru în umbra din partea cealaltă. Sala rămâne albă — nu se
@@ -1749,7 +1748,7 @@ function click5(acum) {
      tabloul, nu numai pe usa: usa e mica in panza, iar cine nu nimereste de doua
      ori crede ca nu se poate intra. */
   if (s5.faza === 'casa' && s5.usi > 0.75) {
-    const T = pregatesteTablou();
+    const TABLOUL = pregatesteTablou();
     if (typeof intraInFoc === 'function') intraInFoc(acum);
     return;
   }
@@ -1856,7 +1855,7 @@ function panzaDeLucru(care, w, h) {
 
 function deseneazaScena5(t, acum) {
   actualizeazaCampia(acum);
-  const T = pregatesteTablou();
+  const TABLOUL = pregatesteTablou();
 
   // sala: perete deschis, cu o linie de podea
   const podea = H * 0.8;
@@ -1895,7 +1894,7 @@ function deseneazaScena5(t, acum) {
 
      De-aia strâmtarea e leneșă la început: cu o curbă iute, rama se ivea din
      primul pas și se pierdea tocmai momentul în care nu știi încă ce privești. */
-  const acopera = Math.max(W, H * T.latime / T.inaltime) * 1.03 / (1 - 2 * PROFIL_RAMEI);
+  const acopera = Math.max(W, H * TABLOUL.latime / TABLOUL.inaltime) * 1.03 / (1 - 2 * PROFIL_RAMEI);
   /* Primii trei pași abia o strâng — în ei se limpezesc doar pătratele, și tot
      nu se vede nici rama, nici sala. Restul drumului face toată depărtarea.
      Cu o curbă simplă, oricât de leneșă, rama fie se ivea din primul pas, fie
@@ -1930,12 +1929,12 @@ function deseneazaScena5(t, acum) {
 
 
   // compunem tabloul cu tot cu oameni, apoi îl pixelăm după cât de departe ești
-  const comp = panzaDeLucru(compunerea, T.latime, T.inaltime);
+  const comp = panzaDeLucru(compunerea, TABLOUL.latime, TABLOUL.inaltime);
   const cc = comp.getContext('2d');
-  cc.clearRect(0, 0, T.latime, T.inaltime);
-  cc.drawImage(T.panza, 0, 0);
-  usileCasei(cc, T.latime, T.inaltime, s5.usi);
-  taraniiIn(cc, T.latime, T.inaltime, acum);
+  cc.clearRect(0, 0, TABLOUL.latime, TABLOUL.inaltime);
+  cc.drawImage(TABLOUL.panza, 0, 0);
+  usileCasei(cc, TABLOUL.latime, TABLOUL.inaltime, s5.usi);
+  taraniiIn(cc, TABLOUL.latime, TABLOUL.inaltime, acum);
 
   if (s5.faza === 'pixeli') {
     /* Pixelii haotici de la intrare: se retrag încet, ca o ceață care se ridică
@@ -1958,7 +1957,7 @@ function deseneazaScena5(t, acum) {
     ctx.drawImage(comp, x, y, lat, inalt);
   } else {
     const nivel = Math.max(6, Math.round(intre(9, 300, Math.pow(s5.claritate, 0.75))));
-    const mic = panzaDeLucru(marunt, nivel, Math.max(4, Math.round(nivel * T.inaltime / T.latime)));
+    const mic = panzaDeLucru(marunt, nivel, Math.max(4, Math.round(nivel * TABLOUL.inaltime / TABLOUL.latime)));
     const mc = mic.getContext('2d');
     mc.clearRect(0, 0, mic.width, mic.height);
     mc.drawImage(comp, 0, 0, mic.width, mic.height);
@@ -1980,7 +1979,7 @@ function deseneazaScena5(t, acum) {
     const lat = Math.min(W * 0.2, Math.max(W * 0.12, rx - W * 0.055));
     const inalt = Math.min(inaltRama * 0.78, podea * 0.52);
     fisaPePanou(ctx, rx - lat - W * 0.028, ry + inaltRama * 0.5 - inalt / 2,
-                lat, inalt, 'Impresionism', TEXT_FISA_IMPRESIONISM, null, true);
+                lat, inalt, T('campie.fisaTitlu'), T('campie.fisa'), null, true);
   }
 
   if (s5.faza === 'sala' || s5.faza === 'viu') pantofiiDePeJos();
@@ -1989,8 +1988,11 @@ function deseneazaScena5(t, acum) {
   if (s5.faza === 'sala') {
     const ramase = PASI_INAPOI - s5.pasi;
     const vorba = ramase === PASI_INAPOI
-      ? 'Fă 10 pași în spate.'
-      : (ramase > 0 ? 'Încă ' + ramase + (ramase === 1 ? ' pas.' : ' pași.') : '');
+      ? T('campie.pasi10')
+      : (ramase > 0
+          ? (ramase === 1 ? T('campie.incaUnPas')
+                          : T('campie.incaPasi').replace('{n}', ramase))
+          : '');
     if (vorba) {
       ctx.font = scrisGeorgia(22, 'bold');
       const latV = ctx.measureText(vorba).width;
@@ -2014,7 +2016,7 @@ function deseneazaScena5(t, acum) {
   /* Strigatul lor, scris. A fost o vreme rostit cu vocea calculatorului — se
      auzea, dar suna a robot, nu a om care striga peste camp. Mai bine citit. */
   if (s5.faza === 'viu') {
-    const vorba = 'De acolo, de departe, ne vezi mai bine? Hai cu noi!';
+    const vorba = T('campie.neVezi');
     ctx.font = scrisGeorgia(22, 'bold');
     const latV = ctx.measureText(vorba).width;
     /* Strigătul cade **între pantofi și ramă**, nu peste pantofi. Scris la o
@@ -2034,7 +2036,7 @@ function deseneazaScena5(t, acum) {
     textIncadrat(vorba, W * 0.5, cy, W * 0.7, ecran(26), scrisGeorgia(22, 'bold'), '#3a3327');
   }
   if (s5.faza === 'casa' && s5.usi > 0.5) {
-    textIncadrat('Hai înăuntru.', W * 0.5, H * 0.86, W * 0.5, 26,
+    textIncadrat(T('campie.haiInauntru'), W * 0.5, H * 0.86, W * 0.5, 26,
                  scrisGeorgia(21, 'bold'), '#4a4132');
   }
 }

@@ -10,7 +10,14 @@ stropești, rupi, ștergi. Nu are meniu, nu are butoane, nu are text de ajutor. 
 se poate atinge, strălucește.
 
 **Nicio bibliotecă, niciun pas de compilare, niciun fișier de imagine sau de
-sunet.** Douăzeci și două de fișiere JavaScript și o pagină HTML.
+sunet.** Douăzeci și trei de fișiere JavaScript și o pagină HTML.
+
+Vorbește **cincisprezece limbi** — română, engleză, cehă, germană, greacă,
+spaniolă, franceză, italiană, maghiară, neerlandeză, polonă, portugheză, turcă,
+ucraineană, rusă. Butonul cu globul, din colțul din dreapta jos, le schimbă **în
+mijlocul jocului**: nu se reîncarcă nimic și nu se pierde drumul făcut până
+acolo. La prima deschidere, jucăria încearcă limba browserului; pe urmă ține
+minte ce ai ales.
 
 ## Cum o pornești
 
@@ -138,7 +145,7 @@ sus, ceva de dedesubt rămâne fără pământ.
 
 ## Teste
 
-`teste.html` rulează **321 de teste** în browser, fără nimic de instalat. Ele nu
+`teste.html` rulează **334 de teste** în browser, fără nimic de instalat. Ele nu
 copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
 aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
 un test poate să întrebe „câte forme s-au desenat aici", „ce scrie pe ecran" sau

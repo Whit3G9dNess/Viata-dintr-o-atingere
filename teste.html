@@ -366,6 +366,18 @@ return {
      în consolă, ca jucăria să nu înțepenească pe veci. La teste vrem exact pe dos:
      o greșeală trebuie să pice testul, nu să fie înghițită și să treacă verde. */
   deseneazaCursorul: typeof deseneazaCursorul !== "undefined" ? deseneazaCursorul : null,
+  T: typeof T !== "undefined" ? T : null,
+  LIMBI: typeof LIMBI !== "undefined" ? LIMBI : null,
+  NUMELE_LIMBILOR: typeof NUMELE_LIMBILOR !== "undefined" ? NUMELE_LIMBILOR : null,
+  ORDINEA_LIMBILOR: typeof ORDINEA_LIMBILOR !== "undefined" ? ORDINEA_LIMBILOR : null,
+  schimbaLimba: typeof schimbaLimba !== "undefined" ? schimbaLimba : null,
+  limba: function () { return typeof limba !== "undefined" ? limba : null; },
+  stampilele: typeof stampilele !== "undefined" ? stampilele : null,
+  STAMPILE_FARA_TEXT: typeof STAMPILE_FARA_TEXT !== "undefined" ? STAMPILE_FARA_TEXT : null,
+  /* Cele două pânze pe care schimbarea limbii **nu** are voie să le arunce:
+     acolo stă ce a pictat și ce a șters jucătorul. */
+  stratulDePictura: function () { return typeof stratulDePictura !== "undefined" ? stratulDePictura : null; },
+  panzaCarbunelui: function () { return typeof panzaCarbunelui !== "undefined" ? panzaCarbunelui : null; },
   cadru: typeof unCadru !== "undefined" ? unCadru : cadru,
   redimensioneaza: redimensioneaza,
   orizont: orizont,
@@ -433,9 +445,6 @@ return {
   fisaPePanou: typeof fisaPePanou !== "undefined" ? fisaPePanou : null,
   scrieIntins: typeof scrieIntins !== "undefined" ? scrieIntins : null,
   salaGalerie: function () { return typeof salaGalerie !== "undefined" ? salaGalerie : null; },
-  DEFINITIE_PUNCT: typeof DEFINITIE_PUNCT !== "undefined" ? DEFINITIE_PUNCT : null,
-  DEFINITIE_LINIE: typeof DEFINITIE_LINIE !== "undefined" ? DEFINITIE_LINIE : null,
-  DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   DURATA_TRANSFORMARII: typeof DURATA_TRANSFORMARII !== "undefined" ? DURATA_TRANSFORMARII : null,
   EVADARI_PANA_SE_PREDA: typeof EVADARI_PANA_SE_PREDA !== "undefined" ? EVADARI_PANA_SE_PREDA : null,
   MARGINEA_ELEFANTULUI: typeof MARGINEA_ELEFANTULUI !== "undefined" ? MARGINEA_ELEFANTULUI : null,
@@ -453,8 +462,6 @@ return {
   baloaneSparte: function () { return typeof baloaneSparte !== "undefined" ? baloaneSparte : null; },
   lumeaDeLaCapat: typeof lumeaDeLaCapat !== "undefined" ? lumeaDeLaCapat : null,
   incepeJucaria: typeof incepeJucaria !== "undefined" ? incepeJucaria : null,
-  TEXT_FISA_MINIATURA: typeof TEXT_FISA_MINIATURA !== "undefined" ? TEXT_FISA_MINIATURA : null,
-  TEXT_FISA_IMPRESIONISM: typeof TEXT_FISA_IMPRESIONISM !== "undefined" ? TEXT_FISA_IMPRESIONISM : null,
   geomSala: typeof geomSala !== "undefined" ? geomSala : null,
   NEGRU_SCENA1: typeof NEGRU_SCENA1 !== "undefined" ? NEGRU_SCENA1 : null,
   s5: typeof s5 !== "undefined" ? s5 : null,
@@ -475,7 +482,6 @@ return {
   deseneazaGradina: typeof deseneazaGradina !== "undefined" ? deseneazaGradina : null,
   deseneazaPetele: typeof deseneazaPetele !== "undefined" ? deseneazaPetele : null,
   definitiePeFundal: typeof definitiePeFundal !== "undefined" ? definitiePeFundal : null,
-  DEFINITIE_PATA: typeof DEFINITIE_PATA !== "undefined" ? DEFINITIE_PATA : null,
   reglezaCalitatea: typeof reglezaCalitatea !== "undefined" ? reglezaCalitatea : null,
   ecran: typeof ecran !== "undefined" ? ecran : null,
   plafonCalitate: function () { return typeof plafonCalitate !== "undefined" ? plafonCalitate : null; },
@@ -542,8 +548,6 @@ return {
   deseneazaScena12: typeof deseneazaScena12 !== "undefined" ? deseneazaScena12 : null,
   loculPunctului: typeof loculPunctului !== "undefined" ? loculPunctului : null,
   apropiereaDePunct: typeof apropiereaDePunct !== "undefined" ? apropiereaDePunct : null,
-  SOAPTA_CU_PROMISIUNE: typeof SOAPTA_CU_PROMISIUNE !== "undefined" ? SOAPTA_CU_PROMISIUNE : null,
-  SOAPTA_SIMPLA: typeof SOAPTA_SIMPLA !== "undefined" ? SOAPTA_SIMPLA : null,
   soaptaVidului: typeof soaptaVidului !== "undefined" ? soaptaVidului : null,
   maiUrmeazaUnTur: typeof maiUrmeazaUnTur !== "undefined" ? maiUrmeazaUnTur : null,
 
@@ -555,7 +559,6 @@ return {
   loculGlobului: typeof loculGlobului !== "undefined" ? loculGlobului : null,
   razaGlobului: typeof razaGlobului !== "undefined" ? razaGlobului : null,
   cursorulFinal: typeof cursorulFinal !== "undefined" ? cursorulFinal : null,
-  FINAL_RAND1: typeof FINAL_RAND1 !== "undefined" ? FINAL_RAND1 : null,
   FINAL_RAND2: typeof FINAL_RAND2 !== "undefined" ? FINAL_RAND2 : null,
   turul: function () { return typeof turul !== "undefined" ? turul : null; },
   puneTurul: function (n) { if (typeof turul !== "undefined") turul = n; },
@@ -614,7 +617,6 @@ return {
   vinilScena9: function () { return typeof vinilScena9 !== "undefined" ? vinilScena9 : null; },
   actualizeazaUleiul: typeof actualizeazaUleiul !== "undefined" ? actualizeazaUleiul : null,
   stratul: typeof stratul !== "undefined" ? stratul : null,
-  TEXT_FISA_PIGMENTI: typeof TEXT_FISA_PIGMENTI !== "undefined" ? TEXT_FISA_PIGMENTI : null,
   atelierulScena8: function () { return typeof atelierulScena8 !== "undefined" ? atelierulScena8 : null; },
   apaScena8: function () { return typeof apaScena8 !== "undefined" ? apaScena8 : null; },
   intraInGheata: typeof intraInGheata !== "undefined" ? intraInGheata : null,
@@ -655,7 +657,6 @@ return {
   pregatesteSalaFocului: typeof pregatesteSalaFocului !== "undefined" ? pregatesteSalaFocului : null,
   salaFocului: typeof salaFocului !== "undefined" ? salaFocului : null,
   PRAG_MANUSI_IN_MANA: typeof PRAG_MANUSI_IN_MANA !== "undefined" ? PRAG_MANUSI_IN_MANA : null,
-  TEXT_FISA_EXPRESIONISM: typeof TEXT_FISA_EXPRESIONISM !== "undefined" ? TEXT_FISA_EXPRESIONISM : null,
   CENUSA_ALBASTRA: typeof CENUSA_ALBASTRA !== "undefined" ? CENUSA_ALBASTRA : null,
   culorileSalii6: (function () {
     if (typeof GALBEN_SALA === "undefined") return null;
@@ -762,9 +763,26 @@ function porneste(optiuni) {
   const ceas = { t: 0 };
   const cronometru = { now: function () { return ceas.t; } };
 
+  /* Cămara jucăriei, falsă și numai a acestui test. Fără ea, testele scriau în
+     `localStorage`-ul adevărat al browserului: rulai suita, și jucăria uita ce
+     limbă alesese jucătorul — rămânea cu limba ultimului test care a schimbat-o.
+     Tot aici stă și limba browserului, ca suita să pornească la fel pe orice
+     calculator, nu în engleză la unul și în română la altul. */
+  const camara = {};
+  const depozitFals = {
+    getItem: function (k) {
+      return Object.prototype.hasOwnProperty.call(camara, k) ? camara[k] : null;
+    },
+    setItem: function (k, v) { camara[k] = String(v); },
+    removeItem: function (k) { delete camara[k]; }
+  };
+  const navigatorFals = { language: "ro", languages: ["ro"] };
+
   const fabrica = new Function("document", "window", "requestAnimationFrame", "performance",
+                               "localStorage", "navigator",
                                sursa + "\n" + EXPORTURI);
-  const j = fabrica(doc, fereastra, function () {}, cronometru);
+  const j = fabrica(doc, fereastra, function () {}, cronometru, depozitFals, navigatorFals);
+  j.camara = camara;
 
   j.panza = panza;
   j.desene = panza.desene;
@@ -772,6 +790,16 @@ function porneste(optiuni) {
   j.goleste = panza.goleste;
   j.panzeAscunse = panzeAscunse;
   j.panzaPrincipala = panza;
+
+  /* Testele joacă **în română**, orice limbă ar avea browserul care le rulează.
+
+     Jucăria își alege singură limba la pornire, după browser — bine pentru
+     jucător, rău pentru teste: pe un calculator cu Windows în engleză, toate
+     verificările de text ar fi picat deodată, și nu fiindcă s-a stricat ceva.
+     Româna e originalul, deci ea e și limba în care sunt scrise aserțiunile.
+
+     Cine vrea să încerce altă limbă o cere anume: `porneste({ limba: "en" })`. */
+  j.schimbaLimba(o.limba || "ro");
   j.ceas = ceas;
 
   // Rulează bucla de animație adevărată, cu pași de câte un cadru.
@@ -1718,7 +1746,9 @@ function ruleaza() {
   test("ultimul articol al manualului spune ce ai de făcut și al cui e ce faci", function () {
     const j = porneste();
     laMuzeu(j, "manual");
-    const ultimul = j.ARTICOLE_MANUAL[j.ARTICOLE_MANUAL.length - 1][1];
+    /* Articolele țin acum **cheia** textului, nu textul: el stă în dicționarul
+       de limbi. Testul cere textul prin `T`, ca jucătorul. */
+    const ultimul = j.T(j.ARTICOLE_MANUAL[j.ARTICOLE_MANUAL.length - 1][1]);
     adevarat(/cercel/i.test(ultimul),
       "ultimul articol nu spune cum se semnează: " + ultimul);
     adevarat(/vizitator/i.test(ultimul) && /drept/i.test(ultimul),
@@ -2004,8 +2034,8 @@ function ruleaza() {
     j.mergiLaStarea("galerie");
     j.intraInGalerie(j.ceas.t);
     j.avanseaza(2000);
-    adevarat(j.TEXT_FISA_MINIATURA !== null, "lipsește textul fișei");
-    adevarat(/dimensiuni foarte reduse/.test(j.TEXT_FISA_MINIATURA),
+    adevarat(j.T("galerie.fisa") !== null, "lipsește textul fișei");
+    adevarat(/dimensiuni foarte reduse/.test(j.T("galerie.fisa")),
       "textul fișei nu e cel cerut");
     // scrisul intră în ștampila sălii, deci se caută în pânza ascunsă
     const ascunsa = j.panzeAscunse.map(function (e) { return e._panza; })
@@ -2026,9 +2056,9 @@ function ruleaza() {
   test("fișa impresionismului spune ce e curentul, nu doar cum arată", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     inCampie(j);
-    adevarat(j.TEXT_FISA_IMPRESIONISM !== null, "lipsește textul fișei");
-    adevarat(/curent artistic/.test(j.TEXT_FISA_IMPRESIONISM) &&
-             /Franța/.test(j.TEXT_FISA_IMPRESIONISM),
+    adevarat(j.T("campie.fisa") !== null, "lipsește textul fișei");
+    adevarat(/curent artistic/.test(j.T("campie.fisa")) &&
+             /Franța/.test(j.T("campie.fisa")),
       "textul fișei nu e cel cerut");
     for (let k = 0; k < 9; k++) { j.click5(j.ceas.t); j.avanseaza(700); }
     const scris = totTextul(j.cadruCurat());
@@ -4079,13 +4109,19 @@ function ruleaza() {
     /* Fiecare functie isi are definitia, si niciuna nu mai are subtitlu in
        paranteza: o paranteza care repeta in trei cuvinte ce scrie dedesubt nu
        lamureste nimic, mai pune doar un rand de citit intre tine si fapta. */
+    /* Functiile tin acum numai **cheia**; numele, definitia si indemnul stau in
+       dictionarul de limbi, si se cer prin `T`, ca jucatorul. */
     for (const f of j.FUNCTIILE_COSTUMULUI) {
-      adevarat(f.text && f.text.length > 60, "functia " + f.nume + " n-are definitie");
-      adevarat(f.sub === undefined, "functia " + f.nume + " tot are subtitlu: " + f.sub);
+      const nume = j.T("gheata." + f.cheie + ".nume");
+      const text = j.T("gheata." + f.cheie + ".text");
+      adevarat(text && text.length > 60, "functia " + nume + " n-are definitie");
+      adevarat(j.T("gheata." + f.cheie + ".indemn").length > 3,
+        "functia " + nume + " n-are indemn");
+      adevarat(f.sub === undefined, "functia " + nume + " tot are subtitlu: " + f.sub);
     }
-    const protectie = j.FUNCTIILE_COSTUMULUI[0];
-    adevarat(/scut termic împotriva mediului înconjurător/.test(protectie.text),
-      "definitia protectiei nu e cea ceruta: " + protectie.text);
+    const protectie = j.T("gheata." + j.FUNCTIILE_COSTUMULUI[0].cheie + ".text");
+    adevarat(/scut termic împotriva mediului înconjurător/.test(protectie),
+      "definitia protectiei nu e cea ceruta: " + protectie);
   });
 
   test("pe perete scrie ce e vorticismul, si numai atat", function () {
@@ -5004,16 +5040,16 @@ function ruleaza() {
     const feluri = j.FISE_COLAJ.map(function (f) { return f.fel; });
     adevarat(feluri.indexOf("ziar") >= 0 && feluri.indexOf("carton") >= 0,
       "amandoua definitiile stau pe acelasi fel de material");
-    const tot = j.FISE_COLAJ.map(function (f) { return f.scris; }).join(" ");
+    const tot = j.FISE_COLAJ.map(function (f) { return j.T("colaj." + f.cheie); }).join(" ");
     adevarat(/Junk Art este un curent artistic/.test(tot), "lipseste definitia Junk Art");
     adevarat(/Colajul este o tehnic/.test(tot), "lipseste definitia colajului");
 
     for (const f of j.FISE_COLAJ) {
       const loc = j.undeAtarnaBiletul(f, j.ceas.t);
-      adevarat(loc !== null, "biletul " + f.titlu + " nu-si gaseste sfoara");
-      adevarat(loc.prins, "biletul " + f.titlu + " nu atarna de nimic");
+      adevarat(loc !== null, "biletul " + f.cheie + " nu-si gaseste sfoara");
+      adevarat(loc.prins, "biletul " + f.cheie + " nu atarna de nimic");
       adevarat(loc.x > 0 && loc.x < j.W() && loc.y > 0 && loc.y < j.H(),
-        "biletul " + f.titlu + " a iesit din ecran");
+        "biletul " + f.cheie + " a iesit din ecran");
     }
   });
 
@@ -5034,10 +5070,10 @@ function ruleaza() {
     for (let k = 0; k < j.FISE_COLAJ.length; k++) {
       const f = j.FISE_COLAJ[k];
       const loc = j.undeAtarnaBiletul(f, j.ceas.t);
-      adevarat(!loc.prins, "biletul " + f.titlu + " a ramas prins dupa ce am tras");
+      adevarat(!loc.prins, "biletul " + f.cheie + " a ramas prins dupa ce am tras");
       adevarat(loc.y > inainte[k] + j.H() * 0.15,
-        "biletul " + f.titlu + " n-a cazut: " + inainte[k] + " -> " + loc.y);
-      adevarat(loc.y < j.H(), "biletul " + f.titlu + " a cazut sub podea");
+        "biletul " + f.cheie + " n-a cazut: " + inainte[k] + " -> " + loc.y);
+      adevarat(loc.y < j.H(), "biletul " + f.cheie + " a cazut sub podea");
     }
   });
 
@@ -5174,7 +5210,7 @@ function ruleaza() {
     pregatesteScena2(j);
     j.avanseaza(200);
     j.goleste();
-    j.definitiePeFundal(j.DEFINITIE_PATA, j.W() * 0.235, j.orizont(),
+    j.definitiePeFundal(j.T('def.pata'), j.W() * 0.235, j.orizont(),
                         Math.min(j.W() * 0.34, 420), 14, "#1c1a16", null, "jos");
     const scrise = j.desene.filter(function (d) { return d.op === "text"; });
     egal(scrise.length, 0, "textul se scrie tot rând cu rând pe pânza mare");
@@ -5777,7 +5813,7 @@ function ruleaza() {
 
     j.puneTurul(j.TURURI_PANA_LA_FINAL);
     adevarat(!j.maiUrmeazaUnTur(), "la ultimul tur mai urmeaza unul?");
-    egal(j.soaptaVidului(), j.SOAPTA_SIMPLA,
+    egal(j.soaptaVidului(), j.T('vid.soaptaSimpla'),
       "la ultima trecere soapta tot promite ceva: " + j.soaptaVidului());
     adevarat(!/roz|promit|Promit/.test(j.soaptaVidului()),
       "a ramas o promisiune in soapta de la urma: " + j.soaptaVidului());
@@ -6473,6 +6509,169 @@ function ruleaza() {
     adevarat(/GALERIE/.test(totTextul(d)), "pe buzunar nu scrie nimic");
     const numere = textele(d).filter(function (t) { return /^[1-9]$/.test(t); });
     egal(numere.length, 0, "au rămas firide numerotate: " + JSON.stringify(numere));
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Limbile");
+
+  /* Cincisprezece dicționare scrise de mână se strică într-un singur fel: cineva
+     adaugă o frază nouă în română și uită să o ducă mai departe. Atunci jucăria
+     nu se sparge — vorbește pe jumătate, și nimeni n-o observă până când nu se
+     joacă cineva în limba aia. Testele de aici caută exact tăcerile. */
+
+  test("fiecare limbă spune tot ce spune româna, nici mai mult, nici mai puțin", function () {
+    const j = porneste();
+    const chei = Object.keys(j.LIMBI.ro);
+    adevarat(chei.length > 90, "româna are numai " + chei.length + " chei");
+    for (const cod of Object.keys(j.LIMBI)) {
+      const d = j.LIMBI[cod];
+      const lipsa = chei.filter(function (k) { return d[k] === undefined; });
+      const inPlus = Object.keys(d).filter(function (k) { return chei.indexOf(k) === -1; });
+      egal(lipsa.length, 0, cod + " nu are cheile: " + lipsa.join(", "));
+      egal(inPlus.length, 0, cod + " are chei pe care româna nu le are: " + inPlus.join(", "));
+    }
+  });
+
+  test("lista din colț arată exact limbile care există", function () {
+    const j = porneste();
+    const coduri = Object.keys(j.LIMBI).sort().join(",");
+    egal(Object.keys(j.NUMELE_LIMBILOR).sort().join(","), coduri,
+         "numele din listă nu se potrivesc cu dicționarele");
+    egal(j.ORDINEA_LIMBILOR.slice().sort().join(","), coduri,
+         "ordinea din listă nu se potrivește cu dicționarele");
+    egal(j.ORDINEA_LIMBILOR[0], "ro", "româna nu e prima în listă");
+    for (const cod of j.ORDINEA_LIMBILOR) {
+      adevarat(String(j.NUMELE_LIMBILOR[cod] || "").trim().length > 0,
+               cod + " n-are nume scris în lista din colț");
+    }
+  });
+
+  test("o cheie care lipsește dintr-o limbă se întoarce în română, nu goală", function () {
+    const j = porneste({ limba: "en" });
+    delete j.LIMBI.en["galerie.asa"];
+    egal(j.T("galerie.asa"), j.LIMBI.ro["galerie.asa"], "cheia lipsă n-a căzut pe română");
+    egal(j.T("cheie.care.nu.exista"), "cheie.care.nu.exista",
+         "o cheie inexistentă ar trebui să se arate pe sine, ca să se vadă că lipsește");
+  });
+
+  test("o limbă pe care n-o avem nu schimbă nimic", function () {
+    const j = porneste();
+    egal(j.schimbaLimba("klingon"), false, "jucăria a primit o limbă pe care n-o are");
+    egal(j.limba(), "ro", "limba s-a schimbat oricum");
+  });
+
+  /* Partea care s-a stricat o dată: textul nu stă numai pe ecran, o parte din el
+     e **pictat în ștampile** (fișa de perete a uleiului, biletele de pe peretele
+     de colaj). Ștampilele se repictează numai când se schimbă mărimea pânzei —
+     deci, fără aruncarea lor, sala rămânea scrisă în limba veche sub un joc care
+     vorbea deja altfel. Iar aruncate prea lacom, s-ar fi șters și ce a pictat
+     jucătorul. Testul păzește ambele capete. */
+  test("schimbarea limbii repictează sălile cu text, dar nu atinge lucrul jucătorului", function () {
+    const j = porneste();
+    const cuText = j.stampilele();
+    adevarat(cuText.length >= 10, "prea puține ștampile cu text: " + cuText.length);
+    for (const s of cuText) { s.o.latime = 640; s.o.inaltime = 480; }
+
+    const pictura = j.stratulDePictura();
+    const carbune = j.panzaCarbunelui();
+    adevarat(pictura !== null && carbune !== null, "lipsesc pânzele jucătorului");
+    pictura.latime = 640; pictura.inaltime = 480;
+    carbune.latime = 640; carbune.inaltime = 480;
+
+    adevarat(j.schimbaLimba("en"), "schimbarea limbii n-a fost primită");
+
+    for (const s of cuText) {
+      egal(s.o.latime, 0, "ștampila " + s.n + " a rămas scrisă în limba veche");
+    }
+    egal(pictura.latime, 640, "s-a șters ce a pictat jucătorul în sala uleiului");
+    egal(carbune.latime, 640, "s-a șters ce a scos jucătorul de sub cărbune");
+    for (const nume of j.STAMPILE_FARA_TEXT) {
+      egal(cuText.filter(function (s) { return s.n === nume; }).length, 0,
+           nume + " a ajuns printre ștampilele aruncate la schimbarea limbii");
+    }
+  });
+
+  test("limba aleasă se ține minte pentru data viitoare", function () {
+    const j = porneste();
+    adevarat(j.schimbaLimba("it"), "schimbarea limbii n-a fost primită");
+    egal(j.camara.limba, "it", "limba nu s-a scris în cămară");
+  });
+
+  test("rândurile cu număr își păstrează locul numărului în fiecare limbă", function () {
+    const j = porneste();
+    for (const cod of Object.keys(j.LIMBI)) {
+      for (const cheie of ["campie.incaPasi", "muzeu.pagina", "art.eticheta"]) {
+        adevarat(/\{n\}/.test(j.LIMBI[cod][cheie]),
+                 cod + ": s-a pierdut {n} din „" + cheie + "”");
+      }
+    }
+  });
+
+  /* Fișa uleiului se pictează paragraf cu paragraf, despărțite la \n. O limbă
+     care le lipește într-unul singur nu dă nicio eroare — doar scoate un bloc
+     de text care nu mai încape în casetă. */
+  test("fișa de perete a uleiului are trei paragrafe în fiecare limbă", function () {
+    const j = porneste();
+    for (const cod of Object.keys(j.LIMBI)) {
+      egal(j.LIMBI[cod]["ulei.fisa"].split("\n").length, 3,
+           cod + ": fișa uleiului n-are trei paragrafe");
+    }
+  });
+
+  test("nicio limbă n-a rămas cu rânduri românești netraduse", function () {
+    const j = porneste();
+    const martori = ["titlu", "def.punct", "def.linie", "def.pata", "ulei.fisa", "final.rand1"];
+    for (const cod of Object.keys(j.LIMBI)) {
+      if (cod === "ro") continue;
+      for (const cheie of martori) {
+        adevarat(j.LIMBI[cod][cheie] !== j.LIMBI.ro[cheie],
+                 cod + ": „" + cheie + "” a rămas cuvânt cu cuvânt în română");
+      }
+    }
+  });
+
+  /* Paznicul care lipsea, și din pricina căruia sala a șaptea a rămas o vreme
+     românească sub un joc care vorbea deja nemțește: o frază scrisă de-a dreptul
+     în scenă nu dă nicio eroare, nu pică niciun test, doar rămâne în română
+     pentru toată lumea. Se vede numai cu ochii, și numai dacă ajungi în sala aia
+     cu limba schimbată.
+
+     Aici o vede codul: orice șir dintr-o scenă care are diacritice românești și
+     se termină ca o frază e un rând uitat afară din dicționar. Comentariile se
+     scot întâi — ele au voie, și trebuie, să fie în română. */
+  test("nicio frază românească nu stă scrisă în afara dicționarului", function () {
+    function faraComentarii(text) {
+      return text.replace(/\/\*[\s\S]*?\*\//g, " ")
+                 .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+    }
+    const bucati = sursa.split(/\/\* ---- (js\/[^ ]+) ---- \*\//);
+    const gasite = [];
+    for (let i = 1; i < bucati.length; i += 2) {
+      const cale = bucati[i], cod = faraComentarii(bucati[i + 1] || "");
+      if (cale === "js/00-limbi.js") continue;      // chiar acolo e locul lor
+      const potriviri = cod.match(/'[^'\n]*[ăâîșțĂÂÎȘȚ][^'\n]*[.!?…]\s*'/g) || [];
+      for (const p of potriviri) gasite.push(cale + ": " + p);
+    }
+    egal(gasite.length, 0,
+         "rânduri rămase în afara dicționarului:\n   " + gasite.join("\n   "));
+  });
+
+  test("jucăria chiar desenează în limba aleasă", function () {
+    /* Titlul e scris cu litere răsfirate, deci spațiile se strâng înainte de
+       comparat. Iar prima pagină are nevoie de câteva clipe ca să se aprindă. */
+    function titlulDe(j) {
+      j.avanseaza(2200);
+      return totTextul(j.cadruCurat()).replace(/\s+/g, " ");
+    }
+    const ro = porneste({ latime: 1400, inaltime: 800 });
+    const en = porneste({ latime: 1400, inaltime: 800, limba: "en" });
+    const scrisRo = titlulDe(ro), scrisEn = titlulDe(en);
+    adevarat(scrisRo.indexOf(ro.LIMBI.ro["titlu"]) !== -1,
+             "titlul românesc nu apare la deschidere: " + scrisRo);
+    adevarat(scrisEn.indexOf(en.LIMBI.en["titlu"]) !== -1,
+             "titlul englezesc nu apare la deschidere: " + scrisEn);
+    adevarat(scrisRo.indexOf(ro.LIMBI.en["titlu"]) === -1,
+             "jucăria în română arată și titlul englezesc");
   });
 }
 

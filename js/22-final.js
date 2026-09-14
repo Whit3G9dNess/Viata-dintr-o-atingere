@@ -251,7 +251,7 @@ function deseneazaGlobul(t, acum) {
   if (s13.aSpus) {
     ctx.save();
     ctx.globalAlpha = Math.min(1, s13.chemare) * (0.55 + 0.45 * bat);
-    textIncadrat('Atinge-l.', W * 0.5, m.y + r * 2.1,
+    textIncadrat(T('final.atingeL'), W * 0.5, m.y + r * 2.1,
                  W * 0.6, Math.max(ecran(20), Math.min(W, H) * 0.03),
                  `italic ${Math.max(13, Math.round(Math.min(W, H) * 0.026))}px Georgia`,
                  '#3a332a');
@@ -326,7 +326,7 @@ function cioburileGlobului(t) {
 
 /* Numele, pe negru. Nimic altceva: nici chenar, nici ornament, nici cursor.
    Un generic se citește în liniște. */
-const FINAL_RAND1 = 'Jucărie digitală interactivă, realizată de';
+/* Rândul se traduce; numele, nu. */
 const FINAL_RAND2 = 'Feliks Iacoblev-Barău';
 
 function deseneazaNumele() {
@@ -339,7 +339,7 @@ function deseneazaNumele() {
 
   ctx.fillStyle = 'rgba(214, 208, 196, 0.85)';
   ctx.font = `italic ${Math.max(12, Math.round(S * 0.028))}px Georgia`;
-  ctx.fillText(FINAL_RAND1, W * 0.5, H * 0.47 - S * 0.035);
+  ctx.fillText(T('final.rand1'), W * 0.5, H * 0.47 - S * 0.035);
 
   ctx.fillStyle = 'rgba(244, 238, 226, 0.96)';
   ctx.font = `${Math.max(16, Math.round(S * 0.046))}px Georgia`;

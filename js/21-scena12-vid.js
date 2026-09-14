@@ -37,14 +37,15 @@ const s12 = {
    Așa că, la ultima trecere, rămâne numai întrebarea. Și ea sună altfel: prima
    oară e o glumă cu o promisiune după ea, a doua oară e o întrebare adevărată,
    pusă în gol, fără nimic care s-o îndulcească. */
-const SOAPTA_CU_PROMISIUNE = 'O luăm de la capăt? Promit că data viitoare elefantul va fi roz!';
-const SOAPTA_SIMPLA = 'O luăm de la capăt?';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* Mai urmează un tur după ăsta? `turul` se ridică abia la ieșirea din vid, deci
    aici el arată încă turul care tocmai s-a terminat. */
 function maiUrmeazaUnTur() { return turul < TURURI_PANA_LA_FINAL; }
 function soaptaVidului() {
-  return maiUrmeazaUnTur() ? SOAPTA_CU_PROMISIUNE : SOAPTA_SIMPLA;
+  return T(maiUrmeazaUnTur() ? 'vid.soaptaCuPromisiune' : 'vid.soaptaSimpla');
 }
 
 /* ---------- UNDE E PUNCTUL ----------

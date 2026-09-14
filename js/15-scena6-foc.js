@@ -202,10 +202,9 @@ function geomManusi() {
 }
 
 /* ---------- TEXTELE DE PE PEREȚI ---------- */
-const TEXT_FISA_EXPRESIONISM =
-  'Expresionismul este un curent artistic dezvoltat la începutul secolului XX, ' +
-  'axat pe redarea stărilor emoționale intense și a trăirilor interioare prin ' +
-  'deformarea realității, culori violente și linii accentuate.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 /* ---------- PASTA ---------- */
 /* Sala asta e despre valoarea petei picturale. Ar fi fost de râs ca tocmai ea să
@@ -519,7 +518,7 @@ function pictezaSalaFocului(c) {
   blanaDeSubSevalet(c, g);
   panouDeSala(c, g.panouStangaX, g.panouY, g.panouLat, g.panouInalt);
   fisaPePanou(c, g.panouStangaX, g.panouY, g.panouLat, g.panouInalt,
-              'Expresionism', TEXT_FISA_EXPRESIONISM, 0, false);
+              T('foc.fisaTitlu'), T('foc.fisa'), 0, false);
 }
 
 /* Pardoseala în tablă de șah, care fuge spre fundul sălii.
@@ -1959,13 +1958,13 @@ function deseneazaScena6(t, acum) {
     dreptunghi(W * 0.5 - Math.min(W * 0.34, ecran(380)) / 2, H * 0.855,
                Math.min(W * 0.34, ecran(380)), H * 0.085, ecran(12));
     ctx.restore();
-    textIncadrat('Atenție, frige! Pune-ți mănușile de protecție de pe masă.',
+    textIncadrat(T('foc.manusi'),
                  W * 0.5, H * 0.878, Math.min(W * 0.31, ecran(350)), ecran(22),
                  `bold ${Math.max(Math.round(ecran(13)), Math.round(Math.min(W, H) * 0.023))}px Georgia`,
                  s6.frige > 0.3 ? '#ffd07a' : '#f3e0bc');
   }
   else if (s6.faza === 'sala' && s6.manusiPuse) {
-    textIncadrat('Acum poți atinge focul.', W * 0.5, H * 0.90,
+    textIncadrat(T('foc.potiAtinge'), W * 0.5, H * 0.90,
                  Math.min(W * 0.4, ecran(420)), ecran(24),
                  `bold ${Math.max(Math.round(ecran(13)), Math.round(Math.min(W, H) * 0.023))}px Georgia`,
                  '#f3e0bc');
@@ -1989,7 +1988,7 @@ function deseneazaScena6(t, acum) {
     ctx.fillStyle = 'rgba(14, 20, 32, 0.82)';
     dreptunghi(tx - lat / 2, ty - H * 0.018, lat, H * 0.062, ecran(12));
     ctx.restore();
-    textIncadrat('Intră prin arsură.', tx, ty, lat - ecran(28), ecran(24),
+    textIncadrat(T('foc.arsura'), tx, ty, lat - ecran(28), ecran(24),
                  `bold ${Math.max(Math.round(ecran(13)), Math.round(Math.min(W, H) * 0.023))}px Georgia`,
                  '#dfe6f2');
   }

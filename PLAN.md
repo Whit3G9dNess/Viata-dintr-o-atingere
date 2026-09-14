@@ -57,6 +57,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 37 | Serverul pornit singur, și cele șase îndreptări cerute la fața locului | ✅ gata |
 | 38 | Sfârșitul: balonul se face glob de sticlă, se sparge, și rămâne un nume | ✅ gata |
 | 39 | Șoapta nu mai promite nimic la ultima trecere prin vid | ✅ gata |
+| 40 | Jucăria vorbește cincisprezece limbi, alese dintr-un colț al paginii | ✅ gata |
 
 ---
 
@@ -455,7 +456,7 @@ balonul și punctul se naște abia după; în galerie cântă, afară nu.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 140 acum**, în douăsprezece secțiuni.
+au nevoie de nimic instalat. **Sunt 334 acum**, adunate pe săli și pe teme.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
@@ -1026,6 +1027,63 @@ tabel, ca să se strângă și ele unde se strânge materialul.
 Unsprezece teste noi pentru sala refăcută (232 în total). Cele vechi vorbeau
 despre un manechin, o ușă pe perete și o pensulă care se ia de pe lucrare —
 lucruri care nu mai există.
+
+## Etapa a douăzeci și noua — cincisprezece limbi
+
+Până aici, jucăria vorbea numai românește, iar textul stătea împrăștiat prin
+douăzeci și două de fișiere: o frază lângă desenul care o arăta. Bun pentru
+scris, imposibil pentru tradus — nimeni nu le putea citi pe toate deodată ca să
+vadă dacă vorbesc la fel.
+
+Tot textul s-a mutat într-un singur fișier, `js/00-limbi.js`, pe cheie. Scenele
+cer `T('muzeu.plic')` **la desenare**, nu la pornire, așa că limba se poate
+schimba din mijlocul jocului: apeși pe butonul din colțul din dreapta jos, alegi,
+și jucăria vorbește altfel pe loc, fără reîncărcare și fără să pierzi drumul.
+Butonul e HTML, nu desenat pe pânză, ca semnul de reîncărcare de alături — se
+vede că nu face parte din joc, și tocmai de-aia nu încurcă jocul.
+
+Limbile: română, engleză, cehă, germană, greacă, spaniolă, franceză, italiană,
+maghiară, neerlandeză, polonă, portugheză, turcă, ucraineană, rusă.
+
+**Ce s-a stricat pe drum, și ce s-a învățat:**
+
+- **Sala uleiului rămânea scrisă în limba veche.** Fișa ei de perete e pictată în
+  ștampila sălii, iar ștampilele se repictează numai la schimbarea mărimii.
+  `schimbaLimba` le aruncă acum pe toate cele cu text — dar **nu** și cele două
+  care țin munca jucătorului: ce a pictat în sala uleiului și ce a șters de sub
+  cărbune. Aruncate și alea, o schimbare de limbă i-ar fi șters lucrarea.
+- **`T` era deja numele unei variabile locale** în sala a cincea (`const T =
+  pregatesteTablou()`). Toate fișierele împart un singur domeniu, iar un local
+  acoperă un global fără să se plângă nimeni: tabloul mergea, dar orice `T(...)`
+  din scena aia cădea. S-a redenumit `TABLOUL`.
+- **Sala a șaptea a rămas românească** după ce tot restul vorbea deja nemțește:
+  rândurile ei erau scrise de-a dreptul în cod, iar asta nu dă nicio eroare și nu
+  pică niciun test. Acum există un test care scanează codul scenelor și pică dacă
+  găsește o frază românească în afara dicționarului.
+- **Cuvintele lungi ies din casete.** Ruperea în rânduri se face după spații, deci
+  un cuvânt singur, mai lat decât caseta, rămâne un rând întreg și iese peste
+  chenar — oricâte rânduri ar mai încăpea pe înălțime. În română nu se vedea;
+  „GEBRAUCHSFUNKTION" da. Casetele care își caută mărimea literei măsoară acum și
+  lățimea (`celMaiLatRand`), iar câteva compuse nemțești și neerlandeze s-au
+  scris în două cuvinte, ca să nu se strângă litera degeaba.
+- **Caseta de sus și rândul de jos din sala de gheață erau croite pentru un
+  singur rând.** Aceeași vorbă în germană se rupe în două: caseta crește acum cu
+  rândurile, iar rândul de jos stă cu talpa la aceeași înălțime, nu cu creștetul
+  — altfel al doilea rând ieșea sub marginea ecranului.
+- **Testele scriau în `localStorage`-ul adevărat.** Rulai suita, și jucăria uita
+  ce limbă alesese jucătorul. Acum fiecare test are cămara lui, falsă, și limba
+  browserului e și ea falsă — ca suita să pornească la fel pe orice calculator.
+- **Numerele din frază** (pagina, pașii rămași, articolul) stau în dicționar cu
+  `{n}` la locul lor: în maghiară numărul vine înaintea cuvântului.
+
+Unsprezece teste noi pentru limbi (334 în total): că fiecare limbă are exact
+cheile românei, că o cheie lipsă cade pe română și nu pe gol, că ștampilele cu
+text se aruncă iar munca jucătorului nu, că `{n}` n-a căzut din nicio traducere,
+și că nicio frază n-a rămas scrisă în afara dicționarului.
+
+**Ce nu s-a luat, și de ce:** limbile fără spații între cuvinte și cele scrise de
+la dreapta la stânga. Nu e o lipsă de vocabular, e felul în care scrie jucăria:
+rândurile se rup după spații, iar toate casetele sunt așezate de la stânga.
 
 ## Rămas de făcut
 

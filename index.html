@@ -37,6 +37,7 @@
      ordinea contează: fiecare fișier se sprijină pe cele dinaintea lui.
      Sunt scripturi obișnuite, nu module, tocmai ca pagina să se deschidă și cu
      dublu-clic, de pe disc, fără niciun server. -->
+<script src="js/00-limbi.js"></script>
 <script src="js/01-panza.js"></script>
 <script src="js/02-cursor.js"></script>
 <script src="js/03-sunete.js"></script>
@@ -59,6 +60,93 @@
 <script src="js/21-scena12-vid.js"></script>
 <script src="js/22-final.js"></script>
 <script src="js/14-bucla.js"></script>
+
+<!-- ============================================================
+     ALEGEREA LIMBII
+
+     Un buton mic în colțul din dreapta jos, cu numele limbii de acum. Apăsat,
+     se deschide lista; alegi, și jucăria vorbește altfel **pe loc**, fără
+     reîncărcare și fără să pierzi drumul făcut până acolo.
+
+     E scris în HTML, nu desenat pe pânză, și dinadins: pe pânză ar fi trebuit
+     socotit unde încape lista, ar fi trebuit prins clicul înaintea jocului, și
+     ar fi fost un lucru de atins care **nu e** din lumea jucăriei. Aici e o
+     unealtă a paginii, ca semnul de reîncărcare de alături — se vede că nu face
+     parte din joc, și tocmai de-aia nu încurcă jocul.
+
+     Fiecare atingere pe el se oprește aici (`stopPropagation`): altfel ar fi
+     căzut și în pânză, iar alegerea limbii ar fi însemnat și o tușă de vopsea
+     sau un balon spart.
+     ============================================================ -->
+<script>
+(function () {
+  if (typeof NUMELE_LIMBILOR === 'undefined') return;
+
+  var deschis = false;
+  var cutie = document.createElement('div');
+  cutie.style.cssText =
+    'position:fixed;right:12px;bottom:12px;z-index:9999;' +
+    'font:13px Georgia,serif;text-align:right;';
+
+  var buton = document.createElement('div');
+  buton.style.cssText =
+    'cursor:pointer;color:#2b2419;background:rgba(255,244,214,0.95);' +
+    'border:1px solid rgba(120,96,48,0.6);border-radius:8px;padding:7px 12px;' +
+    'box-shadow:0 2px 10px rgba(0,0,0,0.35);user-select:none;';
+
+  var lista = document.createElement('div');
+  lista.style.cssText =
+    'display:none;margin-bottom:6px;background:rgba(255,244,214,0.97);' +
+    'border:1px solid rgba(120,96,48,0.6);border-radius:8px;overflow:hidden;' +
+    'box-shadow:0 2px 14px rgba(0,0,0,0.4);max-height:60vh;overflow-y:auto;';
+
+  function scrieButonul() {
+    buton.textContent = '🌍 ' + NUMELE_LIMBILOR[limba];
+  }
+
+  function inchide() {
+    deschis = false;
+    lista.style.display = 'none';
+  }
+
+  ORDINEA_LIMBILOR.forEach(function (cod) {
+    var rand = document.createElement('div');
+    rand.textContent = NUMELE_LIMBILOR[cod];
+    rand.style.cssText =
+      'cursor:pointer;padding:7px 16px;color:#2b2419;white-space:nowrap;' +
+      'border-bottom:1px solid rgba(120,96,48,0.18);';
+    rand.addEventListener('pointerenter', function () {
+      rand.style.background = 'rgba(120,96,48,0.14)';
+    });
+    rand.addEventListener('pointerleave', function () {
+      rand.style.background = 'transparent';
+    });
+    rand.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+      schimbaLimba(cod);
+      scrieButonul();
+      inchide();
+    });
+    lista.appendChild(rand);
+  });
+
+  buton.addEventListener('pointerdown', function (e) {
+    e.stopPropagation();
+    deschis = !deschis;
+    lista.style.display = deschis ? 'block' : 'none';
+  });
+
+  /* O atingere oriunde altundeva închide lista. Fără asta ar rămâne deschisă
+     peste joc, iar jucătorul ar apăsa „prin" ea fără să înțeleagă de ce nu se
+     întâmplă nimic. */
+  window.addEventListener('pointerdown', function () { if (deschis) inchide(); });
+
+  scrieButonul();
+  cutie.appendChild(lista);
+  cutie.appendChild(buton);
+  document.body.appendChild(cutie);
+})();
+</script>
 
 <!-- ============================================================
      REÎNCĂRCAREA LA SALVARE

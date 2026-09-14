@@ -283,9 +283,9 @@ function pilastru(c, x, y, w, h) {
 
    Merge în ștampila sălii, nu în bucla de desen: e un text care nu se schimbă
    niciodată, iar sala se pictează o dată. */
-const TEXT_FISA_MINIATURA =
-  'Miniatura este o lucrare de artă sau un obiect realizat la dimensiuni foarte ' +
-  'reduse, remarcabil prin finețea și detaliul execuției.';
+/* Textul stă în `js/00-limbi.js`, ca tot ce citește jucătorul. Se cere cu
+   `T(...)` **la desen**, nu o dată la încărcare: altfel, schimbată limba, ar
+   rămâne cel de la pornire. */
 
 function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   // câmpul murăl, retras de la ancadramentul aurit al panoului
@@ -354,12 +354,17 @@ function fisaPePanou(c, px, py, pw, ph, titlu, text, yMax, pePeretDeschis) {
   marimeT = Math.max(ecran(8), marimeT);
   const susText = my + pw * 0.05 + marimeT * 1.9;
 
-  /* Litera își caută mărimea la care textul încape în câmp. */
+  /* Litera își caută mărimea la care textul încape în câmp — și pe înălțime, și
+     pe lățime. Lățimea nu se socotea: un cuvânt mai lat decât câmpul ieșea peste
+     chenarul zugrăvit, iar câmpul avea destule rânduri libere sub el, așa că
+     nimic nu strângea litera. Se vede numai în limbile cu cuvinte lungi. */
   let marimeR = pw * 0.078;
   for (let k = 0; k < 14; k++) {
     c.font = `${marimeR}px Georgia`;
-    const cate = randuriIncapute(c, text, latScris).length;
-    if (susText + cate * marimeR * 1.34 <= my + mh - pw * 0.05 || marimeR <= pw * 0.04) break;
+    const randuri = randuriIncapute(c, text, latScris);
+    const incapeInalt = susText + randuri.length * marimeR * 1.34 <= my + mh - pw * 0.05;
+    const incapeLat = celMaiLatRand(c, randuri) <= latScris;
+    if ((incapeInalt && incapeLat) || marimeR <= pw * 0.04) break;
     marimeR *= 0.93;
   }
   marimeR = Math.max(ecran(7), marimeR);
@@ -508,7 +513,7 @@ function pictezaSala(c) {
        acoperite rândurile. În stânga nu e nimic în față, așa că rămâne la
        mărimea ei întreagă — o explicație scrisă ca s-o citești n-are voie să fie
        cea mai mică literă din sală. */
-    if (k === 0) fisaPePanou(c, px, py, pw, ph, 'Miniatura', TEXT_FISA_MINIATURA);
+    if (k === 0) fisaPePanou(c, px, py, pw, ph, T('galerie.fisaTitlu'), T('galerie.fisa'));
     // pilastrul dintre panouri
     if (k < panouri - 1) {
       pilastru(c, S.x0 + (k + 1) * pas - pas * 0.055, S.yT + inaltP * 0.13,
@@ -1298,7 +1303,7 @@ function deseneazaEtichetaRamei(lx, ly, r) {
      de muzeu poartă **ce e lucrarea**, nu ce ai tu de făcut cu ea. Gravată în
      alamă, o instrucțiune încetează să fie a sălii și devine a obiectului — iar
      obiectul ăsta e o lucrare, nu un buton. */
-  textIncadrat('«Tu, înainte de a începe»', lx, ly - ph * 0.10,
+  textIncadrat(T('galerie.placuta'), lx, ly - ph * 0.10,
                latScris, marime * 1.4, `${marime}px Georgia`, '#3a2a10');
 }
 
@@ -1436,21 +1441,21 @@ function deseneazaScena4(t, acum) {
       /* Cât ții lupa pe locul bun, îndemnul se schimbă pe loc. Altfel scria
          mai departe „caută", tocmai când găsiseși — și mișcarea ta și vorba de
          pe ecran vorbeau despre lucruri diferite. */
-      if (s4.peMiniatura > 60) vorbaGaleriei('Așa. Ține-o pe loc.');
-      else if (s4.chemareTablou > 0.4) vorbaGaleriei('Ține lupa peste tăblița mică din mijlocul ramei.');
-      else vorbaGaleriei('Privește prin lupă până găsești secretul.');
+      if (s4.peMiniatura > 60) vorbaGaleriei(T('galerie.asa'));
+      else if (s4.chemareTablou > 0.4) vorbaGaleriei(T('galerie.tinePeste'));
+      else vorbaGaleriei(T('galerie.priveste'));
     } else {
       vorbaGaleriei(s4.chemareLupa > 0.4
-        ? 'Lupa e pe consola din dreapta tabloului. Atinge-o ca s-o iei.'
-        : 'Aici trebuie să devii detectiv de artă. Ia lupa de pe consolă.');
+        ? T('galerie.lupaConsola')
+        : T('galerie.detectiv'));
     }
   } else if (s4.faza === 'descoperit') {
-    if (s4.peEticheta > 60) vorbaGaleriei('Așa. Ține-o pe loc.');
+    if (s4.peEticheta > 60) vorbaGaleriei(T('galerie.asa'));
     else vorbaGaleriei(acum - s4.t0 < 2600
-      ? 'Ești tu. Înainte de prima atingere.'
-      : 'Mai caută. Rama ascunde ceva.');
+      ? T('galerie.estiTu')
+      : T('galerie.maiCauta'));
   } else if (s4.faza === 'eticheta') {
-    vorbaGaleriei('Atinge rama.');
+    vorbaGaleriei(T('galerie.atingeRama'));
   }
 }
 

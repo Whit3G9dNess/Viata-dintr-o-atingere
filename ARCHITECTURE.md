@@ -2,26 +2,26 @@
 
 Document de referință pentru structura tehnică a jucăriei.
 
-> **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, și 323
-> de teste care trec. Rulează fără server, cu dublu-clic pe `index.html`. Nu are
-> build, nu are dependențe, nu are backend, niciun fișier de imagine sau de
-> sunet.
+> **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, cincisprezece
+> limbi, și 334 de teste care trec. Rulează fără server, cu dublu-clic pe
+> `index.html`. Nu are build, nu are dependențe, nu are backend, niciun fișier de
+> imagine sau de sunet.
 
 ## Privire de ansamblu
 
 O pagină de canvas 2D, fără biblioteci și fără niciun fișier luat de undeva —
 nici imagini, nici sunete. Tot ce se vede iese din `CanvasRenderingContext2D`,
 tot ce se aude iese din WebAudio, notă cu notă. `index.html` nu conține cod: e o
-listă de douăzeci și două de scripturi obișnuite, încărcate în ordine.
+listă de douăzeci și trei de scripturi obișnuite, încărcate în ordine.
 
 ```mermaid
 flowchart LR
   subgraph BROWSER["Browser (dublu-clic pe index.html, fără server)"]
     direction LR
     IDX["index.html<br/>listă de scripturi"]
-    subgraph JS["js/*.js — douăzeci și două de fișiere, în ordine"]
+    subgraph JS["js/*.js — douăzeci și trei de fișiere, în ordine"]
       direction TB
-      TEMELIE["Temelia<br/>01 pânză · 02 cursor<br/>03 sunete · 04 stări"]
+      TEMELIE["Temelia<br/>00 limbi · 01 pânză · 02 cursor<br/>03 sunete · 04 stări"]
       SCENE["Sălile<br/>05 balon · 06 minge · 11 muzeu · 12 galerie · 13 câmpie<br/>15 foc · 16 gheață · 17 ulei · 18 acuarelă<br/>19 colaj · 20 cărbune · 21 vid · 22 final"]
       DESEN["Desenul<br/>08 fundal · 09 mânuță<br/>10 scenele 1-2"]
       ATING["07 atingeri"]
@@ -651,6 +651,62 @@ care rămâne din ea e că o țesătură se face din fire care trec **unul peste
 altul**, ca la tabla de șah, nu din două rânduri de dungi suprapuse — de acolo
 vine sclipirea măruntă care se citește din prima ca „țesut".)
 
+## Limbile
+
+Tot ce citește jucătorul stă în `js/00-limbi.js`, pe cheie. Scenele nu scriu
+niciodată o frază: cer `T('muzeu.plic')` și primesc rândul în limba de acum.
+Cheia e în română, fiindcă româna e originalul — celelalte paisprezece sunt
+tălmăciri după ea.
+
+```mermaid
+flowchart LR
+  DICT["js/00-limbi.js<br/>LIMBI.ro · LIMBI.en · …<br/>15 limbi × 121 de chei"]
+  T["T('cheie')<br/>caută în limba de acum,<br/>apoi în română"]
+  SCENA["scenele<br/>cer textul la desenare"]
+  BUTON["butonul din colț<br/>(HTML, nu pânză)"]
+  STAMP["ștampilele cu text<br/>aruncate și repictate"]
+
+  DICT --> T --> SCENA
+  BUTON -- "schimbaLimba(cod)" --> DICT
+  BUTON --> STAMP
+  STAMP --> SCENA
+```
+
+**Textul se cere la desenare, nu la pornire.** De-aia limba se poate schimba în
+mijlocul jocului, fără reîncărcare și fără să pierzi drumul făcut până acolo.
+
+**Trei locuri unde a fost nevoie de grijă:**
+
+1. **Ștampilele cu text.** O parte din scris nu se desenează în fiecare cadru, e
+   *pictat într-o ștampilă*: fișa de perete din sala uleiului, biletele de pe
+   peretele de colaj. Ștampilele se repictează numai la schimbarea mărimii, deci
+   ar fi rămas scrise în limba veche. `schimbaLimba` le aruncă pe toate — **afară
+   de două**, `stratulDePictura` și `panzaCarbunelui`, care nu conțin niciun
+   cuvânt, ci munca jucătorului.
+
+2. **Numerele din frază.** Numărul paginii, câți pași mai sunt, al câtelea
+   articol — toate stau în dicționar cu `{n}` la locul lor, nu lipite în față.
+   În maghiară numărul vine **înaintea** cuvântului („318. §", „156. oldal"), iar
+   un „pagina " + cifră ar fi ieșit pe dos tocmai acolo.
+
+3. **Cuvintele lungi.** Ruperea în rânduri se face după spații, deci un cuvânt
+   mai lat decât caseta rămâne un rând întreg și iese din chenar. Germana scrie
+   „GEBRAUCHSFUNKTION" într-un singur cuvânt. De-aia `celMaiLatRand` (în
+   `08-desen-fundal.js`) e chemată de toate casetele care își caută mărimea
+   literei: se măsoară și lățimea, nu numai înălțimea.
+
+**Ce nu s-a luat:** limbile fără spații între cuvinte (chineza, japoneza,
+thailandeza) — ruperea în rânduri n-ar avea de ce să se agațe; și cele scrise de
+la dreapta la stânga (araba, ebraica) — toate casetele, fișele și plăcuțele sunt
+așezate de la stânga, deci n-ar fi o traducere în plus, ar fi o rescriere a
+desenului.
+
+Un test scanează codul tuturor scenelor și pică dacă găsește o frază românească
+scrisă de-a dreptul, în afara dicționarului. Fără el, un rând uitat nu dă nicio
+eroare — rămâne pur și simplu în română pentru toată lumea, și se vede numai
+dacă cineva ajunge chiar în sala aia cu limba schimbată. Așa a stat o vreme toată
+sala a șaptea.
+
 ## Ce ține fiecare fișier
 
 Ordinea contează: fiecare fișier se sprijină pe cele dinaintea lui. Dacă muți
@@ -659,10 +715,11 @@ unul mai sus, ceva de dedesubt rămâne fără pământ.
 ```mermaid
 flowchart TB
   subgraph T["Temelia"]
-    A1["01-panza.js · 148<br/>pânza, măsurile, regulatorul de calitate"]
+    A0["00-limbi.js · 2228<br/>tot textul, în cincisprezece limbi"]
+    A1["01-panza.js · 163<br/>pânza, măsurile, regulatorul de calitate"]
     A2["02-cursor.js · 69<br/>cursorul și viteza degetului"]
-    A3["03-sunete.js · 911<br/>toate sunetele + muzica"]
-    A4["04-stari.js · 25<br/>variabila stare"]
+    A3["03-sunete.js · 1974<br/>toate sunetele + muzica"]
+    A4["04-stari.js · 46<br/>variabila stare"]
   end
   subgraph S["Scenele"]
     B5["05-scena1-balon.js · 172"]
@@ -796,6 +853,9 @@ flowchart TB
    din cod.
 7. **Comentariile spun de ce, nu ce.** Ce face o linie se vede din ea; comentariul
    spune ce s-a stricat când era altfel.
-8. **Nicio măsură în pixeli rotunzi.** Ce nu iese din `W`/`H` iese din `ecran()`.
+8. **Niciun rând de text în afara dicționarului.** Tot ce citește jucătorul se
+   cere cu `T('cheie')`, la desenare. O frază scrisă de-a dreptul într-o scenă nu
+   se strică — rămâne în română pentru toată lumea, și n-o vede nimeni.
+9. **Nicio măsură în pixeli rotunzi.** Ce nu iese din `W`/`H` iese din `ecran()`.
    Ce e ținut minte de la un cadru la altul, sau se ține în fracțiuni de ecran,
    sau își pune un ascultător în `laRedimensionare`.

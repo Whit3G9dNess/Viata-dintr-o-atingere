@@ -1461,13 +1461,13 @@ function actualizeazaAcuarela(acum) {
     s9.limpezire = Math.min(1, s9.limpezire + dt / 1600);
     if (s9.limpezire >= 1) {
       s9.faza = 'uscat'; s9.t0 = acum;
-      spuneScena9('Acuarela iubește apa. Stropește-o!', 9000);
+      spuneScena9(T('acuarela.stropeste'), 9000);
     }
   }
   else if (s9.faza === 'uscat') {
     if (s9.udare >= 0.72) {
       s9.faza = 'inundat'; s9.t0 = acum;
-      spuneScena9('Lumea s-a inversat. Plonjează în reflexie.', 12000);
+      spuneScena9(T('acuarela.plonjeaza'), 12000);
     }
   }
   else if (s9.faza === 'inundat') {

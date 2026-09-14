@@ -846,11 +846,11 @@ function deseneazaButonul(c, acum) {
     c.textAlign = 'center';
     c.textBaseline = 'middle';
     c.fillStyle = 'rgba(24, 4, 6, 0.85)';
-    c.fillText('APASĂ-MĂ', b.x, b.y - marime * 0.55);
-    c.fillText('IAR', b.x, b.y + marime * 0.62);
+    c.fillText(T('carbune.apasaMa'), b.x, b.y - marime * 0.55);
+    c.fillText(T('carbune.iar'), b.x, b.y + marime * 0.62);
     c.fillStyle = 'rgba(255, 214, 216, 0.92)';
-    c.fillText('APASĂ-MĂ', b.x, b.y - marime * 0.55 - Math.max(1, r * 0.02));
-    c.fillText('IAR', b.x, b.y + marime * 0.62 - Math.max(1, r * 0.02));
+    c.fillText(T('carbune.apasaMa'), b.x, b.y - marime * 0.55 - Math.max(1, r * 0.02));
+    c.fillText(T('carbune.iar'), b.x, b.y + marime * 0.62 - Math.max(1, r * 0.02));
   }
   c.restore();
 }
@@ -1207,7 +1207,7 @@ function actualizeazaCarbune(acum) {
     s11.limpezire = Math.min(1, s11.limpezire + dt / 1800);
     if (s11.limpezire >= 1) {
       s11.faza = 'carbune'; s11.t0 = acum;
-      spuneScena11('Șterge negrul. Sub el a rămas ceva.', 8000);
+      spuneScena11(T('carbune.stergeNegrul'), 8000);
     }
   }
   else if (s11.faza === 'carbune') {
@@ -1221,7 +1221,7 @@ function actualizeazaCarbune(acum) {
     if (s11.rama >= 0.85) {
       s11.faza = 'relief'; s11.t0 = acum;
       if (audio) sunetDescoperire();
-      spuneScena11('Rama arată unde. Sapă în bloc.', 8000);
+      spuneScena11(T('carbune.sapa'), 8000);
     }
   }
   else if (s11.faza === 'relief') {
