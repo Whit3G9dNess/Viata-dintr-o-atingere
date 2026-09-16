@@ -456,7 +456,7 @@ balonul și punctul se naște abia după; în galerie cântă, afară nu.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 334 acum**, adunate pe săli și pe teme.
+au nevoie de nimic instalat. **Sunt 337 acum**, adunate pe săli și pe teme.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
@@ -1076,10 +1076,20 @@ maghiară, neerlandeză, polonă, portugheză, turcă, ucraineană, rusă.
 - **Numerele din frază** (pagina, pașii rămași, articolul) stau în dicționar cu
   `{n}` la locul lor: în maghiară numărul vine înaintea cuvântului.
 
-Unsprezece teste noi pentru limbi (334 în total): că fiecare limbă are exact
+**Jucăria se deschide în engleză.** La început întreba browserul ce limbă
+vorbește, și pornea de la ea. Părea deștept, dar era greu de priceput: doi oameni
+deschideau același link și vedeau două jucării, fără ca vreunul dintre ei să fi
+ales ceva. Acum toată lumea pornește la fel, din engleză — jucăria stă pe web, iar
+cine dă peste link n-are de unde să știe de unde vine — și singurul lucru care
+bate engleza e ce a ales jucătorul data trecută. Româna rămâne originalul și
+limba în care se cade textul dacă lipsește o cheie, dar nu mai e și limba în care
+te întâmpină.
+
+Paisprezece teste noi pentru limbi (337 în total): că fiecare limbă are exact
 cheile românei, că o cheie lipsă cade pe română și nu pe gol, că ștampilele cu
 text se aruncă iar munca jucătorului nu, că `{n}` n-a căzut din nicio traducere,
-și că nicio frază n-a rămas scrisă în afara dicționarului.
+că nicio frază n-a rămas scrisă în afara dicționarului, și că deschiderea e în
+engleză — dar nu scrie nimic în memorie, ca să nu treacă drept o alegere.
 
 **Ce nu s-a luat, și de ce:** limbile fără spații între cuvinte și cele scrise de
 la dreapta la stânga. Nu e o lipsă de vocabular, e felul în care scrie jucăria:

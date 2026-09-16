@@ -766,9 +766,11 @@ function porneste(optiuni) {
   /* Cămara jucăriei, falsă și numai a acestui test. Fără ea, testele scriau în
      `localStorage`-ul adevărat al browserului: rulai suita, și jucăria uita ce
      limbă alesese jucătorul — rămânea cu limba ultimului test care a schimbat-o.
-     Tot aici stă și limba browserului, ca suita să pornească la fel pe orice
-     calculator, nu în engleză la unul și în română la altul. */
-  const camara = {};
+
+     `porneste({ pastrata: "fr" })` o umple dinainte, ca și cum jucătorul ar fi
+     ales franceza data trecută: așa se poate încerca ce face jucăria la
+     deschidere, fără să atingă nimeni memoria adevărată a browserului. */
+  const camara = o.pastrata ? { limba: String(o.pastrata) } : {};
   const depozitFals = {
     getItem: function (k) {
       return Object.prototype.hasOwnProperty.call(camara, k) ? camara[k] : null;
@@ -776,6 +778,9 @@ function porneste(optiuni) {
     setItem: function (k, v) { camara[k] = String(v); },
     removeItem: function (k) { delete camara[k]; }
   };
+  /* Un browser fals, tăcut. Limba jucăriei nu se mai ia de la browser, dar dacă
+     vreodată o scenă întreabă ceva despre el, să întrebe aici, nu afară — altfel
+     suita ar merge altfel pe calculatoare diferite. */
   const navigatorFals = { language: "ro", languages: ["ro"] };
 
   const fabrica = new Function("document", "window", "requestAnimationFrame", "performance",
@@ -791,12 +796,18 @@ function porneste(optiuni) {
   j.panzeAscunse = panzeAscunse;
   j.panzaPrincipala = panza;
 
-  /* Testele joacă **în română**, orice limbă ar avea browserul care le rulează.
+  /* Cu ce limbă s-a deschis jucăria, **înainte** să se amestece testul: engleza,
+     sau cea ținută minte din cămară. De aici o iau testele care verifică tocmai
+     deschiderea. */
+  j.limbaDeLaInceput = j.limba();
+  /* Și dacă deschiderea a scris ceva în cămară. Trebuie să fie „nu": jucăria
+     ține minte numai ce a **ales** jucătorul, nu și limba de la care pornește.
+     Se prinde acum, înainte ca testul să-i ceară româna — pe urmă ar fi scris. */
+  j.aScrisLaDeschidere = Object.prototype.hasOwnProperty.call(camara, "limba");
 
-     Jucăria își alege singură limba la pornire, după browser — bine pentru
-     jucător, rău pentru teste: pe un calculator cu Windows în engleză, toate
-     verificările de text ar fi picat deodată, și nu fiindcă s-a stricat ceva.
-     Româna e originalul, deci ea e și limba în care sunt scrise aserțiunile.
+  /* Pe urmă testele joacă **în română**. Jucăria se deschide în engleză, dar
+     româna e originalul — acolo s-a gândit fiecare frază, și tot în ea sunt
+     scrise aserțiunile care caută text pe ecran.
 
      Cine vrea să încerce altă limbă o cere anume: `porneste({ limba: "en" })`. */
   j.schimbaLimba(o.limba || "ro");
@@ -6589,6 +6600,23 @@ function ruleaza() {
       egal(cuText.filter(function (s) { return s.n === nume; }).length, 0,
            nume + " a ajuns printre ștampilele aruncate la schimbarea limbii");
     }
+  });
+
+  test("jucăria se deschide în engleză, dacă n-a ales nimeni nimic", function () {
+    const j = porneste();
+    egal(j.limbaDeLaInceput, "en", "deschiderea nu mai e în engleză");
+    egal(j.aScrisLaDeschidere, false,
+         "deschiderea a scris o limbă în cămară, deși n-a ales-o nimeni");
+  });
+
+  test("limba aleasă data trecută bate limba de la care se pornește", function () {
+    const j = porneste({ pastrata: "fr" });
+    egal(j.limbaDeLaInceput, "fr", "jucăria a uitat ce alesese jucătorul");
+  });
+
+  test("o limbă ținută minte pe care n-o mai avem nu strică deschiderea", function () {
+    const j = porneste({ pastrata: "klingon" });
+    egal(j.limbaDeLaInceput, "en", "deschiderea a rămas pe o limbă care nu există");
   });
 
   test("limba aleasă se ține minte pentru data viitoare", function () {

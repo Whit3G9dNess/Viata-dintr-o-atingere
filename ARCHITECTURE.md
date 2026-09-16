@@ -3,7 +3,7 @@
 Document de referință pentru structura tehnică a jucăriei.
 
 > **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, cincisprezece
-> limbi, și 334 de teste care trec. Rulează fără server, cu dublu-clic pe
+> limbi, și 337 de teste care trec. Rulează fără server, cu dublu-clic pe
 > `index.html`. Nu are build, nu are dependențe, nu are backend, niciun fișier de
 > imagine sau de sunet.
 
@@ -657,6 +657,14 @@ Tot ce citește jucătorul stă în `js/00-limbi.js`, pe cheie. Scenele nu scriu
 niciodată o frază: cer `T('muzeu.plic')` și primesc rândul în limba de acum.
 Cheia e în română, fiindcă româna e originalul — celelalte paisprezece sunt
 tălmăciri după ea.
+
+**Se deschide în engleză**, nu în română, deși româna e originalul: jucăria stă
+pe web, iar cine dă peste link n-are de unde să știe de unde vine. Româna rămâne
+limba în care se cade textul când o cheie lipsește de undeva, dar nu mai e și
+limba în care te întâmpină. Singurul lucru care bate engleza e **ce a ales
+jucătorul data trecută**, ținut minte în `localStorage`. Limba browserului nu se
+mai întreabă: doi oameni deschideau același link și vedeau două jucării, fără să
+fi ales vreunul dintre ei ceva.
 
 ```mermaid
 flowchart LR

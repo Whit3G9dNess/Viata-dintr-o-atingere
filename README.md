@@ -16,8 +16,8 @@ Vorbește **cincisprezece limbi** — română, engleză, cehă, germană, greac
 spaniolă, franceză, italiană, maghiară, neerlandeză, polonă, portugheză, turcă,
 ucraineană, rusă. Butonul cu globul, din colțul din dreapta jos, le schimbă **în
 mijlocul jocului**: nu se reîncarcă nimic și nu se pierde drumul făcut până
-acolo. La prima deschidere, jucăria încearcă limba browserului; pe urmă ține
-minte ce ai ales.
+acolo. Se deschide în **engleză** — jucăria stă pe web, iar cine dă peste link
+n-are de unde să știe de unde vine — și pe urmă ține minte ce ai ales tu.
 
 ## Cum o pornești
 
@@ -145,7 +145,7 @@ sus, ceva de dedesubt rămâne fără pământ.
 
 ## Teste
 
-`teste.html` rulează **334 de teste** în browser, fără nimic de instalat. Ele nu
+`teste.html` rulează **337 de teste** în browser, fără nimic de instalat. Ele nu
 copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
 aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
 un test poate să întrebe „câte forme s-au desenat aici", „ce scrie pe ecran" sau

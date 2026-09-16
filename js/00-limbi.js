@@ -58,7 +58,12 @@ const NUMELE_LIMBILOR = {
 const ORDINEA_LIMBILOR = ['ro', 'en', 'cs', 'de', 'el', 'es', 'fr', 'it',
                          'hu', 'nl', 'pl', 'pt', 'tr', 'uk', 'ru'];
 
-let limba = 'ro';
+/* Limba de la care pornește oricine deschide jucăria pentru prima oară.
+   **Engleza**, nu româna, deși româna e originalul: jucăria stă pe web, iar cine
+   dă peste link n-are de unde să știe de unde vine. Româna rămâne limba în care
+   s-a gândit fiecare frază și limba în care se cade textul când o cheie lipsește
+   de undeva — dar nu mai e și limba în care te întâmpină. */
+let limba = 'en';
 
 /* Textul, pe cheie. Dacă limba de acum n-o are, se întoarce româna; dacă nici ea
    n-o are, se întoarce chiar cheia — se vede de departe că lipsește ceva, în loc
@@ -2211,18 +2216,19 @@ function schimbaLimba(cod) {
   return true;
 }
 
-/* Ce limbă vorbim la prima deschidere: cea aleasă data trecută, sau cea a
-   browserului, dacă o avem — iar dacă nu, româna. Nimeni nu trebuie să caute
-   butonul ca să înțeleagă primul rând. */
+/* Ce limbă vorbim la deschidere: **cea aleasă data trecută**, dacă a fost aleasă
+   vreuna. Dacă nu, engleza, cea de mai sus.
+
+   Aici se uita înainte și la limba browserului. Părea deștept — și era greu de
+   priceput: doi oameni deschideau același link și vedeau două jucării, fără ca
+   vreunul dintre ei să fi ales ceva. Un început care se poate arăta cu degetul e
+   mai bun decât unul care ghicește: toată lumea pornește la fel, iar butonul cu
+   globul e la un centimetru distanță. */
 function alegeLimbaDeLaInceput() {
   try {
     const pastrata = localStorage.getItem('limba');
-    if (pastrata && LIMBI[pastrata]) { limba = pastrata; return; }
-  } catch (e) { /* fereastră privată: mergem mai departe */ }
-
-  const dinBrowser = (typeof navigator !== 'undefined' && navigator.language || '')
-    .slice(0, 2).toLowerCase();
-  if (LIMBI[dinBrowser]) limba = dinBrowser;
+    if (pastrata && LIMBI[pastrata]) limba = pastrata;
+  } catch (e) { /* fereastră privată: rămâne limba de la care pornim */ }
 }
 
 alegeLimbaDeLaInceput();
