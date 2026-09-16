@@ -151,7 +151,7 @@ sus, ceva de dedesubt rămâne fără pământ.
 
 ## Teste
 
-`teste.html` rulează **353 de teste** în browser, fără nimic de instalat. Ele nu
+`teste.html` rulează **357 de teste** în browser, fără nimic de instalat. Ele nu
 copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
 aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
 un test poate să întrebe „câte forme s-au desenat aici", „ce scrie pe ecran" sau

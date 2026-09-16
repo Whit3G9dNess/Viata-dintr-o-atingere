@@ -29,11 +29,6 @@ function unCadru(t) {
   reglezaCalitatea(t);
   const acum = performance.now();
 
-  /* Înainte de orice desen: dacă am ieșit dintr-o sală, pe pânză stă încă
-     **ultimul ei cadru**. Ăsta e singurul moment în care poate fi pozat pentru
-     albumul de la sfârșit — un cadru mai târziu, peste el s-a desenat deja sala
-     următoare, iar sala veche nu mai există nicăieri. */
-  tineMinteSalaParasita();
 
   /* Muzica muzeului se scrie cu un pas înainte, de la un cadru la altul. Notele
      se programează pe ceasul sunetului, nu pe cel al cadrelor: al doilea sare,
@@ -252,5 +247,11 @@ function unCadru(t) {
   }
 
   deseneazaCursorul();
+
+  /* La capătul cadrului, pe pânză stă chiar sala de acum, desenată de tot. De
+     aici își ia albumul pozele — nu la ieșire, unde ar fi prins tocmai trecerea:
+     ceața care acoperă sala uleiului, portalul care înghite gheața, negrul spre
+     care se stinge totul. */
+  incearcaPozaSalii(acum);
 }
 requestAnimationFrame(cadru);

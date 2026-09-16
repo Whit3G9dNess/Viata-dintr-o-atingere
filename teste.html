@@ -493,6 +493,9 @@ return {
   deseneazaAlbumul: typeof deseneazaAlbumul !== "undefined" ? deseneazaAlbumul : null,
   pozeleAlbumului: typeof pozeleAlbumului !== "undefined" ? pozeleAlbumului : null,
   pozeazaSala: typeof pozeazaSala !== "undefined" ? pozeazaSala : null,
+  incearcaPozaSalii: typeof incearcaPozaSalii !== "undefined" ? incearcaPozaSalii : null,
+  cataViataEInPoza: typeof cataViataEInPoza !== "undefined" ? cataViataEInPoza : null,
+  marireaDispozitivului: typeof marireaDispozitivului !== "undefined" ? marireaDispozitivului : null,
   cateFoi: typeof cateFoi !== "undefined" ? cateFoi : null,
   POZE: typeof POZE !== "undefined" ? POZE : null,
   ORDINEA_POZELOR: typeof ORDINEA_POZELOR !== "undefined" ? ORDINEA_POZELOR : null,
@@ -5967,6 +5970,9 @@ function ruleaza() {
 
   test("cioburile se string in mijlocul ecranului si se sting", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
+    /* O poza in album, ca sfarsitul sa aiba ce arata. Fara niciuna, albumul se
+       sare cu totul si se trece de-a dreptul la nume. */
+    j.pozeazaSala("muzeu");
     const m = laGlob(j);
     j.cursor.x = m.x; j.cursor.y = m.y;
     j.click13(j.ceas.t);
@@ -6638,6 +6644,18 @@ function ruleaza() {
     egal(j.s13.faza, "text", "după ultima filă nu vine numele");
   });
 
+  test("peste album, cursorul se vede — mai ai ce atinge acolo", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.pozeazaSala("muzeu");
+    const m = laGlob(j);
+    j.cursor.x = m.x; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    j.avanseazaUsor(5200);
+    egal(j.s13.faza, "album", "nu s-a deschis albumul");
+    egal(j.cursorulFinal(), false,
+         "cursorul e ascuns tocmai acolo unde trebuie să întorci filele");
+  });
+
   test("fără nicio poză, albumul nu se deschide deloc", function () {
     const j = porneste({ latime: 1400, inaltime: 800 });
     j.ORDINEA_POZELOR.length = 0;
@@ -6781,6 +6799,56 @@ function ruleaza() {
     j.schimbaDispozitivul("calculator");
     egal(j.eTelefon(), false, "am cerut calculator și n-a ascultat");
     j.schimbaDispozitivul("automat");
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Măsura și pozele");
+
+  /* `ecran()` se cheamă de mii de ori pe cadru. O vreme a întrebat browserul, la
+     fiecare apel, dacă suntem pe telefon — `window.matchMedia(...)`, un obiect nou
+     de fiecare dată. Măsurat, ajunsese de patru sute de ori mai scumpă decât o
+     înmulțire, iar în muzeu, unde se scrie mult text, jucăria părea că se blochează.
+     Nimic nu crăpa: se îneca. Testul păzește exact greșeala asta. */
+  test("măsura ecranului nu întreabă browserul nimic", function () {
+    const j = porneste();
+    const corp = String(j.ecran) + String(j.marireaDispozitivului);
+    for (const scump of ["matchMedia", "innerWidth", "innerHeight",
+                         "getComputedStyle", "getBoundingClientRect", "querySelector"]) {
+      adevarat(corp.indexOf(scump) === -1,
+               "`ecran()` întreabă browserul (" + scump + ") — se cheamă de mii de ori pe cadru");
+    }
+  });
+
+  test("o poză neagră are mai puțină viață în ea decât una plină", function () {
+    const j = porneste();
+    function panzaCu(umple) {
+      const lat = 60, inalt = 40, date = new Uint8ClampedArray(lat * inalt * 4);
+      for (let k = 0; k < lat * inalt; k++) umple(date, k * 4, k % lat, Math.floor(k / lat));
+      return { getImageData: function () { return { data: date }; } };
+    }
+    const neagra = panzaCu(function (d, i) { d[i] = d[i + 1] = d[i + 2] = 0; d[i + 3] = 255; });
+    const plina = panzaCu(function (d, i, x, y) {
+      d[i] = (x * 4) % 256; d[i + 1] = (y * 6) % 256; d[i + 2] = 255 - (x * 3) % 256; d[i + 3] = 255;
+    });
+    const nNeagra = j.cataViataEInPoza(neagra, 60, 40);
+    const nPlina = j.cataViataEInPoza(plina, 60, 40);
+    adevarat(nPlina > nNeagra * 3,
+             "ecranul care se stinge ar bate sala plină: " + nNeagra + " față de " + nPlina);
+  });
+
+  test("poza nu se ia din cadrul în care se schimbă sala", function () {
+    /* Ultimul cadru al unei săli nu e sala, e **ieșirea** din ea: ceața, portalul,
+       negrul. Poza se încearcă în timp ce stai, nu când pleci. */
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.avanseazaUsor(2000);
+    adevarat(j.pozeleAlbumului().indexOf("muzeu") !== -1,
+             "sala în care ai stat două secunde n-a lăsat nicio poză");
+    const inainte = j.POZE["muzeu"].panza;
+    j.mergiLaStarea("final");
+    j.avanseazaUsor(200);
+    egal(j.POZE["muzeu"].panza, inainte,
+         "poza s-a schimbat la ieșire, adică s-a pozat tocmai trecerea");
   });
 
   /* ---------------------------------------------------------------- */

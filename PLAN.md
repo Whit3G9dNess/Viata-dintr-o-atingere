@@ -60,6 +60,7 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 40 | Jucăria vorbește cincisprezece limbi, alese dintr-un colț al paginii | ✅ gata |
 | 41 | Un ecran de setări: fereastră, dispozitiv, trei robinete de sunet, limba | ✅ gata |
 | 42 | Albumul de la sfârșit: pozele sălilor prin care ai trecut | ✅ gata |
+| 43 | Patru îndreptări: măsura care întreba browserul, cursorul, pozele, telefonul | ✅ gata |
 
 ---
 
@@ -458,7 +459,7 @@ balonul și punctul se naște abia după; în galerie cântă, afară nu.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 353 acum**, adunate pe săli și pe teme.
+au nevoie de nimic instalat. **Sunt 357 acum**, adunate pe săli și pe teme.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
@@ -1096,6 +1097,52 @@ engleză — dar nu scrie nimic în memorie, ca să nu treacă drept o alegere.
 **Ce nu s-a luat, și de ce:** limbile fără spații între cuvinte și cele scrise de
 la dreapta la stânga. Nu e o lipsă de vocabular, e felul în care scrie jucăria:
 rândurile se rup după spații, iar toate casetele sunt așezate de la stânga.
+
+## Etapa a treizecea — patru îndreptări, după prima jucare adevărată
+
+Ecranul de setări și albumul au fost încercate de Daniela pe drumul lung, nu pe
+bucăți. Au ieșit patru lucruri, și trei dintre ele erau ale mele.
+
+**1. Muzeul „dădea crash".** Nu crăpa nimic: se îneca. Setarea de dispozitiv
+întreba browserul, prin `window.matchMedia('(pointer: coarse)')`, **din
+`ecran()`** — iar `ecran()` se cheamă de mii de ori pe cadru, pentru fiecare
+mărime de literă și fiecare rând rupt. Măsurat: de patru sute de ori mai scumpă
+decât o înmulțire. În sălile pline de text asta însemna zeci de milisecunde pe
+cadru, termometrul de fluență lua întârzierea drept înec, cobora o treaptă,
+treapta nouă invalida toate ștampilele, ele se repictau — și cascada aia arată,
+din afară, exact ca o jucărie blocată.
+
+Acum răspunsul se ține minte și se întreabă din nou numai când chiar se poate
+schimba: la pornire, la schimbarea setării, și la redimensionarea ferestrei. Un
+test pică dacă `ecran()` mai ajunge vreodată să întrebe browserul ceva.
+
+**2. „Automat" credea că orice fereastră e telefon.** Pragul era latura scurtă
+sub 820 de pixeli — iar o fereastră obișnuită de calculator, de 1280 pe 720, are
+latura scurtă de 720. Pe un laptop cu ecran tactil, jucăria se credea telefon și
+scria totul cu un sfert mai mare. Pragul e acum 560: telefoanele rămân sub el pe
+orice parte le-ai întoarce, tabletele și laptopurile trec drept calculatoare.
+
+**3. Peste album nu se vedea cursorul.** Îl ascunsesem cu tot cu genericul de la
+sfârșit — dar la generic nu mai ai ce atinge, iar în album întorci filele cu
+degetul. Fără cursorul luminos, și cu cel de sistem ascuns de pagină, întorceai
+pagini pe ghicite. Se ascunde acum abia după ultima filă.
+
+**4. Pozele erau urâte.** Se luau la ieșirea din sală, adică **tocmai în
+trecere**: ceața care acoperă manechinul din sala uleiului, portalul care înghite
+gheața, negrul spre care se stinge totul. Acum se încearcă din trei în trei
+sferturi de secundă, cât stai în sală, și rămâne cadrul cu cea mai multă viață în
+el — lumini care se bat cu umbre, și culoare. Nota se dă pe o miniatură de
+șaizeci și patru de pixeli, fiindcă citirea pixelilor dintr-o pânză mare costa
+unsprezece milisecunde, adică mai mult decât un cadru; poza adevărată se face
+numai când nota chiar bate ce aveam.
+
+Și încă una, găsită în timpul verificării: **albumul pe un telefon ținut în
+picioare** era o carte deschisă cu patru poze înalte cât un deget. Pozele au
+forma ecranului, deci pe telefon sunt și ele în picioare, iar două pagini
+alăturate le tăiau lățimea în două. Acum, pe ecran înalt, albumul arată o pagină
+și o poză, mare cât ecranul — un teanc de fotografii, nu o carte.
+
+Patru teste noi (357 în total).
 
 ## Rămas de făcut
 

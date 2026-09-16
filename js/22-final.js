@@ -376,10 +376,14 @@ function deseneazaNumele() {
 }
 
 /* Pe negru, la generic, nu se mai plimbă nimic: cursorul luminos ar fi singurul
-   lucru care se mișcă pe ecran, și ar cere să fie urmărit. */
+   lucru care se mișcă pe ecran, și ar cere să fie urmărit.
+
+   **Albumul face excepție**, și trebuie să facă: acolo mai ai ceva de făcut —
+   întorci filele cu degetul. Fără cursor nu se vedea unde ești, fiindcă și cel
+   de sistem e ascuns de pagină: rămâneai să întorci pagini pe ghicite. Cursorul
+   se ascunde abia la generic, unde nu mai e nimic de atins. */
 function cursorulFinal() {
-  return stare === 'final' &&
-         (s13.faza === 'adunare' || s13.faza === 'album' || s13.faza === 'text');
+  return stare === 'final' && (s13.faza === 'adunare' || s13.faza === 'text');
 }
 
 /* Amestec de culori, numai pentru sala asta: `amesteca` stă în sala a cincea și

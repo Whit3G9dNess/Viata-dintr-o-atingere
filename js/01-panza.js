@@ -70,19 +70,51 @@ function ecran(n) { return n * scalaPanzei * marireaDispozitivului(); }
 const DISPOZITIVE = ['automat', 'calculator', 'telefon'];
 let dispozitivAles = 'automat';
 
-function eTelefon() {
-  if (dispozitivAles === 'telefon') return true;
-  if (dispozitivAles === 'calculator') return false;
+/* Răspunsul, **ținut minte**. Aici a fost o greșeală care a costat scump:
+   întrebarea se punea în `eTelefon()`, iar `eTelefon()` era chemată din `ecran()`.
+
+   `ecran()` se cheamă de mii de ori pe cadru — pentru fiecare mărime de literă,
+   pentru fiecare înălțime de rând, pentru fiecare cuvânt rupt în rânduri. Iar
+   `window.matchMedia(...)` nu e o citire, e o **întrebare pusă browserului**, cu
+   un obiect nou de fiecare dată: măsurat, `ecran()` ajunsese de patru sute de ori
+   mai scumpă decât o înmulțire.
+
+   În sălile pline de text — muzeul cu manualul lui de trei sute șaizeci și nouă
+   de pagini, galeria cu fișa ei — asta însemna zeci de milisecunde pe cadru.
+   Termometrul de fluență lua întârzierea drept înec, cobora o treaptă de
+   rezoluție, treapta nouă invalida toate ștampilele, ele se repictau, iar cadrul
+   ăla scump chema încă o coborâre. Din afară arăta ca o jucărie care se blochează
+   la intrarea în muzeu.
+
+   Acum se întreabă o dată, și numai când chiar se poate schimba răspunsul: la
+   pornire, la schimbarea setării, și la redimensionarea ferestrei — o fereastră
+   trasă îngustă poate trece pragul. */
+let esteTelefon = false;
+
+function recunoasteDispozitivul() {
+  if (dispozitivAles === 'telefon') { esteTelefon = true; return; }
+  if (dispozitivAles === 'calculator') { esteTelefon = false; return; }
 
   const cuDegetul =
     (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0) ||
     (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
      window.matchMedia('(pointer: coarse)').matches);
-  const mic = Math.min(window.innerWidth || 0, window.innerHeight || 0) < 820;
-  return !!(cuDegetul && mic);
+
+  /* Latura scurtă, nu cea lungă: un telefon e îngust și în picioare, și culcat —
+     375 într-un fel, 430 în celălalt. Pragul a fost întâi 820, și era greșit: o
+     fereastră obișnuită de calculator, de 1280 pe 720, are latura scurtă de 720.
+     Pe un laptop cu ecran tactil — sunt destule prin școli — jucăria se credea
+     telefon și scria totul cu un sfert mai mare, degeaba.
+
+     560 desparte curat: telefoanele rămân sub el pe orice parte le-ai întoarce,
+     iar tabletele (768) și laptopurile trec drept calculatoare. Cine vrea altfel
+     alege singur din setări — de-aia sunt acolo. */
+  const mic = Math.min(window.innerWidth || 0, window.innerHeight || 0) < 560;
+  esteTelefon = !!(cuDegetul && mic);
 }
 
-function marireaDispozitivului() { return eTelefon() ? 1.28 : 1; }
+function eTelefon() { return esteTelefon; }
+function marireaDispozitivului() { return esteTelefon ? 1.28 : 1; }
 
 /* Schimbarea dispozitivului mișcă `ecran()` sub picioarele tuturor sălilor, deci
    tot ce e pictat o dată și apăsat pe urmă ca o ștampilă trebuie pictat din nou.
@@ -91,6 +123,7 @@ function marireaDispozitivului() { return eTelefon() ? 1.28 : 1; }
 function schimbaDispozitivul(cod) {
   if (DISPOZITIVE.indexOf(cod) === -1 || cod === dispozitivAles) return false;
   dispozitivAles = cod;
+  recunoasteDispozitivul();
   try { localStorage.setItem('dispozitiv', cod); } catch (e) { /* fereastră privată */ }
   if (typeof stampilele === 'function') {
     for (const s of stampilele()) { s.o.latime = 0; s.o.inaltime = 0; }
@@ -108,6 +141,7 @@ function ceDispozitivAmAvut() {
 }
 
 ceDispozitivAmAvut();
+recunoasteDispozitivul();
 
 /* Aceleași litere, măsurate în pixeli de-ai ecranului, nu de-ai pânzei. Un
    „20px" scris de-a dreptul crește pe ecran atunci când pânza se micșorează —
@@ -117,6 +151,10 @@ function scrisGeorgia(px, stil) {
 }
 
 function redimensioneaza() {
+  /* O fereastră trasă îngustă poate trece pragul dintre calculator și telefon.
+     E singurul moment, pe lângă schimbarea setării, în care răspunsul se poate
+     schimba — deci singurul în care merită întrebat din nou. */
+  recunoasteDispozitivul();
   const Wv = W, Hv = H;
   const lf = Math.max(1, window.innerWidth), inf = Math.max(1, window.innerHeight);
   scalaPanzei = Math.min(1, Math.sqrt(PANZA_MAX / (lf * inf))) * calitate;

@@ -3,7 +3,7 @@
 Document de referință pentru structura tehnică a jucăriei.
 
 > **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, cincisprezece
-> limbi, un ecran de setări, și 353 de teste care trec. Rulează fără server, cu dublu-clic pe
+> limbi, un ecran de setări, și 357 de teste care trec. Rulează fără server, cu dublu-clic pe
 > `index.html`. Nu are build, nu are dependențe, nu are backend, niciun fișier de
 > imagine sau de sunet.
 
@@ -768,28 +768,42 @@ Manualul custodelui are un articol pe care jucăria și-l călca:
 de cărbune, rupeai peretele de colaj, creșteai o grădină întreagă din culorile
 sorbite de elefant — iar la capăt se spărgea globul și nu rămânea nimic din ele.
 
-Acum, la **ieșirea din fiecare sală**, se face o poză: ultimul cadru desenat
-acolo, micșorat pe o pânză ascunsă de trei sute șaizeci de pixeli. La sfârșit,
-după ce cioburile globului se sting în mijlocul ecranului, se deschide un album
-și le arată pe toate.
+Acum, **cât stai într-o sală**, jucăria îi face poze din trei în trei sferturi
+de secundă și o păstrează pe cea mai bună. La sfârșit, după ce cioburile globului
+se sting în mijlocul ecranului, se deschide un album și le arată pe toate.
 
 ```mermaid
 flowchart LR
-  SALA["ești într-o sală"] -- "stare se schimbă" --> PRINDE["ultimul ei cadru<br/>e încă pe pânză"]
-  PRINDE --> POZA["pozeazaSala()<br/>360 px pe lat"]
+  CADRU["capătul unui cadru<br/>sala e desenată de tot"] --> MIC["o miniatură de 64 px<br/>willReadFrequently"]
+  MIC --> NOTA["câtă viață are:<br/>lumini ⨯ umbre + culoare"]
+  NOTA -- "mai bună ca până acum" --> POZA["poza adevărată<br/>360 px pe lat"]
+  NOTA -- "mai slabă" --> NIMIC["se aruncă"]
   POZA --> POZE["POZE + ORDINEA_POZELOR"]
-  POZE --> ALBUM["albumul, la sfârșit<br/>2 poze/pagină, 4/filă"]
+  POZE --> ALBUM["albumul, la sfârșit"]
 ```
 
-**Momentul e singurul cu putință.** `tineMinteSalaParasita()` stă la începutul
-cadrului, înaintea oricărui desen: dacă `stare` s-a schimbat de la cadrul trecut,
-pe pânză stă **încă ultimul cadru al sălii vechi**. Un cadru mai târziu s-a
-desenat peste el, iar sala veche nu mai există nicăieri.
+**De ce nu ultimul cadru al sălii.** Așa a fost întâi, și ieșeau poze urâte:
+ultimul cadru al unei săli **nu e sala**, e ieșirea din ea — ceața care acoperă
+manechinul din sala uleiului, portalul care înghite sala de gheață, negrul spre
+care se stinge totul. Exact ce nu ții minte dintr-o cameră.
 
-**De ce ultimul cadru, și nu unul ales anume:** ultimul cadru al unei săli e
-chiar sala așa cum ai lăsat-o. Un cadru ales de noi ar fi o ilustrație; ăsta e o
-urmă. Două jucătoare care trec prin aceleași douăsprezece săli ies cu două albume
-care nu seamănă.
+**Cum se alege.** Se încearcă mereu, cât stai. Fiecare încercare desenează ecranul
+pe o miniatură de șaizeci și patru de pixeli și îi dă o notă: cât se bat luminile
+cu umbrele, plus cât e de colorată. Un ecran care se stinge n-are nici una, nici
+alta. Poza adevărată, de trei sute șaizeci de pixeli, se face **numai când nota
+bate ce aveam** — altfel s-ar copia degeaba. Iar nota veche scade cu trei la sută
+la fiecare încercare, fiindcă o sală se umple pe măsură ce stai în ea.
+
+**Citirea pixelilor costă.** Prima, oricât de mică, ia o sută șaizeci de
+milisecunde — browserul își pregătește abia atunci drumul de întoarcere din placa
+video. Se plătește la încărcarea paginii, pe negru, unde n-o vede nimeni.
+Următoarele costă una și jumătate, o dată la trei sferturi de secundă.
+
+**Pe lat și în picioare.** Pe calculator albumul stă deschis ca o carte: două
+pagini, două poze pe fiecare. Pe un telefon ținut în picioare, pozele au chiar
+forma ecranului — adică sunt și ele în picioare — iar două pagini alăturate le-ar
+face patru fâșii cât un deget. Atunci se arată o pagină și o poză, mare cât
+ecranul: un teanc de fotografii prin care treci una câte una.
 
 Pozele stau mici dinadins. Douăsprezece pânze cât ecranul ar fi zeci de
 megaocteți ținuți degeaba, pe un calculator de școală, pentru o pagină care se
