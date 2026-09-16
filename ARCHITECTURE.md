@@ -3,7 +3,7 @@
 Document de referință pentru structura tehnică a jucăriei.
 
 > **Stare curentă:** douăsprezece săli întregi și jucabile, un sfârșit, cincisprezece
-> limbi, și 337 de teste care trec. Rulează fără server, cu dublu-clic pe
+> limbi, un ecran de setări, și 353 de teste care trec. Rulează fără server, cu dublu-clic pe
 > `index.html`. Nu are build, nu are dependențe, nu are backend, niciun fișier de
 > imagine sau de sunet.
 
@@ -12,17 +12,17 @@ Document de referință pentru structura tehnică a jucăriei.
 O pagină de canvas 2D, fără biblioteci și fără niciun fișier luat de undeva —
 nici imagini, nici sunete. Tot ce se vede iese din `CanvasRenderingContext2D`,
 tot ce se aude iese din WebAudio, notă cu notă. `index.html` nu conține cod: e o
-listă de douăzeci și trei de scripturi obișnuite, încărcate în ordine.
+listă de douăzeci și patru de scripturi obișnuite, încărcate în ordine.
 
 ```mermaid
 flowchart LR
   subgraph BROWSER["Browser (dublu-clic pe index.html, fără server)"]
     direction LR
     IDX["index.html<br/>listă de scripturi"]
-    subgraph JS["js/*.js — douăzeci și trei de fișiere, în ordine"]
+    subgraph JS["js/*.js — douăzeci și patru de fișiere, în ordine"]
       direction TB
       TEMELIE["Temelia<br/>00 limbi · 01 pânză · 02 cursor<br/>03 sunete · 04 stări"]
-      SCENE["Sălile<br/>05 balon · 06 minge · 11 muzeu · 12 galerie · 13 câmpie<br/>15 foc · 16 gheață · 17 ulei · 18 acuarelă<br/>19 colaj · 20 cărbune · 21 vid · 22 final"]
+      SCENE["Sălile<br/>05 balon · 06 minge · 11 muzeu · 12 galerie · 13 câmpie<br/>15 foc · 16 gheață · 17 ulei · 18 acuarelă<br/>19 colaj · 20 cărbune · 21 vid · 22 final · 23 album"]
       DESEN["Desenul<br/>08 fundal · 09 mânuță<br/>10 scenele 1-2"]
       ATING["07 atingeri"]
       BUCLA["14 bucla"]
@@ -71,7 +71,8 @@ stateDiagram-v2
   carbune --> vid : apeși butonul roșu
   vid --> crestere : atingi punctul<br/>(jucăria o ia de la capăt)
   balon --> final : la ultimul tur,<br/>balonul se face glob
-  final --> [*] : îl spargi, și rămâne un nume
+  final --> album : îl spargi, cioburile se sting
+  album --> [*] : îți vezi pozele, și rămâne un nume
   galerie --> muzeu : ieși din galerie
 ```
 
@@ -749,12 +750,53 @@ flowchart TB
     C8["08-desen-fundal.js · 292<br/>fundalurile, foile deschiderii"]
     C9["09-manuta-balon.js · 317<br/>mănușa-balon și cioburile"]
     C10["10-desen-scene-1-2.js · 681"]
+    C23["23-album.js · 302<br/>pozele sălilor, și cartea de la sfârșit"]
     C14["14-bucla.js · 187<br/>un cadru, la nesfârșit"]
   end
   T --> S
   T --> D
   S --> D
 ```
+
+## Albumul de la sfârșit
+
+Manualul custodelui are un articol pe care jucăria și-l călca:
+
+> **Art. 260** — Nimeni nu pleacă fără să lase o urmă.
+
+Și totuși pleca. Pictai pe manechinul din sala uleiului, săpai o formă în blocul
+de cărbune, rupeai peretele de colaj, creșteai o grădină întreagă din culorile
+sorbite de elefant — iar la capăt se spărgea globul și nu rămânea nimic din ele.
+
+Acum, la **ieșirea din fiecare sală**, se face o poză: ultimul cadru desenat
+acolo, micșorat pe o pânză ascunsă de trei sute șaizeci de pixeli. La sfârșit,
+după ce cioburile globului se sting în mijlocul ecranului, se deschide un album
+și le arată pe toate.
+
+```mermaid
+flowchart LR
+  SALA["ești într-o sală"] -- "stare se schimbă" --> PRINDE["ultimul ei cadru<br/>e încă pe pânză"]
+  PRINDE --> POZA["pozeazaSala()<br/>360 px pe lat"]
+  POZA --> POZE["POZE + ORDINEA_POZELOR"]
+  POZE --> ALBUM["albumul, la sfârșit<br/>2 poze/pagină, 4/filă"]
+```
+
+**Momentul e singurul cu putință.** `tineMinteSalaParasita()` stă la începutul
+cadrului, înaintea oricărui desen: dacă `stare` s-a schimbat de la cadrul trecut,
+pe pânză stă **încă ultimul cadru al sălii vechi**. Un cadru mai târziu s-a
+desenat peste el, iar sala veche nu mai există nicăieri.
+
+**De ce ultimul cadru, și nu unul ales anume:** ultimul cadru al unei săli e
+chiar sala așa cum ai lăsat-o. Un cadru ales de noi ar fi o ilustrație; ăsta e o
+urmă. Două jucătoare care trec prin aceleași douăsprezece săli ies cu două albume
+care nu seamănă.
+
+Pozele stau mici dinadins. Douăsprezece pânze cât ecranul ar fi zeci de
+megaocteți ținuți degeaba, pe un calculator de școală, pentru o pagină care se
+vede treizeci de secunde.
+
+La al doilea tur poza se face din nou, peste cea veche: e aceeași sală, dar cu
+tot ce ai mai adăugat între timp. Ordinea rămâne cea a primei treceri.
 
 ## Testele
 

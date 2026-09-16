@@ -16,7 +16,7 @@
    Pe urmă rămâne negrul de la început, și un nume. */
 
 const s13 = {
-  faza: 'crestere',     // crestere → asteapta → spargere → adunare → text
+  faza: 'crestere',     // crestere → asteapta → spargere → adunare → album → text
   t0: 0, ultimulCadru: 0,
   raza: 0,              // cât e globul acum
   intuneric: 0,         // cât s-a stins lumea în jurul lui
@@ -97,7 +97,22 @@ function actualizeazaFinalul(acum) {
       c.y = intre(c.y, mij.y, atenuare(p) * 0.9);
     }
     s13.intuneric = 1;
-    if (p >= 1) { s13.faza = 'text'; s13.t0 = acum; s13.cioburi.length = 0; }
+    if (p >= 1) {
+      s13.cioburi.length = 0;
+      /* Din locul unde s-au stins cioburile se ridică albumul. Dacă n-a rămas
+         nicio poză — cineva a sărit drept la final dintr-un test, sau jucăria
+         s-a deschis chiar aici — se trece mai departe, la nume. */
+      if (typeof pozeleAlbumului === 'function' && pozeleAlbumului().length) {
+        s13.faza = 'album'; s13.t0 = acum;
+        pornesteAlbumul();
+      } else {
+        s13.faza = 'text'; s13.t0 = acum;
+      }
+    }
+  }
+  else if (s13.faza === 'album') {
+    actualizeazaAlbumul(dt);
+    if (album.gata) { s13.faza = 'text'; s13.t0 = acum; s13.scris = 0; }
   }
   else if (s13.faza === 'text') {
     s13.scris = Math.min(1, s13.scris + dt / 2200);
@@ -106,6 +121,8 @@ function actualizeazaFinalul(acum) {
 
 /* ---------- CE SE ÎNTÂMPLĂ LA ATINGERE ---------- */
 function click13(acum) {
+  /* În album, atingerea întoarce fila — nu mai sparge nimic. */
+  if (s13.faza === 'album') { atingeAlbumul(); return; }
   if (s13.faza !== 'asteapta' && s13.faza !== 'crestere') return;
   const m = loculGlobului();
   /* Ținta e largă: globul e singurul lucru de pe ecran, iar un ultim gest nu se
@@ -165,6 +182,7 @@ function deseneazaScena13(t, acum) {
 
   if (s13.faza === 'crestere' || s13.faza === 'asteapta') deseneazaGlobul(t, acum);
   if (s13.faza === 'spargere' || s13.faza === 'adunare') cioburileGlobului(t);
+  if (s13.faza === 'album') deseneazaAlbumul(t);
   if (s13.faza === 'text') deseneazaNumele();
 }
 
@@ -360,7 +378,8 @@ function deseneazaNumele() {
 /* Pe negru, la generic, nu se mai plimbă nimic: cursorul luminos ar fi singurul
    lucru care se mișcă pe ecran, și ar cere să fie urmărit. */
 function cursorulFinal() {
-  return stare === 'final' && (s13.faza === 'adunare' || s13.faza === 'text');
+  return stare === 'final' &&
+         (s13.faza === 'adunare' || s13.faza === 'album' || s13.faza === 'text');
 }
 
 /* Amestec de culori, numai pentru sala asta: `amesteca` stă în sala a cincea și

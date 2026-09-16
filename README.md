@@ -10,7 +10,13 @@ stropești, rupi, ștergi. Nu are meniu, nu are butoane, nu are text de ajutor. 
 se poate atinge, strălucește.
 
 **Nicio bibliotecă, niciun pas de compilare, niciun fișier de imagine sau de
-sunet.** Douăzeci și trei de fișiere JavaScript și o pagină HTML.
+sunet.** Douăzeci și patru de fișiere JavaScript și o pagină HTML.
+
+Are un **ecran de setări** — roata dințată din colțul din dreapta jos: fereastră
+sau tot ecranul, calculator sau telefon, și trei robinete de sunet (muzica,
+sunetele pe care le faci tu, efectele sălii din jur). La sfârșit, după ce se
+sparge globul, se deschide un **album** cu pozele sălilor prin care ai trecut —
+nu niște ilustrații, ci ultimul cadru al fiecărei săli, așa cum ai lăsat-o tu.
 
 Vorbește **cincisprezece limbi** — română, engleză, cehă, germană, greacă,
 spaniolă, franceză, italiană, maghiară, neerlandeză, polonă, portugheză, turcă,
@@ -145,7 +151,7 @@ sus, ceva de dedesubt rămâne fără pământ.
 
 ## Teste
 
-`teste.html` rulează **337 de teste** în browser, fără nimic de instalat. Ele nu
+`teste.html` rulează **353 de teste** în browser, fără nimic de instalat. Ele nu
 copiază codul: îl citesc din fișierele pe care le încarcă `index.html`, în
 aceeași ordine, și îl pun într-o pânză falsă care ține minte fiecare desen. Așa
 un test poate să întrebe „câte forme s-au desenat aici", „ce scrie pe ecran" sau

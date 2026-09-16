@@ -487,6 +487,16 @@ return {
   definitiePeFundal: typeof definitiePeFundal !== "undefined" ? definitiePeFundal : null,
   reglezaCalitatea: typeof reglezaCalitatea !== "undefined" ? reglezaCalitatea : null,
   ecran: typeof ecran !== "undefined" ? ecran : null,
+  album: typeof album !== "undefined" ? album : null,
+  atingeAlbumul: typeof atingeAlbumul !== "undefined" ? atingeAlbumul : null,
+  pornesteAlbumul: typeof pornesteAlbumul !== "undefined" ? pornesteAlbumul : null,
+  deseneazaAlbumul: typeof deseneazaAlbumul !== "undefined" ? deseneazaAlbumul : null,
+  pozeleAlbumului: typeof pozeleAlbumului !== "undefined" ? pozeleAlbumului : null,
+  pozeazaSala: typeof pozeazaSala !== "undefined" ? pozeazaSala : null,
+  cateFoi: typeof cateFoi !== "undefined" ? cateFoi : null,
+  POZE: typeof POZE !== "undefined" ? POZE : null,
+  ORDINEA_POZELOR: typeof ORDINEA_POZELOR !== "undefined" ? ORDINEA_POZELOR : null,
+  SALILE_DIN_ALBUM: typeof SALILE_DIN_ALBUM !== "undefined" ? SALILE_DIN_ALBUM : null,
   VOLUME: typeof VOLUME !== "undefined" ? VOLUME : null,
   FELURI_DE_SUNET: typeof FELURI_DE_SUNET !== "undefined" ? FELURI_DE_SUNET : null,
   puneVolumul: typeof puneVolumul !== "undefined" ? puneVolumul : null,
@@ -5865,6 +5875,16 @@ function ruleaza() {
   /* ---------------------------------------------------------------- */
   sectiune("Sfârșitul: balonul se face sticlă");
 
+  /* De la cioburi la nume trece acum albumul: se deschide singur si se intoarce
+     fila cu fila, la atingere. Testele care cauta numele trec prin el. */
+  function treciDeAlbum(j) {
+    for (let k = 0; k < 40 && j.s13.faza === "album"; k++) {
+      j.avanseazaUsor(1000);
+      j.atingeAlbumul();
+      j.avanseazaUsor(900);
+    }
+  }
+
   function laGlob(j) {
     j.puneTurul(j.TURURI_PANA_LA_FINAL + 1);
     j.mergiLaStarea("balon");
@@ -5959,7 +5979,9 @@ function ruleaza() {
     adevarat(departe.length <= 2 || j.s13.faza === "text",
       departe.length + " cioburi n-au ajuns in mijloc");
     j.avanseazaUsor(600);
-    egal(j.s13.faza, "text", "dupa adunare nu vine numele");
+    /* Dupa ce se sting cioburile nu mai vine numele de-a dreptul, ci albumul cu
+       ce ai facut prin sali. Numele vine dupa ultima fila. */
+    egal(j.s13.faza, "album", "dupa adunare nu se deschide albumul");
     egal(j.s13.cioburi.length, 0, "au ramas cioburi dupa ce s-au stins");
   });
 
@@ -5971,6 +5993,7 @@ function ruleaza() {
     j.cursor.x = m.x; j.cursor.y = m.y;
     j.click13(j.ceas.t);
     j.avanseazaUsor(5200);
+    treciDeAlbum(j);
     egal(j.s13.faza, "text", "nu s-a ajuns la nume");
     j.avanseazaUsor(2400);
 
@@ -6537,6 +6560,110 @@ function ruleaza() {
     adevarat(/GALERIE/.test(totTextul(d)), "pe buzunar nu scrie nimic");
     const numere = textele(d).filter(function (t) { return /^[1-9]$/.test(t); });
     egal(numere.length, 0, "au rămas firide numerotate: " + JSON.stringify(numere));
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Albumul de la sfârșit");
+
+  /* Manualul muzeului are Art. 260: „Nimeni nu pleacă fără să lase o urmă."
+     Jucăria îl călca — pictai, săpai, rupeai, și la glob nu mai rămânea nimic.
+     Acum fiecare sală părăsită își lasă poza, iar la sfârșit se deschide un album
+     cu ele. Testele de aici păzesc tocmai lucrul care se pierde ușor: poza se
+     poate lua **numai** în cadrul în care ai ieșit din sală. */
+
+  test("fiecare sală părăsită își lasă poza", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.avanseazaUsor(200);
+    j.mergiLaStarea("galerie");
+    j.avanseazaUsor(200);
+    const poze = j.pozeleAlbumului();
+    adevarat(poze.indexOf("muzeu") !== -1,
+             "muzeul n-a lăsat nicio poză: " + JSON.stringify(poze));
+  });
+
+  test("poza e chiar ce era pe ecran, nu o pânză goală", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu");
+    j.avanseazaUsor(200);
+    j.mergiLaStarea("galerie");
+    j.avanseazaUsor(200);
+    const p = j.POZE["muzeu"];
+    adevarat(p && p.lat > 0 && p.inalt > 0, "poza muzeului n-are mărime");
+    aproape(p.lat / p.inalt, j.W() / j.H(), 0.05,
+            "poza n-a păstrat proporția ecranului");
+  });
+
+  test("trecerile scurte nu ajung în album", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    for (const trecere of ["intuneric", "crestere", "transformare"]) {
+      adevarat(j.SALILE_DIN_ALBUM.indexOf(trecere) === -1,
+               trecere + " a ajuns printre sălile din album");
+    }
+  });
+
+  test("la al doilea tur, poza se face din nou — nu se adaugă încă una", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.mergiLaStarea("muzeu"); j.avanseazaUsor(200);
+    j.mergiLaStarea("galerie"); j.avanseazaUsor(200);
+    j.mergiLaStarea("muzeu"); j.avanseazaUsor(200);
+    j.mergiLaStarea("galerie"); j.avanseazaUsor(200);
+    const deCateOri = j.pozeleAlbumului().filter(function (s) { return s === "muzeu"; });
+    egal(deCateOri.length, 1, "muzeul a intrat de două ori în album");
+  });
+
+  test("albumul se întoarce filă cu filă, iar la capăt vine numele", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    /* Zece poze, puse de-a dreptul. Mersul prin sali le-ar lasa nepregatite —
+       fiecare are functia ei de intrare — iar aici nu salile se verifica, ci
+       albumul. */
+    for (const sala of ["minge", "muzeu", "galerie", "campie", "foc",
+                        "gheata", "ulei", "acuarela", "colaj", "carbune"]) {
+      j.pozeazaSala(sala);
+    }
+    const m = laGlob(j);
+    j.cursor.x = m.x; j.cursor.y = m.y;
+    j.click13(j.ceas.t);
+    j.avanseazaUsor(5200);
+    egal(j.s13.faza, "album", "nu s-a deschis albumul");
+    adevarat(j.cateFoi() > 1, "albumul are o singură filă, deși sunt zece poze");
+
+    const intai = j.album.foaie;
+    j.avanseazaUsor(1000);
+    j.atingeAlbumul();
+    j.avanseazaUsor(900);
+    egal(j.album.foaie, intai + 1, "atingerea n-a întors fila");
+
+    treciDeAlbum(j);
+    egal(j.s13.faza, "text", "după ultima filă nu vine numele");
+  });
+
+  test("fără nicio poză, albumul nu se deschide deloc", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    j.ORDINEA_POZELOR.length = 0;
+    j.puneTurul(j.TURURI_PANA_LA_FINAL + 1);
+    j.intraInFinal(j.ceas.t);
+    j.ORDINEA_POZELOR.length = 0;
+    j.s13.faza = "adunare"; j.s13.t0 = j.ceas.t;
+    j.avanseazaUsor(1800);
+    egal(j.s13.faza, "text",
+         "albumul s-a deschis gol, în loc să lase numele să vină");
+  });
+
+  test("albumul chiar pune pozele pe pagină, nu le desenează el", function () {
+    const j = porneste({ latime: 1400, inaltime: 800 });
+    for (const sala of ["muzeu", "galerie", "campie"]) {
+      j.mergiLaStarea(sala);
+      j.avanseazaUsor(120);
+    }
+    j.mergiLaStarea("final");
+    j.avanseazaUsor(120);
+    j.pornesteAlbumul();
+    j.album.deschidere = 1;
+    const d = j.doar(function () { j.deseneazaAlbumul(j.ceas.t); });
+    const imagini = d.filter(function (o) { return o.op === "imagine"; });
+    adevarat(imagini.length >= 2,
+             "albumul n-a pus nicio poză pe pagină: " + imagini.length);
   });
 
   /* ---------------------------------------------------------------- */

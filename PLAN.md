@@ -58,6 +58,8 @@ partea cea mai folositoare din fișierul ăsta, fiindcă acolo scrie ce s-a stri
 | 38 | Sfârșitul: balonul se face glob de sticlă, se sparge, și rămâne un nume | ✅ gata |
 | 39 | Șoapta nu mai promite nimic la ultima trecere prin vid | ✅ gata |
 | 40 | Jucăria vorbește cincisprezece limbi, alese dintr-un colț al paginii | ✅ gata |
+| 41 | Un ecran de setări: fereastră, dispozitiv, trei robinete de sunet, limba | ✅ gata |
+| 42 | Albumul de la sfârșit: pozele sălilor prin care ai trecut | ✅ gata |
 
 ---
 
@@ -456,7 +458,7 @@ balonul și punctul se naște abia după; în galerie cântă, afară nu.
 ## Teste
 
 Se lucrează cu testul scris întâi. Testele stau în [teste.html](teste.html) și nu
-au nevoie de nimic instalat. **Sunt 337 acum**, adunate pe săli și pe teme.
+au nevoie de nimic instalat. **Sunt 353 acum**, adunate pe săli și pe teme.
 
 Ele nu copiază codul jucăriei: citesc `index.html`, iau de acolo lista fișierelor
 din `js/` **în ordinea în care le încarcă pagina**, le adună și le rulează cu o
