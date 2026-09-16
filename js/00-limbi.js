@@ -224,7 +224,34 @@ LIMBI.ro = {
 
   // sfârșitul
   'final.rand1': 'Jucărie digitală interactivă, realizată de',
-  'final.atingeL': 'Atinge-l.'
+  'final.atingeL': 'Atinge-l.',
+
+  // ecranul de setări, singurul loc din jucărie cu butoane
+  'set.titlu': 'SETĂRI',
+  'set.ecran': 'ECRAN',
+  'set.sunet': 'SUNET',
+  'set.limba': 'LIMBĂ',
+  'set.inchide': 'Închide',
+  'set.fereastra': 'Mod fereastră',
+  'set.fereastra.desc': 'Pe tot ecranul, jucăria nu mai are margini. Apeși Esc și ieși înapoi.',
+  'set.fereastraNormala': 'Fereastră',
+  'set.totEcranul': 'Tot ecranul',
+  'set.dispozitiv': 'Dispozitiv',
+  'set.dispozitiv.desc': 'Pe telefon, scrisul și lucrurile de atins se fac mai mari. „Automat” alege singur.',
+  'set.automat': 'Automat',
+  'set.calculator': 'Calculator',
+  'set.telefon': 'Telefon',
+  'set.miscare': 'Mișcare',
+  'set.miscare.desc': '„Redusă” potolește pâlpâirile și scânteile, pentru cine amețește de la ele.',
+  'set.normala': 'Normală',
+  'set.redusa': 'Redusă',
+  'set.muzica': 'Muzică',
+  'set.muzica.desc': 'Piesele care se aud cât stai într-o sală.',
+  'set.sunete': 'Sunete',
+  'set.sunete.desc': 'Ce faci tu: balonul care pocnește, mingea care sare, atingerea.',
+  'set.efecte': 'Efecte',
+  'set.efecte.desc': 'Ce face sala în jurul tău: focul, ploaia, viscolul, radioul.',
+  'set.limba.desc': 'Toate cuvintele din jucărie, în limba aleasă aici.'
 };
 
 /* ---------- ENGLISH ---------- */
@@ -362,7 +389,33 @@ LIMBI.en = {
   'vid.soaptaSimpla': 'Shall we start over?',
 
   'final.rand1': 'An interactive digital toy, made by',
-  'final.atingeL': 'Touch it.'
+  'final.atingeL': 'Touch it.',
+
+  'set.titlu': 'SETTINGS',
+  'set.ecran': 'DISPLAY',
+  'set.sunet': 'SOUND',
+  'set.limba': 'LANGUAGE',
+  'set.inchide': 'Close',
+  'set.fereastra': 'Window mode',
+  'set.fereastra.desc': 'Full screen leaves the toy no edges. Press Esc to come back.',
+  'set.fereastraNormala': 'Windowed',
+  'set.totEcranul': 'Full screen',
+  'set.dispozitiv': 'Device',
+  'set.dispozitiv.desc': 'On a phone, the writing and the things you touch grow larger. “Automatic” decides for itself.',
+  'set.automat': 'Automatic',
+  'set.calculator': 'Computer',
+  'set.telefon': 'Phone',
+  'set.miscare': 'Motion',
+  'set.miscare.desc': '“Reduced” calms the flickers and sparks, for anyone they make dizzy.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Reduced',
+  'set.muzica': 'Music',
+  'set.muzica.desc': 'The pieces that play while you are in a room.',
+  'set.sunete': 'Sounds',
+  'set.sunete.desc': 'What you do: the bubble popping, the ball bouncing, the touch.',
+  'set.efecte': 'Effects',
+  'set.efecte.desc': 'What the room does around you: the fire, the rain, the blizzard, the radio.',
+  'set.limba.desc': 'Every word in the toy, in the language chosen here.'
 };
 
 /* ---------- FRANÇAIS ---------- */
@@ -500,7 +553,33 @@ LIMBI.fr = {
   'vid.soaptaSimpla': 'On recommence ?',
 
   'final.rand1': 'Jouet numérique interactif, réalisé par',
-  'final.atingeL': 'Touche-le.'
+  'final.atingeL': 'Touche-le.',
+
+  'set.titlu': 'RÉGLAGES',
+  'set.ecran': 'AFFICHAGE',
+  'set.sunet': 'SON',
+  'set.limba': 'LANGUE',
+  'set.inchide': 'Fermer',
+  'set.fereastra': 'Mode fenêtre',
+  'set.fereastra.desc': 'En plein écran, le jouet n’a plus de bords. Appuie sur Échap pour revenir.',
+  'set.fereastraNormala': 'Fenêtre',
+  'set.totEcranul': 'Plein écran',
+  'set.dispozitiv': 'Appareil',
+  'set.dispozitiv.desc': 'Sur téléphone, le texte et les choses à toucher grandissent. « Automatique » choisit seul.',
+  'set.automat': 'Automatique',
+  'set.calculator': 'Ordinateur',
+  'set.telefon': 'Téléphone',
+  'set.miscare': 'Mouvement',
+  'set.miscare.desc': '« Réduit » calme les scintillements et les étincelles, pour qui en a le vertige.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Réduit',
+  'set.muzica': 'Musique',
+  'set.muzica.desc': 'Les morceaux qui jouent pendant que tu es dans une salle.',
+  'set.sunete': 'Sons',
+  'set.sunete.desc': 'Ce que tu fais : la bulle qui éclate, la balle qui rebondit, le toucher.',
+  'set.efecte': 'Effets',
+  'set.efecte.desc': 'Ce que la salle fait autour de toi : le feu, la pluie, le blizzard, la radio.',
+  'set.limba.desc': 'Tous les mots du jouet, dans la langue choisie ici.'
 };
 
 /* ---------- ESPAÑOL ---------- */
@@ -638,7 +717,33 @@ LIMBI.es = {
   'vid.soaptaSimpla': '¿Empezamos de nuevo?',
 
   'final.rand1': 'Juguete digital interactivo, realizado por',
-  'final.atingeL': 'Tócalo.'
+  'final.atingeL': 'Tócalo.',
+
+  'set.titlu': 'AJUSTES',
+  'set.ecran': 'PANTALLA',
+  'set.sunet': 'SONIDO',
+  'set.limba': 'IDIOMA',
+  'set.inchide': 'Cerrar',
+  'set.fereastra': 'Modo ventana',
+  'set.fereastra.desc': 'A pantalla completa, el juguete ya no tiene bordes. Pulsa Esc para volver.',
+  'set.fereastraNormala': 'Ventana',
+  'set.totEcranul': 'Pantalla completa',
+  'set.dispozitiv': 'Dispositivo',
+  'set.dispozitiv.desc': 'En el móvil, la letra y las cosas que se tocan se hacen más grandes. «Automático» elige solo.',
+  'set.automat': 'Automático',
+  'set.calculator': 'Ordenador',
+  'set.telefon': 'Móvil',
+  'set.miscare': 'Movimiento',
+  'set.miscare.desc': '«Reducido» calma los parpadeos y las chispas, para quien se marea con ellos.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Reducido',
+  'set.muzica': 'Música',
+  'set.muzica.desc': 'Las piezas que suenan mientras estás en una sala.',
+  'set.sunete': 'Sonidos',
+  'set.sunete.desc': 'Lo que haces tú: la pompa al estallar, la pelota al botar, el toque.',
+  'set.efecte': 'Efectos',
+  'set.efecte.desc': 'Lo que hace la sala a tu alrededor: el fuego, la lluvia, la ventisca, la radio.',
+  'set.limba.desc': 'Todas las palabras del juguete, en el idioma elegido aquí.'
 };
 
 /* ---------- ITALIANO ---------- */
@@ -776,7 +881,33 @@ LIMBI.it = {
   'vid.soaptaSimpla': 'Ricominciamo?',
 
   'final.rand1': 'Giocattolo digitale interattivo, realizzato da',
-  'final.atingeL': 'Toccalo.'
+  'final.atingeL': 'Toccalo.',
+
+  'set.titlu': 'IMPOSTAZIONI',
+  'set.ecran': 'SCHERMO',
+  'set.sunet': 'AUDIO',
+  'set.limba': 'LINGUA',
+  'set.inchide': 'Chiudi',
+  'set.fereastra': 'Modalità finestra',
+  'set.fereastra.desc': 'A schermo intero il giocattolo non ha più bordi. Premi Esc per tornare.',
+  'set.fereastraNormala': 'Finestra',
+  'set.totEcranul': 'Schermo intero',
+  'set.dispozitiv': 'Dispositivo',
+  'set.dispozitiv.desc': 'Sul telefono la scritta e le cose da toccare si ingrandiscono. «Automatico» decide da solo.',
+  'set.automat': 'Automatico',
+  'set.calculator': 'Computer',
+  'set.telefon': 'Telefono',
+  'set.miscare': 'Movimento',
+  'set.miscare.desc': '«Ridotto» calma i tremolii e le scintille, per chi ne ha le vertigini.',
+  'set.normala': 'Normale',
+  'set.redusa': 'Ridotto',
+  'set.muzica': 'Musica',
+  'set.muzica.desc': 'I brani che si sentono mentre sei in una sala.',
+  'set.sunete': 'Suoni',
+  'set.sunete.desc': 'Quello che fai tu: la bolla che scoppia, la palla che rimbalza, il tocco.',
+  'set.efecte': 'Effetti',
+  'set.efecte.desc': 'Quello che fa la sala intorno a te: il fuoco, la pioggia, la bufera, la radio.',
+  'set.limba.desc': 'Tutte le parole del giocattolo, nella lingua scelta qui.'
 };
 
 /* ---------- PORTUGUÊS ---------- */
@@ -914,7 +1045,33 @@ LIMBI.pt = {
   'vid.soaptaSimpla': 'Recomeçamos?',
 
   'final.rand1': 'Brinquedo digital interativo, realizado por',
-  'final.atingeL': 'Toca-lhe.'
+  'final.atingeL': 'Toca-lhe.',
+
+  'set.titlu': 'DEFINIÇÕES',
+  'set.ecran': 'ECRÃ',
+  'set.sunet': 'SOM',
+  'set.limba': 'IDIOMA',
+  'set.inchide': 'Fechar',
+  'set.fereastra': 'Modo de janela',
+  'set.fereastra.desc': 'Em ecrã inteiro o brinquedo deixa de ter margens. Carrega em Esc para voltar.',
+  'set.fereastraNormala': 'Janela',
+  'set.totEcranul': 'Ecrã inteiro',
+  'set.dispozitiv': 'Dispositivo',
+  'set.dispozitiv.desc': 'No telemóvel, a letra e as coisas de tocar ficam maiores. «Automático» escolhe sozinho.',
+  'set.automat': 'Automático',
+  'set.calculator': 'Computador',
+  'set.telefon': 'Telemóvel',
+  'set.miscare': 'Movimento',
+  'set.miscare.desc': '«Reduzido» acalma os tremeluzires e as faíscas, para quem fica tonto com eles.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Reduzido',
+  'set.muzica': 'Música',
+  'set.muzica.desc': 'As peças que se ouvem enquanto estás numa sala.',
+  'set.sunete': 'Sons',
+  'set.sunete.desc': 'O que fazes tu: a bolha a rebentar, a bola a saltar, o toque.',
+  'set.efecte': 'Efeitos',
+  'set.efecte.desc': 'O que a sala faz à tua volta: o fogo, a chuva, a nevasca, o rádio.',
+  'set.limba.desc': 'Todas as palavras do brinquedo, no idioma escolhido aqui.'
 };
 
 /* ---------- DEUTSCH ---------- */
@@ -1052,7 +1209,33 @@ LIMBI.de = {
   'vid.soaptaSimpla': 'Fangen wir noch einmal an?',
 
   'final.rand1': 'Interaktives digitales Spielzeug, gemacht von',
-  'final.atingeL': 'Berühre ihn.'
+  'final.atingeL': 'Berühre ihn.',
+
+  'set.titlu': 'EINSTELLUNGEN',
+  'set.ecran': 'ANZEIGE',
+  'set.sunet': 'TON',
+  'set.limba': 'SPRACHE',
+  'set.inchide': 'Schließen',
+  'set.fereastra': 'Fenstermodus',
+  'set.fereastra.desc': 'Im Vollbild hat das Spielzeug keine Ränder mehr. Mit Esc kommst du zurück.',
+  'set.fereastraNormala': 'Fenster',
+  'set.totEcranul': 'Vollbild',
+  'set.dispozitiv': 'Gerät',
+  'set.dispozitiv.desc': 'Auf dem Handy werden Schrift und Berührpunkte größer. „Automatisch“ entscheidet selbst.',
+  'set.automat': 'Automatisch',
+  'set.calculator': 'Computer',
+  'set.telefon': 'Handy',
+  'set.miscare': 'Bewegung',
+  'set.miscare.desc': '„Reduziert“ beruhigt das Flackern und die Funken, für alle, denen davon schwindelig wird.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Reduziert',
+  'set.muzica': 'Musik',
+  'set.muzica.desc': 'Die Stücke, die laufen, solange du in einem Raum bist.',
+  'set.sunete': 'Geräusche',
+  'set.sunete.desc': 'Was du tust: die platzende Blase, der springende Ball, die Berührung.',
+  'set.efecte': 'Effekte',
+  'set.efecte.desc': 'Was der Raum um dich herum tut: das Feuer, der Regen, der Schneesturm, das Radio.',
+  'set.limba.desc': 'Jedes Wort im Spielzeug, in der hier gewählten Sprache.'
 };
 
 /* ---------- NEDERLANDS ---------- */
@@ -1190,7 +1373,33 @@ LIMBI.nl = {
   'vid.soaptaSimpla': 'Beginnen we opnieuw?',
 
   'final.rand1': 'Interactief digitaal speelgoed, gemaakt door',
-  'final.atingeL': 'Raak hem aan.'
+  'final.atingeL': 'Raak hem aan.',
+
+  'set.titlu': 'INSTELLINGEN',
+  'set.ecran': 'BEELD',
+  'set.sunet': 'GELUID',
+  'set.limba': 'TAAL',
+  'set.inchide': 'Sluiten',
+  'set.fereastra': 'Venstermodus',
+  'set.fereastra.desc': 'In volledig scherm heeft het speelgoed geen randen meer. Druk op Esc om terug te komen.',
+  'set.fereastraNormala': 'Venster',
+  'set.totEcranul': 'Volledig scherm',
+  'set.dispozitiv': 'Apparaat',
+  'set.dispozitiv.desc': 'Op een telefoon worden de tekst en de dingen om aan te raken groter. „Automatisch” kiest zelf.',
+  'set.automat': 'Automatisch',
+  'set.calculator': 'Computer',
+  'set.telefon': 'Telefoon',
+  'set.miscare': 'Beweging',
+  'set.miscare.desc': '„Beperkt” kalmeert het flikkeren en de vonken, voor wie er duizelig van wordt.',
+  'set.normala': 'Normaal',
+  'set.redusa': 'Beperkt',
+  'set.muzica': 'Muziek',
+  'set.muzica.desc': 'De stukken die klinken terwijl je in een zaal bent.',
+  'set.sunete': 'Geluiden',
+  'set.sunete.desc': 'Wat jij doet: de bel die knapt, de bal die stuitert, de aanraking.',
+  'set.efecte': 'Effecten',
+  'set.efecte.desc': 'Wat de zaal om je heen doet: het vuur, de regen, de sneeuwstorm, de radio.',
+  'set.limba.desc': 'Elk woord in het speelgoed, in de taal die je hier kiest.'
 };
 
 /* ---------- ČEŠTINA ---------- */
@@ -1328,7 +1537,33 @@ LIMBI.cs = {
   'vid.soaptaSimpla': 'Začneme znovu?',
 
   'final.rand1': 'Interaktivní digitální hračka, kterou vytvořil',
-  'final.atingeL': 'Dotkni se ho.'
+  'final.atingeL': 'Dotkni se ho.',
+
+  'set.titlu': 'NASTAVENÍ',
+  'set.ecran': 'OBRAZ',
+  'set.sunet': 'ZVUK',
+  'set.limba': 'JAZYK',
+  'set.inchide': 'Zavřít',
+  'set.fereastra': 'Režim okna',
+  'set.fereastra.desc': 'Na celou obrazovku nemá hračka žádné okraje. Klávesou Esc se vrátíš.',
+  'set.fereastraNormala': 'V okně',
+  'set.totEcranul': 'Celá obrazovka',
+  'set.dispozitiv': 'Zařízení',
+  'set.dispozitiv.desc': 'Na telefonu se písmo a věci k dotýkání zvětší. „Automaticky“ si vybere samo.',
+  'set.automat': 'Automaticky',
+  'set.calculator': 'Počítač',
+  'set.telefon': 'Telefon',
+  'set.miscare': 'Pohyb',
+  'set.miscare.desc': '„Tlumený“ zklidní blikání a jiskry, pro ty, komu se z nich točí hlava.',
+  'set.normala': 'Normální',
+  'set.redusa': 'Tlumený',
+  'set.muzica': 'Hudba',
+  'set.muzica.desc': 'Skladby, které hrají, dokud jsi v sále.',
+  'set.sunete': 'Zvuky',
+  'set.sunete.desc': 'Co děláš ty: prasklá bublina, skákající míč, dotek.',
+  'set.efecte': 'Efekty',
+  'set.efecte.desc': 'Co dělá sál kolem tebe: oheň, déšť, vánice, rádio.',
+  'set.limba.desc': 'Všechna slova hračky, v jazyce zvoleném zde.'
 };
 
 /* ---------- POLSKI ---------- */
@@ -1466,7 +1701,33 @@ LIMBI.pl = {
   'vid.soaptaSimpla': 'Zaczynamy od nowa?',
 
   'final.rand1': 'Interaktywna zabawka cyfrowa, wykonana przez',
-  'final.atingeL': 'Dotknij go.'
+  'final.atingeL': 'Dotknij go.',
+
+  'set.titlu': 'USTAWIENIA',
+  'set.ecran': 'OBRAZ',
+  'set.sunet': 'DŹWIĘK',
+  'set.limba': 'JĘZYK',
+  'set.inchide': 'Zamknij',
+  'set.fereastra': 'Tryb okna',
+  'set.fereastra.desc': 'Na pełnym ekranie zabawka nie ma już brzegów. Naciśnij Esc, żeby wrócić.',
+  'set.fereastraNormala': 'W oknie',
+  'set.totEcranul': 'Pełny ekran',
+  'set.dispozitiv': 'Urządzenie',
+  'set.dispozitiv.desc': 'Na telefonie napisy i rzeczy do dotykania robią się większe. „Automatycznie” wybiera samo.',
+  'set.automat': 'Automatycznie',
+  'set.calculator': 'Komputer',
+  'set.telefon': 'Telefon',
+  'set.miscare': 'Ruch',
+  'set.miscare.desc': '„Ograniczony” uspokaja migotanie i iskry, dla tych, którym kręci się od nich w głowie.',
+  'set.normala': 'Normalny',
+  'set.redusa': 'Ograniczony',
+  'set.muzica': 'Muzyka',
+  'set.muzica.desc': 'Utwory, które grają, kiedy jesteś w sali.',
+  'set.sunete': 'Dźwięki',
+  'set.sunete.desc': 'To, co robisz ty: pękająca bańka, odbijająca się piłka, dotknięcie.',
+  'set.efecte': 'Efekty',
+  'set.efecte.desc': 'To, co robi sala wokół ciebie: ogień, deszcz, zamieć, radio.',
+  'set.limba.desc': 'Wszystkie słowa zabawki, w języku wybranym tutaj.'
 };
 
 /* ---------- MAGYAR ---------- */
@@ -1604,7 +1865,33 @@ LIMBI.hu = {
   'vid.soaptaSimpla': 'Kezdjük elölről?',
 
   'final.rand1': 'Interaktív digitális játék, készítette:',
-  'final.atingeL': 'Érintsd meg.'
+  'final.atingeL': 'Érintsd meg.',
+
+  'set.titlu': 'BEÁLLÍTÁSOK',
+  'set.ecran': 'KÉP',
+  'set.sunet': 'HANG',
+  'set.limba': 'NYELV',
+  'set.inchide': 'Bezárás',
+  'set.fereastra': 'Ablak mód',
+  'set.fereastra.desc': 'Teljes képernyőn a játéknak nincs többé széle. Az Esc visszahoz.',
+  'set.fereastraNormala': 'Ablak',
+  'set.totEcranul': 'Teljes képernyő',
+  'set.dispozitiv': 'Eszköz',
+  'set.dispozitiv.desc': 'Telefonon az írás és a megérinthető dolgok nagyobbak lesznek. Az „Automatikus” magától választ.',
+  'set.automat': 'Automatikus',
+  'set.calculator': 'Számítógép',
+  'set.telefon': 'Telefon',
+  'set.miscare': 'Mozgás',
+  'set.miscare.desc': 'A „Csökkentett” lecsendesíti a villódzást és a szikrákat annak, akinek szédülést okoznak.',
+  'set.normala': 'Normál',
+  'set.redusa': 'Csökkentett',
+  'set.muzica': 'Zene',
+  'set.muzica.desc': 'A darabok, amelyek szólnak, amíg egy teremben vagy.',
+  'set.sunete': 'Hangok',
+  'set.sunete.desc': 'Amit te csinálsz: a pukkanó buborék, a pattogó labda, az érintés.',
+  'set.efecte': 'Effektek',
+  'set.efecte.desc': 'Amit a terem csinál körülötted: a tűz, az eső, a hóvihar, a rádió.',
+  'set.limba.desc': 'A játék minden szava, az itt választott nyelven.'
 };
 
 /* ---------- ΕΛΛΗΝΙΚΑ ---------- */
@@ -1742,7 +2029,33 @@ LIMBI.el = {
   'vid.soaptaSimpla': 'Ξαναρχίζουμε;',
 
   'final.rand1': 'Διαδραστικό ψηφιακό παιχνίδι, δημιουργός:',
-  'final.atingeL': 'Άγγιξέ το.'
+  'final.atingeL': 'Άγγιξέ το.',
+
+  'set.titlu': 'ΡΥΘΜΙΣΕΙΣ',
+  'set.ecran': 'ΕΙΚΟΝΑ',
+  'set.sunet': 'ΗΧΟΣ',
+  'set.limba': 'ΓΛΩΣΣΑ',
+  'set.inchide': 'Κλείσιμο',
+  'set.fereastra': 'Λειτουργία παραθύρου',
+  'set.fereastra.desc': 'Σε πλήρη οθόνη το παιχνίδι δεν έχει πια άκρες. Πάτησε Esc για να γυρίσεις.',
+  'set.fereastraNormala': 'Παράθυρο',
+  'set.totEcranul': 'Πλήρης οθόνη',
+  'set.dispozitiv': 'Συσκευή',
+  'set.dispozitiv.desc': 'Στο κινητό τα γράμματα και όσα αγγίζεις μεγαλώνουν. Η «Αυτόματη» διαλέγει μόνη της.',
+  'set.automat': 'Αυτόματη',
+  'set.calculator': 'Υπολογιστής',
+  'set.telefon': 'Κινητό',
+  'set.miscare': 'Κίνηση',
+  'set.miscare.desc': 'Η «Μειωμένη» ηρεμεί τα τρεμοπαίγματα και τις σπίθες, για όποιον ζαλίζεται από αυτά.',
+  'set.normala': 'Κανονική',
+  'set.redusa': 'Μειωμένη',
+  'set.muzica': 'Μουσική',
+  'set.muzica.desc': 'Τα κομμάτια που ακούγονται όσο βρίσκεσαι σε μια αίθουσα.',
+  'set.sunete': 'Ήχοι',
+  'set.sunete.desc': 'Ό,τι κάνεις εσύ: η φούσκα που σκάει, η μπάλα που αναπηδά, το άγγιγμα.',
+  'set.efecte': 'Εφέ',
+  'set.efecte.desc': 'Ό,τι κάνει η αίθουσα γύρω σου: η φωτιά, η βροχή, η χιονοθύελλα, το ραδιόφωνο.',
+  'set.limba.desc': 'Όλες οι λέξεις του παιχνιδιού, στη γλώσσα που διαλέγεις εδώ.'
 };
 
 /* ---------- TÜRKÇE ---------- */
@@ -1880,7 +2193,33 @@ LIMBI.tr = {
   'vid.soaptaSimpla': 'Baştan başlayalım mı?',
 
   'final.rand1': 'Etkileşimli dijital oyuncak, yapan:',
-  'final.atingeL': 'Ona dokun.'
+  'final.atingeL': 'Ona dokun.',
+
+  'set.titlu': 'AYARLAR',
+  'set.ecran': 'GÖRÜNTÜ',
+  'set.sunet': 'SES',
+  'set.limba': 'DİL',
+  'set.inchide': 'Kapat',
+  'set.fereastra': 'Pencere modu',
+  'set.fereastra.desc': 'Tam ekranda oyuncağın kenarı kalmaz. Geri dönmek için Esc’e bas.',
+  'set.fereastraNormala': 'Pencere',
+  'set.totEcranul': 'Tam ekran',
+  'set.dispozitiv': 'Aygıt',
+  'set.dispozitiv.desc': 'Telefonda yazılar ve dokunulacak şeyler büyür. “Otomatik” kendi karar verir.',
+  'set.automat': 'Otomatik',
+  'set.calculator': 'Bilgisayar',
+  'set.telefon': 'Telefon',
+  'set.miscare': 'Hareket',
+  'set.miscare.desc': '“Azaltılmış”, titreşimleri ve kıvılcımları yatıştırır; başı dönenler için.',
+  'set.normala': 'Normal',
+  'set.redusa': 'Azaltılmış',
+  'set.muzica': 'Müzik',
+  'set.muzica.desc': 'Bir salondayken çalan parçalar.',
+  'set.sunete': 'Sesler',
+  'set.sunete.desc': 'Senin yaptıkların: patlayan baloncuk, zıplayan top, dokunuş.',
+  'set.efecte': 'Efektler',
+  'set.efecte.desc': 'Salonun çevrende yaptıkları: ateş, yağmur, tipi, radyo.',
+  'set.limba.desc': 'Oyuncaktaki her kelime, burada seçilen dilde.'
 };
 
 /* ---------- УКРАЇНСЬКА ---------- */
@@ -2018,7 +2357,33 @@ LIMBI.uk = {
   'vid.soaptaSimpla': 'Почнемо спочатку?',
 
   'final.rand1': 'Інтерактивна цифрова іграшка, автор:',
-  'final.atingeL': 'Торкнися його.'
+  'final.atingeL': 'Торкнися його.',
+
+  'set.titlu': 'НАЛАШТУВАННЯ',
+  'set.ecran': 'ЗОБРАЖЕННЯ',
+  'set.sunet': 'ЗВУК',
+  'set.limba': 'МОВА',
+  'set.inchide': 'Закрити',
+  'set.fereastra': 'Режим вікна',
+  'set.fereastra.desc': 'На весь екран іграшка більше не має країв. Натисни Esc, щоб повернутися.',
+  'set.fereastraNormala': 'У вікні',
+  'set.totEcranul': 'Весь екран',
+  'set.dispozitiv': 'Пристрій',
+  'set.dispozitiv.desc': 'На телефоні напис і те, чого торкаєшся, більшає. «Автоматично» вибирає саме.',
+  'set.automat': 'Автоматично',
+  'set.calculator': 'Комп’ютер',
+  'set.telefon': 'Телефон',
+  'set.miscare': 'Рух',
+  'set.miscare.desc': '«Зменшений» заспокоює мерехтіння й іскри — для тих, кому від них паморочиться.',
+  'set.normala': 'Звичайний',
+  'set.redusa': 'Зменшений',
+  'set.muzica': 'Музика',
+  'set.muzica.desc': 'Твори, що звучать, доки ти в залі.',
+  'set.sunete': 'Звуки',
+  'set.sunete.desc': 'Те, що робиш ти: бульбашка, що лускає, м’яч, що стрибає, дотик.',
+  'set.efecte': 'Ефекти',
+  'set.efecte.desc': 'Те, що робить зала навколо тебе: вогонь, дощ, завірюха, радіо.',
+  'set.limba.desc': 'Усі слова іграшки — мовою, вибраною тут.'
 };
 
 /* ---------- РУССКИЙ ---------- */
@@ -2156,7 +2521,33 @@ LIMBI.ru = {
   'vid.soaptaSimpla': 'Начнём сначала?',
 
   'final.rand1': 'Интерактивная цифровая игрушка, автор:',
-  'final.atingeL': 'Коснись его.'
+  'final.atingeL': 'Коснись его.',
+
+  'set.titlu': 'НАСТРОЙКИ',
+  'set.ecran': 'ИЗОБРАЖЕНИЕ',
+  'set.sunet': 'ЗВУК',
+  'set.limba': 'ЯЗЫК',
+  'set.inchide': 'Закрыть',
+  'set.fereastra': 'Режим окна',
+  'set.fereastra.desc': 'Во весь экран у игрушки больше нет краёв. Нажми Esc, чтобы вернуться.',
+  'set.fereastraNormala': 'В окне',
+  'set.totEcranul': 'Весь экран',
+  'set.dispozitiv': 'Устройство',
+  'set.dispozitiv.desc': 'На телефоне надписи и то, чего касаешься, становятся крупнее. «Автоматически» выбирает само.',
+  'set.automat': 'Автоматически',
+  'set.calculator': 'Компьютер',
+  'set.telefon': 'Телефон',
+  'set.miscare': 'Движение',
+  'set.miscare.desc': '«Уменьшенное» успокаивает мерцание и искры — для тех, у кого от них кружится голова.',
+  'set.normala': 'Обычное',
+  'set.redusa': 'Уменьшенное',
+  'set.muzica': 'Музыка',
+  'set.muzica.desc': 'Пьесы, которые звучат, пока ты в зале.',
+  'set.sunete': 'Звуки',
+  'set.sunete.desc': 'То, что делаешь ты: лопнувший пузырь, прыгающий мяч, прикосновение.',
+  'set.efecte': 'Эффекты',
+  'set.efecte.desc': 'То, что делает зал вокруг тебя: огонь, дождь, метель, радио.',
+  'set.limba.desc': 'Все слова игрушки — на языке, выбранном здесь.'
 };
 
 /* ---------- SCHIMBAREA LIMBII ----------

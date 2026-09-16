@@ -314,7 +314,10 @@ function parametruFals() {
     setValueAtTime: function (v) { this.value = v; },
     linearRampToValueAtTime: function (v) { this.value = v; },
     exponentialRampToValueAtTime: function (v) { this.value = v; },
-    setTargetAtTime: function () {},
+    /* Robinetele de volum se mută **lin**, cu `setTargetAtTime`, ca să nu sară
+       un pocnet în boxe. Fals sau nu, parametrul trebuie să poată spune spre ce
+       valoare a fost trimis — altfel n-are cine verifica volumul. */
+    setTargetAtTime: function (v) { this.value = v; },
     cancelScheduledValues: function () {},
     setValueCurveAtTime: function () {}
   };
@@ -484,6 +487,15 @@ return {
   definitiePeFundal: typeof definitiePeFundal !== "undefined" ? definitiePeFundal : null,
   reglezaCalitatea: typeof reglezaCalitatea !== "undefined" ? reglezaCalitatea : null,
   ecran: typeof ecran !== "undefined" ? ecran : null,
+  VOLUME: typeof VOLUME !== "undefined" ? VOLUME : null,
+  FELURI_DE_SUNET: typeof FELURI_DE_SUNET !== "undefined" ? FELURI_DE_SUNET : null,
+  puneVolumul: typeof puneVolumul !== "undefined" ? puneVolumul : null,
+  catDeDeschis: typeof catDeDeschis !== "undefined" ? catDeDeschis : null,
+  robinete: function () { return typeof robinete !== "undefined" ? robinete : null; },
+  DISPOZITIVE: typeof DISPOZITIVE !== "undefined" ? DISPOZITIVE : null,
+  schimbaDispozitivul: typeof schimbaDispozitivul !== "undefined" ? schimbaDispozitivul : null,
+  eTelefon: typeof eTelefon !== "undefined" ? eTelefon : null,
+  dispozitivAles: function () { return typeof dispozitivAles !== "undefined" ? dispozitivAles : null; },
   plafonCalitate: function () { return typeof plafonCalitate !== "undefined" ? plafonCalitate : null; },
   laRedimensionare: typeof laRedimensionare !== "undefined" ? laRedimensionare : null,
   calitate: function () { return typeof calitate !== "undefined" ? calitate : null; },
@@ -770,7 +782,12 @@ function porneste(optiuni) {
      `porneste({ pastrata: "fr" })` o umple dinainte, ca și cum jucătorul ar fi
      ales franceza data trecută: așa se poate încerca ce face jucăria la
      deschidere, fără să atingă nimeni memoria adevărată a browserului. */
-  const camara = o.pastrata ? { limba: String(o.pastrata) } : {};
+  const camara = {};
+  if (o.pastrata) camara.limba = String(o.pastrata);
+  if (o.volume) {
+    for (const fel of Object.keys(o.volume)) camara["volum." + fel] = String(o.volume[fel]);
+  }
+  if (o.dispozitiv) camara.dispozitiv = String(o.dispozitiv);
   const depozitFals = {
     getItem: function (k) {
       return Object.prototype.hasOwnProperty.call(camara, k) ? camara[k] : null;
@@ -6520,6 +6537,123 @@ function ruleaza() {
     adevarat(/GALERIE/.test(totTextul(d)), "pe buzunar nu scrie nimic");
     const numere = textele(d).filter(function (t) { return /^[1-9]$/.test(t); });
     egal(numere.length, 0, "au rămas firide numerotate: " + JSON.stringify(numere));
+  });
+
+  /* ---------------------------------------------------------------- */
+  sectiune("Setările");
+
+  /* Sunetul nu mai merge de-a dreptul la boxe, ci prin trei robinete. Ele sunt
+     singurul loc din jucărie unde un jucător poate **opri** ceva — deci și
+     singurul loc unde o greșeală se aude ca o stricăciune: ori nu tace ce-ai
+     închis, ori tace tot. */
+
+  test("fiecare sunet are un robinet, și niciunul nu merge de-a dreptul la boxe", function () {
+    const j = porneste();
+    const fara = [];
+    const bucati = sursa.split(/\/\* ---- (js\/[^ ]+) ---- \*\//);
+    for (let i = 1; i < bucati.length; i += 2) {
+      const cod = bucati[i + 1] || "";
+      if (/audio\.destination/.test(cod.replace(/iesirea\([^)]*\)/g, ""))) {
+        /* `iesirea` are voie: ea **este** locul unde se ajunge la boxe. */
+        const randuri = cod.split("\n").filter(function (r) {
+          return r.indexOf("audio.destination") !== -1 &&
+                 r.indexOf("function iesirea") === -1 &&
+                 r.indexOf("g.connect(audio.destination)") === -1 &&
+                 r.indexOf("|| audio.destination") === -1;
+        });
+        for (const r of randuri) fara.push(bucati[i] + ": " + r.trim());
+      }
+    }
+    egal(fara.length, 0, "sunete care ocolesc robinetele:\n   " + fara.join("\n   "));
+    egal(j.FELURI_DE_SUNET.join(","), "muzica,sunete,efecte", "felurile de sunet s-au schimbat");
+  });
+
+  test("50 înseamnă cât s-a gândit sunetul, 0 tăcere, 100 de două ori", function () {
+    const j = porneste();
+    j.puneVolumul("muzica", 50);
+    aproape(j.catDeDeschis("muzica"), 1, 0.001, "la 50 sunetul ar trebui lăsat în pace");
+    j.puneVolumul("muzica", 0);
+    aproape(j.catDeDeschis("muzica"), 0, 0.001, "la 0 ar trebui tăcere");
+    j.puneVolumul("muzica", 100);
+    aproape(j.catDeDeschis("muzica"), 2, 0.001, "la 100 ar trebui de două ori");
+    j.puneVolumul("muzica", 50);
+  });
+
+  test("un volum din afara scării se strânge înăuntru, și nu strică nimic", function () {
+    const j = porneste();
+    j.puneVolumul("efecte", 900);
+    egal(j.VOLUME.efecte, 100, "un volum uriaș n-a fost strâns");
+    j.puneVolumul("efecte", -40);
+    egal(j.VOLUME.efecte, 0, "un volum negativ n-a fost strâns");
+    egal(j.puneVolumul("gargara", 50), false, "jucăria a primit un fel de sunet care nu există");
+    j.puneVolumul("efecte", 50);
+  });
+
+  test("robinetul mutat se ține minte pentru data viitoare", function () {
+    const j = porneste();
+    j.puneVolumul("sunete", 20);
+    egal(j.camara["volum.sunete"], "20", "volumul nu s-a scris în cămară");
+    const alta = porneste({ volume: { sunete: 20 } });
+    egal(alta.VOLUME.sunete, 20, "volumul nu s-a citit înapoi din cămară");
+    j.puneVolumul("sunete", 50);
+  });
+
+  test("robinetul chiar ajunge la sunet, nu stă numai într-un număr", function () {
+    const j = porneste();
+    j.pornesteAudio();
+    const r = j.robinete();
+    adevarat(r !== null, "nu s-au făcut robinetele la pornirea sunetului");
+    j.puneVolumul("efecte", 0);
+    aproape(r.efecte.gain.value, 0, 0.001, "robinetul efectelor n-a fost închis");
+    j.puneVolumul("efecte", 50);
+  });
+
+  /* Dispozitivul mișcă `ecran()` sub picioarele tuturor sălilor. E cea mai adâncă
+     manetă din jucărie: tot ce se atinge și tot ce se citește trece prin ea. */
+
+  test("pe telefon, tot ce se atinge și tot ce se citește se face mai mare", function () {
+    const j = porneste();
+    j.schimbaDispozitivul("calculator");
+    const laCalculator = j.ecran(100);
+    j.schimbaDispozitivul("telefon");
+    const laTelefon = j.ecran(100);
+    adevarat(laTelefon > laCalculator * 1.15,
+             "pe telefon măsura a crescut prea puțin: " + laCalculator + " → " + laTelefon);
+    adevarat(laTelefon < laCalculator * 1.6,
+             "pe telefon măsura a crescut prea mult: " + laCalculator + " → " + laTelefon);
+    j.schimbaDispozitivul("automat");
+  });
+
+  test("schimbarea dispozitivului repictează sălile, dar nu atinge lucrul jucătorului", function () {
+    const j = porneste();
+    j.schimbaDispozitivul("calculator");
+    const stampile = j.stampilele();
+    for (const s of stampile) { s.o.latime = 640; s.o.inaltime = 480; }
+    const pictura = j.stratulDePictura();
+    pictura.latime = 640; pictura.inaltime = 480;
+
+    adevarat(j.schimbaDispozitivul("telefon"), "schimbarea dispozitivului n-a fost primită");
+
+    for (const s of stampile) {
+      egal(s.o.latime, 0, "ștampila " + s.n + " a rămas măsurată pentru calculator");
+    }
+    egal(pictura.latime, 640, "s-a șters ce a pictat jucătorul, pentru o schimbare de măsură");
+    j.schimbaDispozitivul("automat");
+  });
+
+  test("un dispozitiv pe care nu-l avem nu schimbă nimic", function () {
+    const j = porneste();
+    egal(j.schimbaDispozitivul("frigider"), false, "jucăria a primit un dispozitiv care nu există");
+    egal(j.dispozitivAles(), "automat", "dispozitivul s-a schimbat oricum");
+  });
+
+  test("alegerea limpede bate ghicitul", function () {
+    const j = porneste();
+    j.schimbaDispozitivul("telefon");
+    egal(j.eTelefon(), true, "am cerut telefon și n-a ascultat");
+    j.schimbaDispozitivul("calculator");
+    egal(j.eTelefon(), false, "am cerut calculator și n-a ascultat");
+    j.schimbaDispozitivul("automat");
   });
 
   /* ---------------------------------------------------------------- */

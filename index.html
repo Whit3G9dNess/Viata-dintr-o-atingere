@@ -62,89 +62,318 @@
 <script src="js/14-bucla.js"></script>
 
 <!-- ============================================================
-     ALEGEREA LIMBII
+     ECRANUL DE SETĂRI
 
-     Un buton mic în colțul din dreapta jos, cu numele limbii de acum. Apăsat,
-     se deschide lista; alegi, și jucăria vorbește altfel **pe loc**, fără
-     reîncărcare și fără să pierzi drumul făcut până acolo.
+     O roată dințată în colțul din dreapta jos. Apăsată, se deschide peste joc un
+     ecran cu file sus, cu rândurile de ales la stânga și cu lămurirea rândului
+     ales la dreapta — ca la setările unui joc adevărat.
 
-     E scris în HTML, nu desenat pe pânză, și dinadins: pe pânză ar fi trebuit
-     socotit unde încape lista, ar fi trebuit prins clicul înaintea jocului, și
-     ar fi fost un lucru de atins care **nu e** din lumea jucăriei. Aici e o
-     unealtă a paginii, ca semnul de reîncărcare de alături — se vede că nu face
-     parte din joc, și tocmai de-aia nu încurcă jocul.
+     E scris în HTML, nu desenat pe pânză, și dinadins. Pe pânză ar fi trebuit
+     socotit la mână unde încape fiecare rând, ar fi trebuit prins fiecare clic
+     înaintea jocului, iar cursoarele de volum ar fi fost trei mecanisme scrise de
+     la zero. Mai mult: ar fi fost lucruri **de atins care nu sunt din lumea
+     jucăriei**, iar jucăria n-are butoane nicăieri — tocmai asta e regula ei.
+     Aici e limpede că e o unealtă a paginii, ca semnul de reîncărcare din colțul
+     celălalt, și tocmai de-aia nu încurcă jocul.
 
-     Fiecare atingere pe el se oprește aici (`stopPropagation`): altfel ar fi
-     căzut și în pânză, iar alegerea limbii ar fi însemnat și o tușă de vopsea
-     sau un balon spart.
+     Fiecare atingere pe ecranul ăsta se oprește aici (`stopPropagation`): altfel
+     ar fi căzut și în pânză, iar mutarea unui cursor de volum ar fi însemnat și o
+     tușă de vopsea sau un balon spart.
+
+     Jocul merge mai departe în spate, sub un geam fumuriu. N-are ce pune pe
+     pauză: nu te vânează nimeni, nu pierzi nimic dacă stai.
      ============================================================ -->
+<style>
+  #setari {
+    position: fixed; inset: 0; z-index: 10000; display: none;
+    background: rgba(6, 9, 20, 0.86);
+    font: 15px Georgia, serif; color: #dfe7f5;
+    cursor: default; -webkit-user-select: none; user-select: none;
+    padding: 3vmin; box-sizing: border-box;
+  }
+  #setari.deschis { display: flex; }
+  #setari .cadru {
+    margin: auto; width: min(1040px, 100%); max-height: 100%;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(20, 28, 52, 0.97), rgba(12, 17, 34, 0.97));
+    border: 1px solid rgba(150, 180, 230, 0.26); border-radius: 12px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+    padding: 20px 22px; box-sizing: border-box;
+  }
+  #setari .sus {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    border-bottom: 1px solid rgba(150, 180, 230, 0.22);
+    padding-bottom: 12px; margin-bottom: 16px;
+  }
+  /* Filele își iau rândul lor întreg. Pe un telefon îngust, altfel ar fi
+     împins butonul de închidere pe un rând de unul singur, sub ele. */
+  #setari .file { display: flex; gap: 4px; flex-wrap: wrap; flex: 1 0 100%; }
+  #setari .fila {
+    cursor: pointer; padding: 9px 18px; border-radius: 7px;
+    letter-spacing: 0.09em; font-size: 13px; color: #8fa3c4;
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  #setari .fila:hover { color: #cfe0ff; background: rgba(120, 160, 230, 0.10); }
+  #setari .fila.aleasa {
+    color: #fff; background: rgba(94, 200, 255, 0.14);
+    border-color: rgba(94, 200, 255, 0.55);
+  }
+  #setari .titlu {
+    flex: 1 1 auto; letter-spacing: 0.26em; font-size: 12px; color: #6f83a4;
+  }
+  #setari .inchide {
+    cursor: pointer; padding: 7px 13px; border-radius: 7px; font-size: 15px;
+    color: #9fb2d0; border: 1px solid rgba(150, 180, 230, 0.3);
+  }
+  #setari .inchide:hover { color: #fff; background: rgba(120, 160, 230, 0.16); }
+  #setari .jos { display: flex; gap: 20px; flex-wrap: wrap; min-height: 0; align-items: stretch; }
+  #setari .lista { flex: 1.7 1 340px; min-width: 0; overflow-y: auto; max-height: 58vh; }
+  #setari .rand {
+    display: flex; align-items: center; gap: 14px; padding: 13px 14px;
+    border-radius: 7px; cursor: default;
+    border-bottom: 1px solid rgba(150, 180, 230, 0.10);
+  }
+  #setari .rand:hover, #setari .rand.privit { background: rgba(120, 160, 230, 0.12); }
+  #setari .eticheta { flex: 1 1 auto; min-width: 0; }
+  #setari .sageata {
+    cursor: pointer; padding: 2px 10px; color: #7f95b8; font-size: 18px; line-height: 1;
+  }
+  #setari .sageata:hover { color: #fff; }
+  #setari .valoare {
+    min-width: 9.5em; text-align: center; color: #fff; white-space: nowrap;
+  }
+  #setari input[type=range] {
+    flex: 0 0 200px; max-width: 45%; accent-color: #5ec8ff; cursor: pointer;
+  }
+  #setari .procent { min-width: 3.2em; text-align: right; color: #fff; }
+  #setari .limbi { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 4px; }
+  #setari .limbi div {
+    cursor: pointer; padding: 8px 14px; border-radius: 6px;
+    border: 1px solid rgba(150, 180, 230, 0.22); white-space: nowrap;
+  }
+  #setari .limbi div:hover { background: rgba(120, 160, 230, 0.16); color: #fff; }
+  #setari .limbi div.aleasa { border-color: #5ec8ff; color: #fff; background: rgba(94, 200, 255, 0.14); }
+  #setari .lamurire {
+    flex: 1 1 260px; min-width: 0; padding: 16px 18px; border-radius: 8px;
+    background: rgba(9, 13, 28, 0.8); border: 1px solid rgba(150, 180, 230, 0.18);
+  }
+  #setari .lamurire h3 { margin: 0 0 10px; font-size: 15px; color: #fff; font-weight: normal; }
+  #setari .lamurire p { margin: 0; line-height: 1.55; color: #a9bcd8; font-size: 14px; }
+  #roata {
+    position: fixed; right: 12px; bottom: 12px; z-index: 9999; cursor: pointer;
+    font: 15px Georgia, serif; color: #2b2419; background: rgba(255, 244, 214, 0.95);
+    border: 1px solid rgba(120, 96, 48, 0.6); border-radius: 8px; padding: 6px 11px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); -webkit-user-select: none; user-select: none;
+  }
+</style>
 <script>
 (function () {
-  if (typeof NUMELE_LIMBILOR === 'undefined') return;
+  if (typeof NUMELE_LIMBILOR === 'undefined' || typeof T !== 'function') return;
 
-  var deschis = false;
-  var cutie = document.createElement('div');
-  cutie.style.cssText =
-    'position:fixed;right:12px;bottom:12px;z-index:9999;' +
-    'font:13px Georgia,serif;text-align:right;';
+  /* ---- roata din colț ---- */
+  var roata = document.createElement('div');
+  roata.id = 'roata';
+  roata.textContent = '⚙';
+  roata.setAttribute('aria-label', 'setări');
 
-  var buton = document.createElement('div');
-  buton.style.cssText =
-    'cursor:pointer;color:#2b2419;background:rgba(255,244,214,0.95);' +
-    'border:1px solid rgba(120,96,48,0.6);border-radius:8px;padding:7px 12px;' +
-    'box-shadow:0 2px 10px rgba(0,0,0,0.35);user-select:none;';
+  var fereastra = document.createElement('div');
+  fereastra.id = 'setari';
+  fereastra.innerHTML =
+    '<div class="cadru">' +
+      '<div class="sus"><span class="titlu"></span>' +
+      '<span class="inchide">&#10005;</span><span class="file"></span></div>' +
+      '<div class="jos"><div class="lista"></div>' +
+      '<div class="lamurire"><h3></h3><p></p></div></div>' +
+    '</div>';
 
-  var lista = document.createElement('div');
-  lista.style.cssText =
-    'display:none;margin-bottom:6px;background:rgba(255,244,214,0.97);' +
-    'border:1px solid rgba(120,96,48,0.6);border-radius:8px;overflow:hidden;' +
-    'box-shadow:0 2px 14px rgba(0,0,0,0.4);max-height:60vh;overflow-y:auto;';
+  var elFile = fereastra.querySelector('.file');
+  var elTitlu = fereastra.querySelector('.titlu');
+  var elLista = fereastra.querySelector('.lista');
+  var elNume = fereastra.querySelector('.lamurire h3');
+  var elText = fereastra.querySelector('.lamurire p');
+  var elInchide = fereastra.querySelector('.inchide');
 
-  function scrieButonul() {
-    buton.textContent = '🌍 ' + NUMELE_LIMBILOR[limba];
+  var FILE = [
+    { cheie: 'ecran', semn: '🖵', randuri: ['fereastra', 'dispozitiv'] },
+    { cheie: 'sunet', semn: '🔊', randuri: ['muzica', 'sunete', 'efecte'] },
+    { cheie: 'limba', semn: '🌍', randuri: ['limba'] }
+  ];
+  var filaAleasa = 'ecran';
+
+  /* Tot ecranul. Browserul nu dă voie decât dintr-o atingere a omului — de-aia
+     se cere aici, în ascultătorul de clic, și niciodată la pornire. */
+  function totEcranul(vrem) {
+    try {
+      var r = document.documentElement;
+      if (vrem && !document.fullscreenElement) {
+        (r.requestFullscreen || r.webkitRequestFullscreen || function () {}).call(r);
+      } else if (!vrem && document.fullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
+      }
+    } catch (e) { /* unele browsere refuză; rămâne în fereastră */ }
   }
 
-  function inchide() {
-    deschis = false;
-    lista.style.display = 'none';
+  function randurile() {
+    return {
+      fereastra: {
+        fel: 'alegere', eticheta: 'set.fereastra', lamurire: 'set.fereastra.desc',
+        valori: [['fereastra', 'set.fereastraNormala'], ['tot', 'set.totEcranul']],
+        acum: function () { return document.fullscreenElement ? 'tot' : 'fereastra'; },
+        pune: function (v) { totEcranul(v === 'tot'); }
+      },
+      dispozitiv: {
+        fel: 'alegere', eticheta: 'set.dispozitiv', lamurire: 'set.dispozitiv.desc',
+        valori: [['automat', 'set.automat'], ['calculator', 'set.calculator'],
+                 ['telefon', 'set.telefon']],
+        acum: function () { return dispozitivAles; },
+        pune: function (v) { schimbaDispozitivul(v); }
+      },
+      muzica: { fel: 'cursor', cheie: 'muzica', eticheta: 'set.muzica', lamurire: 'set.muzica.desc' },
+      sunete: { fel: 'cursor', cheie: 'sunete', eticheta: 'set.sunete', lamurire: 'set.sunete.desc' },
+      efecte: { fel: 'cursor', cheie: 'efecte', eticheta: 'set.efecte', lamurire: 'set.efecte.desc' },
+      limba: { fel: 'limbi', eticheta: 'set.limba', lamurire: 'set.limba.desc' }
+    };
   }
 
-  ORDINEA_LIMBILOR.forEach(function (cod) {
+  function spuneDespre(r) {
+    elNume.textContent = T(r.eticheta);
+    elText.textContent = T(r.lamurire);
+    var toate = elLista.querySelectorAll('.rand');
+    for (var i = 0; i < toate.length; i++) toate[i].classList.remove('privit');
+  }
+
+  function faceRand(r) {
     var rand = document.createElement('div');
-    rand.textContent = NUMELE_LIMBILOR[cod];
-    rand.style.cssText =
-      'cursor:pointer;padding:7px 16px;color:#2b2419;white-space:nowrap;' +
-      'border-bottom:1px solid rgba(120,96,48,0.18);';
-    rand.addEventListener('pointerenter', function () {
-      rand.style.background = 'rgba(120,96,48,0.14)';
-    });
-    rand.addEventListener('pointerleave', function () {
-      rand.style.background = 'transparent';
-    });
-    rand.addEventListener('pointerdown', function (e) {
-      e.stopPropagation();
-      schimbaLimba(cod);
-      scrieButonul();
-      inchide();
-    });
-    lista.appendChild(rand);
-  });
+    rand.className = 'rand';
 
-  buton.addEventListener('pointerdown', function (e) {
+    var et = document.createElement('span');
+    et.className = 'eticheta';
+    et.textContent = T(r.eticheta);
+    rand.appendChild(et);
+
+    if (r.fel === 'alegere') {
+      var valori = r.valori, acum = r.acum();
+      var k = 0;
+      for (var i = 0; i < valori.length; i++) if (valori[i][0] === acum) k = i;
+
+      var stanga = document.createElement('span');
+      stanga.className = 'sageata'; stanga.textContent = '‹';
+      var mijloc = document.createElement('span');
+      mijloc.className = 'valoare'; mijloc.textContent = T(valori[k][1]);
+      var dreapta = document.createElement('span');
+      dreapta.className = 'sageata'; dreapta.textContent = '›';
+
+      var muta = function (cat) {
+        return function (e) {
+          e.stopPropagation();
+          var nou = valori[(k + cat + valori.length) % valori.length][0];
+          r.pune(nou);
+          deseneaza();
+          spuneDespre(r);
+        };
+      };
+      stanga.addEventListener('pointerdown', muta(-1));
+      dreapta.addEventListener('pointerdown', muta(1));
+      mijloc.addEventListener('pointerdown', muta(1));
+      rand.appendChild(stanga); rand.appendChild(mijloc); rand.appendChild(dreapta);
+
+    } else if (r.fel === 'cursor') {
+      var cursor = document.createElement('input');
+      cursor.type = 'range'; cursor.min = 0; cursor.max = 100; cursor.step = 1;
+      cursor.value = VOLUME[r.cheie];
+      var procent = document.createElement('span');
+      procent.className = 'procent';
+      procent.textContent = VOLUME[r.cheie] + '%';
+      cursor.addEventListener('input', function () {
+        puneVolumul(r.cheie, Number(cursor.value));
+        procent.textContent = VOLUME[r.cheie] + '%';
+      });
+      cursor.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+      rand.appendChild(cursor); rand.appendChild(procent);
+
+    } else if (r.fel === 'limbi') {
+      rand.style.display = 'block';
+      var cutie = document.createElement('div');
+      cutie.className = 'limbi';
+      ORDINEA_LIMBILOR.forEach(function (cod) {
+        var b = document.createElement('div');
+        b.textContent = NUMELE_LIMBILOR[cod];
+        if (cod === limba) b.className = 'aleasa';
+        b.addEventListener('pointerdown', function (e) {
+          e.stopPropagation();
+          schimbaLimba(cod);
+          deseneaza();
+        });
+        cutie.appendChild(b);
+      });
+      rand.appendChild(cutie);
+    }
+
+    rand.addEventListener('pointerenter', function () { spuneDespre(r); });
+    return rand;
+  }
+
+  /* Se redesenează tot, de fiecare dată. Ecranul are șase rânduri: e mai ieftin
+     decât să ținem minte care bucată s-a schimbat — și, mai ales, o schimbare de
+     limbă schimbă **fiecare** cuvânt de aici, inclusiv numele filelor. */
+  function deseneaza() {
+    elTitlu.textContent = T('set.titlu');
+    elInchide.title = T('set.inchide');
+
+    elFile.innerHTML = '';
+    FILE.forEach(function (f) {
+      var b = document.createElement('div');
+      b.className = 'fila' + (f.cheie === filaAleasa ? ' aleasa' : '');
+      b.style.display = 'inline-block';
+      b.textContent = f.semn + '  ' + T('set.' + f.cheie);
+      b.addEventListener('pointerdown', function (e) {
+        e.stopPropagation();
+        filaAleasa = f.cheie;
+        deseneaza();
+      });
+      elFile.appendChild(b);
+    });
+
+    var toate = randurile();
+    var fila = FILE.filter(function (f) { return f.cheie === filaAleasa; })[0];
+    elLista.innerHTML = '';
+    fila.randuri.forEach(function (nume) {
+      elLista.appendChild(faceRand(toate[nume]));
+    });
+    spuneDespre(toate[fila.randuri[0]]);
+  }
+
+  function deschide() {
+    deseneaza();
+    fereastra.classList.add('deschis');
+  }
+  function inchide() { fereastra.classList.remove('deschis'); }
+
+  roata.addEventListener('pointerdown', function (e) {
     e.stopPropagation();
-    deschis = !deschis;
-    lista.style.display = deschis ? 'block' : 'none';
+    if (fereastra.classList.contains('deschis')) inchide(); else deschide();
+  });
+  elInchide.addEventListener('pointerdown', function (e) { e.stopPropagation(); inchide(); });
+
+  /* Atingerea pe fundalul fumuriu închide; cea dinăuntru se oprește aici, ca să
+     nu cadă în pânză. */
+  fereastra.addEventListener('pointerdown', function (e) {
+    e.stopPropagation();
+    if (e.target === fereastra) inchide();
   });
 
-  /* O atingere oriunde altundeva închide lista. Fără asta ar rămâne deschisă
-     peste joc, iar jucătorul ar apăsa „prin" ea fără să înțeleagă de ce nu se
-     întâmplă nimic. */
-  window.addEventListener('pointerdown', function () { if (deschis) inchide(); });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && fereastra.classList.contains('deschis')) inchide();
+  });
+  /* Ieșirea din „tot ecranul" se poate face și cu tasta browserului, pe lângă
+     butonul nostru. Atunci rândul trebuie să se schimbe singur, altfel ar scrie
+     „Tot ecranul" peste o fereastră obișnuită. */
+  document.addEventListener('fullscreenchange', function () {
+    if (fereastra.classList.contains('deschis')) deseneaza();
+  });
 
-  scrieButonul();
-  cutie.appendChild(lista);
-  cutie.appendChild(buton);
-  document.body.appendChild(cutie);
+  document.body.appendChild(roata);
+  document.body.appendChild(fereastra);
 })();
 </script>
 

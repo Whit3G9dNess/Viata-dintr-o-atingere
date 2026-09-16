@@ -50,7 +50,64 @@ const laRedimensionare = [];
    `ecran(470)` înseamnă „470 de pixeli de-ai ecranului", socotiți în pixeli
    de-ai pânzei. Atât cât trebuie ca desenul să arate la fel, oricât de tare a
    coborât calitatea. */
-function ecran(n) { return n * scalaPanzei; }
+function ecran(n) { return n * scalaPanzei * marireaDispozitivului(); }
+
+/* ---------- CALCULATOR SAU TELEFON ----------
+
+   Pe telefon nu se schimbă desenul, se schimbă **măsura**. Aproape tot ce se
+   atinge și tot ce se citește e socotit cu `ecran()`: mărimea literei, înălțimea
+   rândului, cât de mare e cercelul de tras, lățimea unui bilet. Un sfert în plus
+   acolo înseamnă litere care se citesc de la o palmă distanță și ținte care
+   încap sub un deget — nu sub un vârf de cursor.
+
+   Nu e o socoteală de frumusețe, ci de nimerit: degetul acoperă vreo șapte
+   milimetri de sticlă, iar mausul, unul. Ce e croit pentru maus se ratează cu
+   degetul, și cine ratează de trei ori crede că jucăria e stricată.
+
+   „Automat" se uită la două lucruri deodată, fiindcă niciunul singur nu ajunge:
+   un ecran tactil poate fi un laptop cu ecran tactil, iar o fereastră îngustă pe
+   calculator e tot un calculator. Numai împreună înseamnă telefon. */
+const DISPOZITIVE = ['automat', 'calculator', 'telefon'];
+let dispozitivAles = 'automat';
+
+function eTelefon() {
+  if (dispozitivAles === 'telefon') return true;
+  if (dispozitivAles === 'calculator') return false;
+
+  const cuDegetul =
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0) ||
+    (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+     window.matchMedia('(pointer: coarse)').matches);
+  const mic = Math.min(window.innerWidth || 0, window.innerHeight || 0) < 820;
+  return !!(cuDegetul && mic);
+}
+
+function marireaDispozitivului() { return eTelefon() ? 1.28 : 1; }
+
+/* Schimbarea dispozitivului mișcă `ecran()` sub picioarele tuturor sălilor, deci
+   tot ce e pictat o dată și apăsat pe urmă ca o ștampilă trebuie pictat din nou.
+   Se aruncă aceleași ștampile ca la schimbarea limbii — adică toate **afară de
+   cele două care țin munca jucătorului**. */
+function schimbaDispozitivul(cod) {
+  if (DISPOZITIVE.indexOf(cod) === -1 || cod === dispozitivAles) return false;
+  dispozitivAles = cod;
+  try { localStorage.setItem('dispozitiv', cod); } catch (e) { /* fereastră privată */ }
+  if (typeof stampilele === 'function') {
+    for (const s of stampilele()) { s.o.latime = 0; s.o.inaltime = 0; }
+  }
+  redimensioneaza();
+  uitaCadrul();
+  return true;
+}
+
+function ceDispozitivAmAvut() {
+  try {
+    const pastrat = localStorage.getItem('dispozitiv');
+    if (pastrat && DISPOZITIVE.indexOf(pastrat) !== -1) dispozitivAles = pastrat;
+  } catch (e) { /* fereastră privată: rămâne „automat" */ }
+}
+
+ceDispozitivAmAvut();
 
 /* Aceleași litere, măsurate în pixeli de-ai ecranului, nu de-ai pânzei. Un
    „20px" scris de-a dreptul crește pe ecran atunci când pânza se micșorează —

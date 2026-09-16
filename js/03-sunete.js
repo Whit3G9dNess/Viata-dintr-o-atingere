@@ -28,10 +28,86 @@ function pornesteAudio() {
   if (audioRefuzat) return;
   try {
     audio = new (window.AudioContext || window.webkitAudioContext)();
+    faceRobinetele();
   } catch (e) {
     audioRefuzat = true;
   }
 }
+
+/* ---------- CELE TREI ROBINETE ----------
+
+   Sunetele nu mai merg de-a dreptul la boxe, ci prin trei robinete:
+
+   - **muzica** — piesele scrise, care se aud tot timpul cât ești într-o sală;
+   - **sunetele** — ce faci tu: balonul care pocnește, mingea care sare, clicul;
+   - **efectele** — ce face sala în jurul tău: focul, ploaia, viscolul, radioul.
+
+   Se mișcă separat fiindcă nu deranjează la fel. Într-o clasă cu douăzeci de
+   calculatoare, muzica e de prisos și focul e gălăgios — dar pocnetul balonului
+   e chiar **răspunsul** la atingerea ta, iar fără el jucăria pare stricată. Cine
+   vrea liniște trebuie să poată lăsa răspunsurile și să taie fundalul.
+
+   50 înseamnă **cât s-a gândit sunetul**: nici mai tare, nici mai încet decât
+   atunci când a fost scris. 0 e tăcere, 100 e de două ori mai tare. */
+const FELURI_DE_SUNET = ['muzica', 'sunete', 'efecte'];
+const VOLUME = { muzica: 50, sunete: 50, efecte: 50 };
+let robinete = null;
+
+/* Cât de deschis stă un robinet. Liniar, dinadins: jumătate din numere înseamnă
+   jumătate din amplitudine, adică vreo șase decibeli mai încet — aproape exact
+   ce aude urechea ca „pe jumătate". */
+function catDeDeschis(fel) {
+  const v = Math.max(0, Math.min(100, VOLUME[fel]));
+  return v / 50;
+}
+
+function faceRobinetele() {
+  if (!audio || robinete) return;
+  robinete = {};
+  for (const fel of FELURI_DE_SUNET) {
+    const g = audio.createGain();
+    g.gain.value = catDeDeschis(fel);
+    g.connect(audio.destination);
+    robinete[fel] = g;
+  }
+}
+
+/* Unde se duce un sunet. Dacă robinetele nu s-au făcut încă — sau browserul a
+   refuzat contextul — se întoarce ieșirea de-a dreptul: mai bine se aude decât
+   să crape jucăria pentru un buton de volum. */
+function iesirea(fel) {
+  if (!robinete) faceRobinetele();
+  return (robinete && robinete[fel]) || audio.destination;
+}
+
+/* Mutarea unui robinet se face **lin**, pe vreo cincime de secundă. Pusă dintr-o
+   dată, sărea un pocnet în boxe — treapta din undă e chiar un pocnet. */
+function puneVolumul(fel, cat) {
+  if (FELURI_DE_SUNET.indexOf(fel) === -1) return false;
+  VOLUME[fel] = Math.max(0, Math.min(100, Math.round(cat)));
+  if (robinete && robinete[fel] && audio) {
+    try {
+      robinete[fel].gain.setTargetAtTime(catDeDeschis(fel), audio.currentTime, 0.06);
+    } catch (e) {
+      robinete[fel].gain.value = catDeDeschis(fel);
+    }
+  }
+  try { localStorage.setItem('volum.' + fel, String(VOLUME[fel])); } catch (e) { }
+  return true;
+}
+
+function ceVolumeAmAvut() {
+  for (const fel of FELURI_DE_SUNET) {
+    try {
+      const pastrat = localStorage.getItem('volum.' + fel);
+      if (pastrat !== null && pastrat !== '' && isFinite(Number(pastrat))) {
+        VOLUME[fel] = Math.max(0, Math.min(100, Math.round(Number(pastrat))));
+      }
+    } catch (e) { /* fereastră privată: rămân cele de la fabrică */ }
+  }
+}
+
+ceVolumeAmAvut();
 
 /* Toate sunetele încep cu același paznic: **fără context audio, tăcere**.
 
@@ -44,7 +120,8 @@ function pornesteAudio() {
 
    O jucărie fără sunet e o jucărie. Una care se oprește, nu. */
 // O notă simplă: frecvență, moment de start, durată, volum, formă de undă
-function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = null) {
+function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = null,
+              fel = 'sunete') {
   if (!audio) return;
   const osc = audio.createOscillator();
   osc.type = tip;
@@ -54,7 +131,7 @@ function nota(frecventa, cand, durata, volum, tip = 'sine', frecventaFinala = nu
   vol.gain.setValueAtTime(0.0001, cand);
   vol.gain.exponentialRampToValueAtTime(volum, cand + 0.015);
   vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
-  osc.connect(vol).connect(audio.destination);
+  osc.connect(vol).connect(iesirea(fel));
   osc.start(cand);
   osc.stop(cand + durata + 0.05);
   /* Vocea se și întoarce, ca cine a programat-o s-o poată tăia înainte de vreme.
@@ -81,7 +158,8 @@ function taieVocile(voci) {
 }
 
 // Un „fâșâit" filtrat — pentru stropi de vopsea și aspirare
-function zgomot(cand, durata, volum, frecventaStart, frecventaFinal = null) {
+function zgomot(cand, durata, volum, frecventaStart, frecventaFinal = null,
+                fel = 'sunete') {
   if (!audio) return;
   if (!bufferZgomot) {
     bufferZgomot = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
@@ -100,7 +178,7 @@ function zgomot(cand, durata, volum, frecventaStart, frecventaFinal = null) {
   vol.gain.setValueAtTime(0.0001, cand);
   vol.gain.exponentialRampToValueAtTime(volum, cand + 0.02);
   vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea(fel));
   sursa.start(cand);
   sursa.stop(cand + durata + 0.05);
 }
@@ -120,7 +198,7 @@ function sunetRasarit() {
   volBas.gain.setValueAtTime(0.0001, t);
   volBas.gain.exponentialRampToValueAtTime(0.12, t + 1.2);
   volBas.gain.exponentialRampToValueAtTime(0.0001, t + 4.5);
-  bas.connect(volBas).connect(audio.destination);
+  bas.connect(volBas).connect(iesirea('sunete'));
   bas.start(t); bas.stop(t + 4.6);
 
   const clinchet = audio.createOscillator();
@@ -131,7 +209,7 @@ function sunetRasarit() {
   volClinchet.gain.setValueAtTime(0.0001, t + 1);
   volClinchet.gain.exponentialRampToValueAtTime(0.045, t + 2.2);
   volClinchet.gain.exponentialRampToValueAtTime(0.0001, t + 4.4);
-  clinchet.connect(volClinchet).connect(audio.destination);
+  clinchet.connect(volClinchet).connect(iesirea('sunete'));
   clinchet.start(t + 1); clinchet.stop(t + 4.5);
 }
 
@@ -234,7 +312,7 @@ function pornesteFundalSonor(frecvente, taiere, volum) {
   const vol = audio.createGain();
   vol.gain.setValueAtTime(0.0001, t);
   vol.gain.exponentialRampToValueAtTime(volum, t + 5);
-  vol.connect(audio.destination);
+  vol.connect(iesirea('muzica'));
 
   const filtru = audio.createBiquadFilter();
   filtru.type = 'lowpass';
@@ -333,14 +411,15 @@ function tineMuzicaMuzeului() {
     for (let k = 0; k < 8; k++) {
       const treapta = acord[k % 4];
       voci.push(nota(frecventa(inaltime(treapta)), inceput + (m * 4 + k * 0.5) * PATRIME,
-                     PATRIME * 0.42, 0.022, 'triangle'));
+                     PATRIME * 0.42, 0.022, 'triangle', null, 'muzica'));
     }
   }
 
   // melodia, peste el
   let cand = inceput;
   for (const [treapta, batai] of MELODIE_MUZEU) {
-    voci.push(nota(frecventa(inaltime(treapta)), cand, batai * PATRIME * 0.86, 0.03, 'triangle'));
+    voci.push(nota(frecventa(inaltime(treapta)), cand, batai * PATRIME * 0.86, 0.03,
+                   'triangle', null, 'muzica'));
     cand += batai * PATRIME;
   }
 
@@ -422,7 +501,7 @@ function pornesteNatura(cuVant) {
   rafala.connect(catDeTare).connect(filtru.frequency);
   rafala.start(t);
 
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   naturaScena3 = { sursa, rafala, vol };
 }
@@ -450,7 +529,7 @@ function cantecDePasare() {
     const cand = t + k * (0.085 + Math.random() * 0.075);
     const urca = Math.random() < 0.6;
     nota(urca ? inalt : inalt * 1.35, cand, 0.075, 0.02, 'sine',
-         urca ? inalt * 1.45 : inalt * 0.78);
+         urca ? inalt * 1.45 : inalt * 0.78, 'efecte');
   }
 }
 
@@ -595,7 +674,7 @@ function pornesteFocul() {
   respiratie.connect(adancime).connect(vol.gain);
   respiratie.start(t);
 
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   foculScena6 = { sursa, respiratie, vol, panaLa: t + 0.2 };
 }
@@ -613,7 +692,7 @@ function tinePocnetele() {
     zgomot(cand, 0.035 + Math.random() * 0.05, tarie, 2600 + Math.random() * 2400, 700);
     // si bufnetul lemnului de sub el, care ii da greutate
     if (Math.random() < 0.55) {
-      nota(90 + Math.random() * 70, cand, 0.1, tarie * 0.5, 'triangle', 48);
+      nota(90 + Math.random() * 70, cand, 0.1, tarie * 0.5, 'triangle', 48, 'efecte');
     }
     foculScena6.panaLa = cand + 0.18 + Math.random() * 1.15;
   }
@@ -709,7 +788,7 @@ function pornestePloaia() {
   val.connect(adancime).connect(vol.gain);
   val.start(t);
 
-  sursa.connect(taiere).connect(forma).connect(vol).connect(audio.destination);
+  sursa.connect(taiere).connect(forma).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   ploaiaScena9 = { sursa, val, vol, panaLa: t + 0.3 };
 }
@@ -723,9 +802,9 @@ function tinePicaturileDeApa() {
   while (ploaiaScena9.panaLa < acum + 2) {
     const cand = ploaiaScena9.panaLa;
     const inalt = 900 + Math.random() * 1400;
-    nota(inalt, cand, 0.09, 0.05 + Math.random() * 0.05, 'sine', inalt * 0.45);
+    nota(inalt, cand, 0.09, 0.05 + Math.random() * 0.05, 'sine', inalt * 0.45, 'efecte');
     // ecoul: aceeași picătură, mai târziu și mai stinsă
-    nota(inalt * 0.98, cand + 0.16, 0.13, 0.018, 'sine', inalt * 0.4);
+    nota(inalt * 0.98, cand + 0.16, 0.13, 0.018, 'sine', inalt * 0.4, 'efecte');
     ploaiaScena9.panaLa = cand + 0.5 + Math.random() * 1.9;
   }
 }
@@ -786,7 +865,7 @@ function pornesteVinilul() {
   const vol = audio.createGain();
   vol.gain.setValueAtTime(0.0001, t);
   vol.gain.exponentialRampToValueAtTime(0.022, t + 1.5);
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   vinilScena9 = { sursa, vol, panaLa: t + 0.2 };
 }
@@ -853,7 +932,7 @@ function zgomotUscat(cand, durata, volum, f0, f1, ascutime) {
   vol.gain.exponentialRampToValueAtTime(volum, cand + 0.008);
   vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
 
-  sursa.connect(taie).connect(forma).connect(vol).connect(audio.destination);
+  sursa.connect(taie).connect(forma).connect(vol).connect(iesirea('sunete'));
   sursa.start(cand);
   sursa.stop(cand + durata + 0.05);
 }
@@ -909,7 +988,7 @@ function stireRadio() {
   volP.gain.exponentialRampToValueAtTime(0.030, t + 0.25);
   volP.gain.setValueAtTime(0.030, t + DURATA - 0.5);
   volP.gain.exponentialRampToValueAtTime(0.0001, t + DURATA);
-  paraziti.connect(bandaP).connect(volP).connect(audio.destination);
+  paraziti.connect(bandaP).connect(volP).connect(iesirea('efecte'));
   paraziti.start(t);
   paraziti.stop(t + DURATA + 0.1);
 
@@ -934,7 +1013,7 @@ function stireRadio() {
   gura.gain.setValueAtTime(11, t);
   const volV = audio.createGain();
   volV.gain.setValueAtTime(0.0001, t);
-  banda.connect(gura).connect(volV).connect(audio.destination);
+  banda.connect(gura).connect(volV).connect(iesirea('efecte'));
 
   let cand = t + 0.45;
   let inaltime = 132;
@@ -1121,7 +1200,7 @@ function pornesteAtelierRetro() {
   val.connect(adancime).connect(vol.gain);
   val.start(t);
 
-  sursa.connect(jos).connect(vol).connect(audio.destination);
+  sursa.connect(jos).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   atelierulScena10 = { sursa, val, vol, panaLa: t + 1 };
 }
@@ -1133,7 +1212,7 @@ function tineAtelierRetro() {
     const cand = atelierulScena10.panaLa;
     // un pocnet de tablă sau o scârțâitură de lemn, rar
     if (Math.random() < 0.5) {
-      nota(210 + Math.random() * 260, cand, 0.14, 0.016, 'triangle', 90);
+      nota(210 + Math.random() * 260, cand, 0.14, 0.016, 'triangle', 90, 'efecte');
     } else {
       zgomotUscat(cand, 0.10 + Math.random() * 0.1, 0.014,
                   600 + Math.random() * 700, 300, 6);
@@ -1209,7 +1288,7 @@ function zgomotZgariat(cand, durata, volum, f0, f1, ascutime) {
   vol.gain.exponentialRampToValueAtTime(volum, cand + durata * 0.2);
   vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
 
-  sursa.connect(banda).connect(vol).connect(audio.destination);
+  sursa.connect(banda).connect(vol).connect(iesirea('sunete'));
   sursa.start(cand);
   sursa.stop(cand + durata + 0.05);
 }
@@ -1318,7 +1397,7 @@ function sunetVacuum() {
   vol.gain.exponentialRampToValueAtTime(0.16, t + D * 0.80);
   vol.gain.setValueAtTime(0.16, t + D * 0.86);
   vol.gain.linearRampToValueAtTime(0.0001, t + D * 0.90);
-  sursa.connect(banda).connect(vol).connect(audio.destination);
+  sursa.connect(banda).connect(vol).connect(iesirea('sunete'));
   sursa.start(t);
   sursa.stop(t + D);
 
@@ -1364,7 +1443,7 @@ function pornesteLinisteaIncordata() {
   adancime.gain.setValueAtTime(0.014, t);
   val.connect(adancime).connect(vol.gain);
   val.start(t);
-  bas.connect(vol).connect(audio.destination);
+  bas.connect(vol).connect(iesirea('efecte'));
   bas.start(t);
 
   linisteaScena11 = { bas, val, vol, panaLa: t + 2 };
@@ -1377,8 +1456,8 @@ function tineLinisteaIncordata() {
     const cand = linisteaScena11.panaLa;
     // ecoul fin al prafului: un ton foarte înalt și foarte stins, cu o umbră
     const f = 2600 + Math.random() * 2600;
-    nota(f, cand, 0.20, 0.008, 'sine');
-    nota(f * 0.99, cand + 0.09, 0.26, 0.004, 'sine');
+    nota(f, cand, 0.20, 0.008, 'sine', null, 'efecte');
+    nota(f * 0.99, cand + 0.09, 0.26, 0.004, 'sine', null, 'efecte');
     linisteaScena11.panaLa = cand + 2.6 + Math.random() * 5.5;
   }
 }
@@ -1426,7 +1505,7 @@ function batereDeInima(cand, tarie) {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + 0.03);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(g).connect(audio.destination);
+    osc.connect(g).connect(iesirea('efecte'));
     osc.start(t);
     osc.stop(t + dur + 0.05);
   };
@@ -1506,7 +1585,7 @@ function osilaba(cand, durata, vocala, tarie) {
 
   sursa.connect(f1).connect(amestec);
   sursa.connect(f2).connect(amestec);
-  amestec.connect(vol).connect(audio.destination);
+  amestec.connect(vol).connect(iesirea('sunete'));
   sursa.start(cand);
   sursa.stop(cand + durata + 0.05);
 }
@@ -1637,7 +1716,7 @@ function pornesteViscolul() {
   suflu.connect(catSuflu).connect(vol.gain);
   suflu.start(t);
 
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea('efecte'));
   sursa.start(t);
   viscolulScena7 = { sursa, rafala, suflu, vol, urmatorulPas: t + 1.5 };
 }
@@ -1721,7 +1800,7 @@ function pornesteTurbina() {
   const vol = audio.createGain();
   vol.gain.setValueAtTime(0.0001, t);
   vol.gain.exponentialRampToValueAtTime(0.075, t + 1.6);
-  vol.connect(audio.destination);
+  vol.connect(iesirea('efecte'));
 
   const voci = [];
   for (const f of [44, 45.7, 88, 132.3]) {
@@ -1789,7 +1868,7 @@ function pornesteAtelierUlei() {
   const vol = audio.createGain();
   vol.gain.setValueAtTime(0.0001, t);
   vol.gain.exponentialRampToValueAtTime(0.04, t + 3);
-  vol.connect(audio.destination);
+  vol.connect(iesirea('efecte'));
 
   /* Aerul greu al unui atelier: nu tăcere, ci o apăsare joasă, ca într-o cameră
      cu ferestrele închise și cu ulei de in pe masă. */
@@ -1824,7 +1903,7 @@ function tinePicaturileDeUlei() {
   const acum = audio.currentTime;
   while (atelierulScena8.urmatoareaPicatura < acum + 2) {
     const cand = atelierulScena8.urmatoareaPicatura;
-    nota(320 + Math.random() * 180, cand, 0.13, 0.035, 'sine', 90);
+    nota(320 + Math.random() * 180, cand, 0.13, 0.035, 'sine', 90, 'efecte');
     zgomot(cand, 0.05, 0.03, 800, 200);
     atelierulScena8.urmatoareaPicatura = cand + 2.5 + Math.random() * 5;
   }
@@ -1874,7 +1953,7 @@ function zgomotCleios(cand, durata, volum, f0, f1) {
   vol.gain.setValueAtTime(volum, cand + durata * 0.55);
   vol.gain.exponentialRampToValueAtTime(0.0001, cand + durata);
 
-  sursa.connect(filtru).connect(vol).connect(audio.destination);
+  sursa.connect(filtru).connect(vol).connect(iesirea('sunete'));
   sursa.start(cand);
   sursa.stop(cand + durata + 0.05);
 }
@@ -1929,7 +2008,7 @@ function pornesteClipocitul() {
   const vol = audio.createGain();
   vol.gain.setValueAtTime(0.0001, t);
   vol.gain.exponentialRampToValueAtTime(0.06, t + 1.5);
-  vol.connect(audio.destination);
+  vol.connect(iesirea('efecte'));
 
   const sursa = audio.createBufferSource();
   sursa.buffer = bufferZgomot;
@@ -1953,7 +2032,7 @@ function tineClipocitul() {
   while (apaScena8.urmatorulClipocit < acum + 1.5) {
     const cand = apaScena8.urmatorulClipocit;
     const f = 500 + Math.random() * 900;
-    nota(f, cand, 0.09, 0.035, 'sine', f * 2.6);
+    nota(f, cand, 0.09, 0.035, 'sine', f * 2.6, 'efecte');
     if (Math.random() < 0.5) zgomot(cand + 0.05, 0.3, 0.03, 3000, 5200);
     apaScena8.urmatorulClipocit = cand + 0.25 + Math.random() * 0.7;
   }
